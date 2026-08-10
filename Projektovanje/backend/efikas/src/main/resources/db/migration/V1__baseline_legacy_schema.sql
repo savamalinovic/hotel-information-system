@@ -1,6 +1,5 @@
-DROP SCHEMA IF EXISTS efikas CASCADE;
-
-CREATE SCHEMA efikas;
+-- Legacy schema baseline. Never add destructive DROP statements to a migration.
+CREATE SCHEMA IF NOT EXISTS efikas;
 
 
 -- =========================================================================
@@ -315,14 +314,6 @@ CREATE TABLE IF NOT EXISTS efikas."expenses_book" (
 
 
 -- -------------------------------------------------------------------------
-
-select * from efikas.app_user;
-
-select * from efikas.reservation;
-
-select * from efikas.reservation_type;
-
-select * from efikas.apartment;
 
 -- update efikas.apartment set "Name" = 'Apartman srece' where apartment."ApartmentId" = 4 ;
 

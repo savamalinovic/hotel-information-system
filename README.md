@@ -8,7 +8,7 @@ Repozitorijum je nastao iz ranijeg projekta za elektronsku fiskalnu i kontrolnu 
 
 - `Projektovanje/backend/efikas` — Spring Boot 3.5.7, Java 17, Maven i PostgreSQL backend;
 - `Projektovanje/frontend/eFikas-mobile` — Expo 54, React Native i TypeScript mobilna aplikacija za agente i operativne radnike;
-- `Projektovanje/database` — postojeći SQL model i mock podaci; do uvođenja migracija nisu autoritativan produkcijski migration tok;
+- `Projektovanje/database` — napomene o bazi i naslijeđeni mock podaci; autoritativne SQL migracije su uz backend u `src/main/resources/db/migration`;
 - `Projektovanje/esir` — naslijeđeni ESIR materijal, van budućeg funkcionalnog opsega;
 - `Dokumentacija` — naslijeđena projektna dokumentacija;
 
@@ -29,7 +29,7 @@ Za podrazumijevani lokalni PostgreSQL iz root direktorijuma:
 docker compose up -d --wait postgres
 ```
 
-Compose inicijalizuje razvojnu bazu `efikas` i testnu bazu `efikas_test` postojećim DDL-om. To je privremeni bootstrap do A02 migracija.
+Compose pravi razvojnu bazu `efikas` i testnu bazu `efikas_test`. Backend i testovi zatim automatski primjenjuju verzionisane Flyway migracije.
 
 ## Backend
 
@@ -48,7 +48,7 @@ Provjere:
 ./mvnw.cmd package
 ```
 
-Backend compile/package ne zahtijevaju aktivnu bazu. Testovi koriste lokalnu `efikas_test` bazu i zato zahtijevaju pokrenut i inicijalizovan PostgreSQL. `ddl-auto=validate` ne mijenja šemu.
+Backend compile/package ne zahtijevaju aktivnu bazu. Testovi koriste lokalnu `efikas_test` bazu i zato zahtijevaju pokrenut PostgreSQL; Flyway inicijalizuje praznu bazu, a `ddl-auto=validate` zatim provjerava mapiranje bez mijenjanja šeme.
 
 ## Mobilna aplikacija
 
@@ -90,7 +90,11 @@ Ovi problemi nisu nastali dokumentacionim izmjenama A00. Testno okruženje pripa
 
 ## A01 lokalno okruženje
 
-A01 dodaje ponovljiv PostgreSQL 16 Compose servis, odvojenu testnu bazu, sigurne backend/mobile primjere konfiguracije i konfigurabilan mobile API URL. Izolovana native PostgreSQL provjera potvrdila je inicijalizaciju obje baze. Backend se povezuje, ali validacija zatim otkriva postojeći DDL/JPA naming nesklad (`apartment_id` naspram quoted `"ApartmentId"`) koji pripada A02. Docker CLI nije dostupan na A01 radnoj mašini, pa Compose runtime nije potvrđen.
+A01 dodaje ponovljiv PostgreSQL 16 Compose servis, odvojenu testnu bazu, sigurne backend/mobile primjere konfiguracije i konfigurabilan mobile API URL. Docker CLI nije dostupan na radnoj mašini, pa Compose runtime nije potvrđen.
+
+## A02 migracije baze
+
+A02 uvodi Flyway i verzionisani V1 baseline naslijeđene šeme. Prazna baza se migrira automatski, a postojeća naslijeđena baza može se baselineovati bez ponovnog DDL-a i gubitka podataka. Eksplicitna Hibernate naming strategija usklađuje JPA sa postojećim quoted imenima, dok `ddl-auto=validate` ostaje zaštitna validacija.
 
 ## Git tok
 
