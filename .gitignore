@@ -3,5 +3,15 @@
 target/
 *.iml
 application*.properties
+!**/application.example.properties
+
+# Local secrets and credentials
+**/.env.local
+**/.env.*.local
+**/application*.yml
+**/application*.yaml
+**/*.pem
+**/*.key
+**/*service-account*.json
 
 efikas-firebase-service-account.json
