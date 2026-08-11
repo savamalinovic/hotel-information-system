@@ -68,6 +68,21 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/reservations/1/demo-receipt")
+    ResponseEntity<Void> generateDemoReceipt() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/reservations/1/demo-receipt")
+    ResponseEntity<Void> demoReceipt() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/reservations/1/demo-receipt/pdf")
+    ResponseEntity<Void> demoReceiptPdf() {
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/v1/reservations/1/check-in/claim")
     ResponseEntity<Void> claimCheckIn() {
         return ResponseEntity.ok().build();

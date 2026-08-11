@@ -122,6 +122,20 @@ class RbacAuthorizationTest {
     }
 
     @Test
+    void agentGeneratesDemoReceiptWhileManagerAndAgentCanReadIt() throws Exception {
+        mockMvc.perform(post("/api/v1/reservations/1/demo-receipt").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/demo-receipt").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/reservations/1/demo-receipt").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/reservations/1/demo-receipt/pdf").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/reservations/1/demo-receipt").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void paymentReadsAllowManagerAndAgentButLedgerWritesRequireAgent() throws Exception {
         mockMvc.perform(get("/api/v1/reservations/1/payments").with(role(UserRole.MANAGER)))
                 .andExpect(status().isOk());

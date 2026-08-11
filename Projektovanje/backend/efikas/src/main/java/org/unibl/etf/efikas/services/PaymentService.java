@@ -17,6 +17,7 @@ import org.unibl.etf.efikas.models.requests.ReversePaymentRequest;
 import org.unibl.etf.efikas.models.responses.PaymentResponse;
 import org.unibl.etf.efikas.models.responses.PaymentSummaryResponse;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
+import org.unibl.etf.efikas.repositories.DemoReceiptRepository;
 import org.unibl.etf.efikas.repositories.PaymentRepository;
 import org.unibl.etf.efikas.repositories.ReservationRepository;
 
@@ -33,6 +34,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
     private final AppUserRepository appUserRepository;
+    private final DemoReceiptRepository demoReceiptRepository;
 
     @Transactional(readOnly = true)
     public List<PaymentResponse> findAll(Integer reservationId) {
@@ -50,6 +52,7 @@ public class PaymentService {
     @Transactional
     public PaymentResponse record(Integer reservationId, RecordPaymentRequest request, String actorEmail) {
         Reservation reservation = lockReservation(reservationId);
+        ensureReceiptNotIssued(reservationId);
         if (reservation.getStatus() == ReservationStatus.CANCELLED
                 || reservation.getStatus() == ReservationStatus.NO_SHOW) {
             throw new DomainConflictException("A new payment cannot be recorded for a cancelled or no-show reservation.");
@@ -75,6 +78,7 @@ public class PaymentService {
             Integer reservationId, Long paymentId, CorrectPaymentRequest request, String actorEmail
     ) {
         Reservation reservation = lockReservation(reservationId);
+        ensureReceiptNotIssued(reservationId);
         Payment original = requireOriginalPayment(reservationId, paymentId);
         ensureNotReversed(original);
 
@@ -98,6 +102,7 @@ public class PaymentService {
             Integer reservationId, Long paymentId, ReversePaymentRequest request, String actorEmail
     ) {
         Reservation reservation = lockReservation(reservationId);
+        ensureReceiptNotIssued(reservationId);
         Payment original = requireOriginalPayment(reservationId, paymentId);
         ensureNotReversed(original);
 
@@ -144,6 +149,12 @@ public class PaymentService {
         if (paymentRepository.existsByReferencedPaymentPaymentIdAndType(
                 original.getPaymentId(), PaymentType.REVERSAL)) {
             throw new DomainConflictException("The payment has already been reversed.");
+        }
+    }
+
+    private void ensureReceiptNotIssued(Integer reservationId) {
+        if (demoReceiptRepository.existsByReservationReservationId(reservationId)) {
+            throw new DomainConflictException("Payments cannot change after a demo receipt is issued.");
         }
     }
 

@@ -99,7 +99,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasRole(UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/reservations/*/guests",
                                 "/api/v1/reservations/*/check-in", "/api/v1/reservations/*/check-in/claim",
-                                "/api/v1/reservations/*/check-out")
+                                "/api/v1/reservations/*/check-out", "/api/v1/reservations/*/demo-receipt")
                         .hasRole(UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.PUT, "/api/v1/reservations/*/guests/*",
                                 "/api/v1/reservations/*/check-in/claim")

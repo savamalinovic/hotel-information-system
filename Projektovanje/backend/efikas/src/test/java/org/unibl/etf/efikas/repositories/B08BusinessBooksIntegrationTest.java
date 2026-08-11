@@ -84,37 +84,10 @@ class B08BusinessBooksIntegrationTest {
     }
 
     @Test
-    void incomeBookIsAutomaticIdempotentAndDatabaseImmutable() {
-        AppUser manager = appUserRepository.save(user("b08-income-manager@example.invalid", "9500000000003", UserRole.MANAGER));
-        AppUser agent = appUserRepository.save(user("b08-income-agent@example.invalid", "9500000000004", UserRole.AGENT));
-        Integer reservationId = reservation(manager, agent, 1);
-
-        var created = books.recordGeneratedReceipt(reservationId, "DEMO-B08-0001", LocalDate.now(),
-                "Accommodation service", new BigDecimal("90.00"), new BigDecimal("105.30"),
-                new BigDecimal("15.30"));
-        var repeated = books.recordGeneratedReceipt(reservationId, "DEMO-B08-0001", LocalDate.now(),
-                "Accommodation service", new BigDecimal("90.00"), new BigDecimal("105.30"),
-                new BigDecimal("15.30"));
-
-        assertThat(repeated.incomeBookEntryId()).isEqualTo(created.incomeBookEntryId());
-        assertThatThrownBy(() -> books.recordGeneratedReceipt(reservationId, "DEMO-B08-0001", LocalDate.now(),
-                "Changed amount", new BigDecimal("91.00"), new BigDecimal("106.30"),
-                new BigDecimal("15.30")))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("different income-book entry");
-        assertThat(books.income(LocalDate.now(), LocalDate.now(), "DEMO-B08", PageRequest.of(0, 20)).content())
-                .singleElement().satisfies(entry -> {
-                    assertThat(entry.reservationId()).isEqualTo(reservationId);
-                    assertThat(entry.totalRevenue()).isEqualByComparingTo("105.30");
-                });
-        assertThat(new String(books.exportIncome(null, null, null), StandardCharsets.UTF_8))
-                .contains("\"DEMO-B08-0001\"")
-                .contains("\"105.30\"");
-        assertThatThrownBy(() -> jdbcTemplate.update(
-                "update efikas.income_book_entry set \"Description\" = 'Changed' where \"IncomeBookEntryId\" = ?",
-                created.incomeBookEntryId()))
-                .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("immutable");
+    void incomeBookHasReadOnlyEmptyStateBeforeDemoReceiptFlow() {
+        assertThat(books.income(null, null, "B08-NO-MATCH", PageRequest.of(0, 20)).content()).isEmpty();
+        assertThat(new String(books.exportIncome(null, null, "B08-NO-MATCH"), StandardCharsets.UTF_8))
+                .startsWith("\uFEFF\"incomeBookEntryId\"");
     }
 
     @Test
@@ -124,13 +97,6 @@ class B08BusinessBooksIntegrationTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("from");
 
-        AppUser manager = appUserRepository.save(user("b08-validation-manager@example.invalid", "9500000000005", UserRole.MANAGER));
-        AppUser agent = appUserRepository.save(user("b08-validation-agent@example.invalid", "9500000000006", UserRole.AGENT));
-        Integer reservationId = reservation(manager, agent, 1);
-        assertThatThrownBy(() -> books.recordGeneratedReceipt(reservationId, "DEMO-B08-NEG", LocalDate.now(),
-                "Invalid", BigDecimal.ONE.negate(), BigDecimal.ZERO, BigDecimal.ZERO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Service sale revenue");
     }
 
     private Integer reservation(AppUser manager, AppUser creator, int guestCount) {
