@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,10 +15,13 @@ import org.unibl.etf.efikas.models.enums.UserRole;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RbacProbeController.class)
-@Import({SecurityConfig.class, JwtAuthFilter.class, JwtAuthenticationEntryPoint.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, JwtAuthenticationEntryPoint.class,
+        JwtAccessDeniedHandler.class, ApiErrorResponseWriter.class})
 @ActiveProfiles("rbac-probe")
 class RbacAuthorizationTest {
 
@@ -45,7 +49,11 @@ class RbacAuthorizationTest {
     @Test
     void anonymousUserCannotReadApartments() throws Exception {
         mockMvc.perform(get("/api/v1/apartments"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"))
+                .andExpect(jsonPath("$.path").value("/api/v1/apartments"));
     }
 
     @Test
@@ -55,7 +63,11 @@ class RbacAuthorizationTest {
         mockMvc.perform(get("/api/v1/apartments").with(role(UserRole.AGENT)))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/apartments").with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+                .andExpect(jsonPath("$.path").value("/api/v1/apartments"));
     }
 
     @Test

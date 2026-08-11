@@ -4,30 +4,29 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import org.unibl.etf.efikas.models.responses.errors.ApiErrorCode;
 
 import java.io.IOException;
 
-// Defines an action to be performed when authentication fails
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     private final ApiErrorResponseWriter errorWriter;
 
     @Override
-    public void commence(
+    public void handle(
             HttpServletRequest request,
             HttpServletResponse response,
-            AuthenticationException authException) throws IOException, ServletException {
-
+            AccessDeniedException accessDeniedException
+    ) throws IOException, ServletException {
         errorWriter.write(
                 request,
                 response,
-                HttpServletResponse.SC_UNAUTHORIZED,
-                ApiErrorCode.AUTHENTICATION_REQUIRED,
-                "Authentication is required.");
+                HttpServletResponse.SC_FORBIDDEN,
+                ApiErrorCode.ACCESS_DENIED,
+                "Access is denied.");
     }
 }
