@@ -1,5 +1,7 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,6 +10,7 @@ import org.unibl.etf.efikas.exceptions.S3UploadException;
 import org.unibl.etf.efikas.models.responses.FileUploadResponse;
 import org.unibl.etf.efikas.services.interfaces.S3Service;
 import org.unibl.etf.efikas.util.Constants;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,6 +19,8 @@ import java.util.Map;
 // REST controller for testing AWS S3 API. Can be changed further down the line (or deleted) when the url gets embedded in appropriate models.
 @RestController
 @RequestMapping("/api/v1/s3")
+@Tag(name = "Storage")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class S3Controller {
 
     private final S3Service s3Service;

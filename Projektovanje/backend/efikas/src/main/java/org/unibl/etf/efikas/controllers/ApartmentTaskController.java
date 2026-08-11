@@ -1,5 +1,7 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.unibl.etf.efikas.models.entities.ApartmentTask;
 import org.unibl.etf.efikas.models.responses.ApartmentExpenseResponse;
 import org.unibl.etf.efikas.models.responses.ApartmentTaskResponse;
 import org.unibl.etf.efikas.services.ApartmentTaskService;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
 
 import java.net.URI;
 import java.util.List;
@@ -20,6 +23,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/apartments")
 @RequiredArgsConstructor
+@Tag(name = "Apartment tasks")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class ApartmentTaskController {
 
     private final ApartmentTaskService apartmentTaskService;
