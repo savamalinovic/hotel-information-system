@@ -23,6 +23,7 @@ import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.repositories.AttendanceSessionRepository;
 import org.unibl.etf.efikas.repositories.AvailabilityOverrideRepository;
 import org.unibl.etf.efikas.repositories.BreakPeriodRepository;
+import org.unibl.etf.efikas.repositories.OperationalTaskRepository;
 
 import java.time.Instant;
 
@@ -33,6 +34,7 @@ public class WorkforceAvailabilityService {
     private final AttendanceSessionRepository attendanceSessionRepository;
     private final BreakPeriodRepository breakPeriodRepository;
     private final AvailabilityOverrideRepository availabilityOverrideRepository;
+    private final OperationalTaskRepository operationalTaskRepository;
 
     @Transactional(readOnly = true)
     public WorkerAvailabilityResponse current(String workerEmail) {
@@ -170,7 +172,10 @@ public class WorkforceAvailabilityService {
         BreakPeriod openBreak = session == null ? null : breakPeriodRepository
                 .findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(session.getAttendanceSessionId())
                 .orElse(null);
-        WorkerAvailabilityStatus status = deriveStatus(session != null, override != null, openBreak != null);
+        boolean busy = operationalTaskRepository.existsByAssignedWorkerUserIdAndStatusIn(
+                worker.getUserId(), java.util.List.of(org.unibl.etf.efikas.models.enums.TaskStatus.ASSIGNED,
+                        org.unibl.etf.efikas.models.enums.TaskStatus.IN_PROGRESS));
+        WorkerAvailabilityStatus status = deriveStatus(session != null, override != null, openBreak != null, busy);
         return new WorkerAvailabilityResponse(
                 worker.getUserId(), worker.getName(), worker.getSurname(), status,
                 session == null ? null : session.getAttendanceSessionId(),
@@ -182,7 +187,7 @@ public class WorkforceAvailabilityService {
     }
 
     static WorkerAvailabilityStatus deriveStatus(
-            boolean clockedIn, boolean unavailableOverride, boolean openBreak
+            boolean clockedIn, boolean unavailableOverride, boolean openBreak, boolean busy
     ) {
         if (!clockedIn) {
             return WorkerAvailabilityStatus.OFF_DUTY;
@@ -190,7 +195,15 @@ public class WorkforceAvailabilityService {
         if (unavailableOverride) {
             return WorkerAvailabilityStatus.UNAVAILABLE;
         }
-        return openBreak ? WorkerAvailabilityStatus.ON_BREAK : WorkerAvailabilityStatus.AVAILABLE;
+        if (openBreak) return WorkerAvailabilityStatus.ON_BREAK;
+        return busy ? WorkerAvailabilityStatus.BUSY : WorkerAvailabilityStatus.AVAILABLE;
+    }
+
+    @Transactional(readOnly = true)
+    public void assertAvailableForTask(AppUser worker) {
+        if (currentAvailability(worker, Instant.now()).status() != WorkerAvailabilityStatus.AVAILABLE) {
+            throw new DomainConflictException("The worker must be present and available to take a task.");
+        }
     }
 
     private AttendanceSession requireOpenSession(Integer workerId) {

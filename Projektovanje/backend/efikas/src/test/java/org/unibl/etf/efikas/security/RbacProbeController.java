@@ -113,6 +113,21 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/tasks")
+    ResponseEntity<Void> createOperationalTask() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/tasks")
+    ResponseEntity<Void> operationalTasks() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/tasks/available")
+    ResponseEntity<Void> availableOperationalTasks() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/tasks/1/claim")
+    ResponseEntity<Void> claimOperationalTask() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/tasks/1/cancel")
+    ResponseEntity<Void> cancelOperationalTask() { return ResponseEntity.ok().build(); }
+
     @GetMapping("/api/v1/cash-registers")
     ResponseEntity<Void> cashRegisters() {
         return ResponseEntity.ok().build();

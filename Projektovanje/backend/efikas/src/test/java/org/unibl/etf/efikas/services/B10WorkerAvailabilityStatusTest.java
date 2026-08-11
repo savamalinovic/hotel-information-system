@@ -8,13 +8,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class B10WorkerAvailabilityStatusTest {
     @Test
     void derivesCurrentStatusWithStablePrecedence() {
-        assertThat(WorkforceAvailabilityService.deriveStatus(false, false, false))
+        assertThat(WorkforceAvailabilityService.deriveStatus(false, false, false, true))
                 .isEqualTo(WorkerAvailabilityStatus.OFF_DUTY);
-        assertThat(WorkforceAvailabilityService.deriveStatus(true, false, false))
+        assertThat(WorkforceAvailabilityService.deriveStatus(true, false, false, false))
                 .isEqualTo(WorkerAvailabilityStatus.AVAILABLE);
-        assertThat(WorkforceAvailabilityService.deriveStatus(true, false, true))
+        assertThat(WorkforceAvailabilityService.deriveStatus(true, false, true, true))
                 .isEqualTo(WorkerAvailabilityStatus.ON_BREAK);
-        assertThat(WorkforceAvailabilityService.deriveStatus(true, true, true))
+        assertThat(WorkforceAvailabilityService.deriveStatus(true, true, true, true))
                 .isEqualTo(WorkerAvailabilityStatus.UNAVAILABLE);
+        assertThat(WorkforceAvailabilityService.deriveStatus(true, false, false, true))
+                .isEqualTo(WorkerAvailabilityStatus.BUSY);
     }
 }

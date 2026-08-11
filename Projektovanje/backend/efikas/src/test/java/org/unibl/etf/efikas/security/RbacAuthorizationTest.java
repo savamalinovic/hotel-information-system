@@ -135,13 +135,19 @@ class RbacAuthorizationTest {
     }
 
     @Test
-    void workerCanReadTasksButCannotUseLegacyTaskWrite() throws Exception {
+    void legacyApartmentTasksAreClosedAndNewTaskActionsHaveExplicitRoles() throws Exception {
         mockMvc.perform(get("/api/v1/apartments/1/tasks").with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/apartments/1/tasks").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
         mockMvc.perform(post("/api/v1/apartments/1/tasks").with(role(UserRole.AGENT)))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks").with(role(UserRole.AGENT))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/tasks").with(role(UserRole.MANAGER))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/tasks").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/tasks/available").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.AGENT))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isForbidden());
     }
 
     @Test

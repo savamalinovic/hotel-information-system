@@ -2,6 +2,7 @@ package org.unibl.etf.efikas.controllers;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Apartment tasks")
 @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
+@Hidden
 public class ApartmentTaskController {
 
     private final ApartmentTaskService apartmentTaskService;
