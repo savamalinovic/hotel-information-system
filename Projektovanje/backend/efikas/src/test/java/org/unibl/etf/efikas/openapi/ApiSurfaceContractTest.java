@@ -35,7 +35,8 @@ class ApiSurfaceContractTest {
             S3Controller.class,
             SpecializationController.class,
             SettingsController.class,
-            UserManagementController.class
+            UserManagementController.class,
+            WorkforceController.class
     );
 
     @Test
@@ -91,7 +92,8 @@ class ApiSurfaceContractTest {
                 S3Controller.class,
                 SpecializationController.class,
                 SettingsController.class,
-                UserManagementController.class
+                UserManagementController.class,
+                WorkforceController.class
         );
 
         assertThat(protectedControllers)

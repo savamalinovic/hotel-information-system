@@ -157,4 +157,19 @@ class RbacProbeController {
     ResponseEntity<Void> specializations() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/v1/workforce/availability")
+    ResponseEntity<Void> workforceAvailability() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/workforce/me/availability")
+    ResponseEntity<Void> myWorkforceAvailability() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/workforce/me/attendance/clock-in")
+    ResponseEntity<Void> clockInWorker() {
+        return ResponseEntity.ok().build();
+    }
 }
