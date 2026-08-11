@@ -78,6 +78,26 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/api/v1/reservations/1/payments")
+    ResponseEntity<Void> payments() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/reservations/1/payments")
+    ResponseEntity<Void> recordPayment() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/reservations/1/payments/1/corrections")
+    ResponseEntity<Void> correctPayment() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/reservations/1/payments/1/reversal")
+    ResponseEntity<Void> reversePayment() {
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/api/v1/guests/1")
     ResponseEntity<Void> guest() {
         return ResponseEntity.ok().build();
