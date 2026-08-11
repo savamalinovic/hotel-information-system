@@ -11,6 +11,7 @@ public class Constants {
     public static class Aws {
         public static final String S3_BUCKET_IMAGES_FOLDER_PREFIX = "images/";
         public static final String TASK_ATTACHMENTS_FOLDER_PREFIX = "task-attachments/";
+        public static final String DAMAGE_ATTACHMENTS_FOLDER_PREFIX = "damage-attachments/";
     }
 
     public static class PdfFonts {

@@ -247,4 +247,24 @@ class RbacProbeController {
     ResponseEntity<Void> voidOperationalExpense() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/v1/apartments/1/damages")
+    ResponseEntity<Void> apartmentDamages() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/apartments/1/damages")
+    ResponseEntity<Void> createApartmentDamage() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/api/v1/apartments/1/damages/1")
+    ResponseEntity<Void> updateApartmentDamage() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/apartments/1/damages/1/attachments")
+    ResponseEntity<Void> attachApartmentDamage() {
+        return ResponseEntity.ok().build();
+    }
 }
