@@ -11,6 +11,7 @@ import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.entities.AttendanceSession;
 import org.unibl.etf.efikas.models.entities.AvailabilityOverride;
 import org.unibl.etf.efikas.models.entities.BreakPeriod;
+import org.unibl.etf.efikas.models.entities.LeaveRequest;
 import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.models.enums.WorkerAvailabilityStatus;
 import org.unibl.etf.efikas.models.requests.CreateAvailabilityOverrideRequest;
@@ -23,6 +24,7 @@ import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.repositories.AttendanceSessionRepository;
 import org.unibl.etf.efikas.repositories.AvailabilityOverrideRepository;
 import org.unibl.etf.efikas.repositories.BreakPeriodRepository;
+import org.unibl.etf.efikas.repositories.LeaveRequestRepository;
 import org.unibl.etf.efikas.repositories.OperationalTaskRepository;
 
 import java.time.Instant;
@@ -35,6 +37,7 @@ public class WorkforceAvailabilityService {
     private final BreakPeriodRepository breakPeriodRepository;
     private final AvailabilityOverrideRepository availabilityOverrideRepository;
     private final OperationalTaskRepository operationalTaskRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
 
     @Transactional(readOnly = true)
     public WorkerAvailabilityResponse current(String workerEmail) {
@@ -169,13 +172,15 @@ public class WorkforceAvailabilityService {
                 .findByWorkerUserIdAndClockedOutAtIsNull(worker.getUserId()).orElse(null);
         AvailabilityOverride override = availabilityOverrideRepository.findCurrent(worker.getUserId(), now)
                 .orElse(null);
+        LeaveRequest leave = leaveRequestRepository.findCurrentApproved(worker.getUserId(), now).orElse(null);
         BreakPeriod openBreak = session == null ? null : breakPeriodRepository
                 .findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(session.getAttendanceSessionId())
                 .orElse(null);
         boolean busy = operationalTaskRepository.existsByAssignedWorkerUserIdAndStatusIn(
                 worker.getUserId(), java.util.List.of(org.unibl.etf.efikas.models.enums.TaskStatus.ASSIGNED,
                         org.unibl.etf.efikas.models.enums.TaskStatus.IN_PROGRESS));
-        WorkerAvailabilityStatus status = deriveStatus(session != null, override != null, openBreak != null, busy);
+        WorkerAvailabilityStatus status = deriveStatus(
+                session != null, leave != null, override != null, openBreak != null, busy);
         return new WorkerAvailabilityResponse(
                 worker.getUserId(), worker.getName(), worker.getSurname(), status,
                 session == null ? null : session.getAttendanceSessionId(),
@@ -183,12 +188,24 @@ public class WorkforceAvailabilityService {
                 openBreak == null ? null : openBreak.getStartedAt(),
                 override == null ? null : override.getAvailabilityOverrideId(),
                 override == null ? null : override.getEndsAt(),
-                override == null ? null : override.getReason());
+                override == null ? null : override.getReason(),
+                leave == null ? null : leave.getLeaveRequestId(),
+                leave == null ? null : leave.getEndsAt(),
+                leave == null ? null : leave.getReason());
     }
 
     static WorkerAvailabilityStatus deriveStatus(
             boolean clockedIn, boolean unavailableOverride, boolean openBreak, boolean busy
     ) {
+        return deriveStatus(clockedIn, false, unavailableOverride, openBreak, busy);
+    }
+
+    static WorkerAvailabilityStatus deriveStatus(
+            boolean clockedIn, boolean onLeave, boolean unavailableOverride, boolean openBreak, boolean busy
+    ) {
+        if (onLeave) {
+            return WorkerAvailabilityStatus.ON_LEAVE;
+        }
         if (!clockedIn) {
             return WorkerAvailabilityStatus.OFF_DUTY;
         }

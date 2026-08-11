@@ -207,4 +207,19 @@ class RbacProbeController {
     ResponseEntity<Void> clockInWorker() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/v1/workforce/leave-requests")
+    ResponseEntity<Void> managerLeaveRequests() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/workforce/leave-requests/1/approve")
+    ResponseEntity<Void> approveLeaveRequest() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/workforce/me/leave-requests")
+    ResponseEntity<Void> createLeaveRequest() {
+        return ResponseEntity.ok().build();
+    }
 }

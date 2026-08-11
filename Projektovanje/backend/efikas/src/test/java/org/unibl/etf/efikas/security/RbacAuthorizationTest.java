@@ -236,6 +236,26 @@ class RbacAuthorizationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void workerOwnsLeaveRequestsWhileOnlyManagerDecides() throws Exception {
+        mockMvc.perform(post("/api/v1/workforce/me/leave-requests")
+                        .with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/workforce/me/leave-requests").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/workforce/leave-requests").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/workforce/leave-requests")
+                        .with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/workforce/leave-requests/1/approve")
+                        .with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/workforce/leave-requests/1/approve")
+                        .with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+    }
+
     private static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor role(
             UserRole role
     ) {
