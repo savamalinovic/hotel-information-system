@@ -3,6 +3,7 @@ package org.unibl.etf.efikas.openapi;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import org.unibl.etf.efikas.configs.OpenApiConfig;
 import org.unibl.etf.efikas.controllers.*;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,9 +74,7 @@ class ApiSurfaceContractTest {
                 .isAnnotationPresent(Hidden.class)).isTrue();
 
         assertThat(BooksController.class.getDeclaredMethods())
-                .filteredOn(ApiSurfaceContractTest::isLegacyBookWrite)
-                .isNotEmpty()
-                .allSatisfy(method -> assertThat(method.isAnnotationPresent(Hidden.class)).isTrue());
+                .noneMatch(ApiSurfaceContractTest::isLegacyBookWrite);
     }
 
     @Test
@@ -104,6 +104,16 @@ class ApiSurfaceContractTest {
                     assertThat(requirement).as(controller.getSimpleName()).isNotNull();
                     assertThat(requirement.name()).isEqualTo(OpenApiConfig.BEARER_AUTH);
                 });
+    }
+
+    @Test
+    void businessBooksExposeOnlyTheThreeReadModelsAndTheirExports() {
+        assertThat(Arrays.stream(BooksController.class.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(GetMapping.class))
+                .map(method -> method.getAnnotation(GetMapping.class).value()[0]))
+                .containsExactlyInAnyOrder(
+                        "/domestic-guests", "/foreign-guests", "/income",
+                        "/domestic-guests/export", "/foreign-guests/export", "/income/export");
     }
 
     private static boolean isLegacyBookWrite(Method method) {
