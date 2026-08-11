@@ -7,6 +7,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.unibl.etf.efikas.models.dto.ChangePasswordDTO;
+import org.unibl.etf.efikas.models.enums.UserRole;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,5 +64,24 @@ class AuthenticationRequestValidationTest {
         assertThat(validator.validate(request))
                 .extracting(violation -> violation.getPropertyPath().toString())
                 .containsExactlyInAnyOrder("otp", "passwordConfirmed");
+    }
+
+    @Test
+    void managedUserRequestValidatesIdentityAndPasswordBounds() {
+        CreateManagedUserRequest request = new CreateManagedUserRequest(
+                "invalid-email",
+                "short",
+                "A",
+                "B",
+                "123",
+                "x",
+                "abc",
+                UserRole.OPERATIONAL_WORKER,
+                Set.of((short) 0));
+
+        assertThat(validator.validate(request))
+                .extracting(violation -> violation.getPropertyPath().toString())
+                .contains("email", "password", "name", "surname", "jmbg", "address", "phoneNumber",
+                        "specializationIds[].<iterable element>");
     }
 }

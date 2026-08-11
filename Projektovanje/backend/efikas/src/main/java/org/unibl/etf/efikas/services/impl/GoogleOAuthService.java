@@ -7,7 +7,10 @@ import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.unibl.etf.efikas.models.dto.UserDTO;
+import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.responses.AuthenticationResponse;
+import org.unibl.etf.efikas.exceptions.InvalidCredentialsException;
+import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.interfaces.OAuthService;
 
@@ -19,12 +22,15 @@ import java.util.Collections;
 public class GoogleOAuthService implements OAuthService {
     private final JwtUtil jwtUtil;
     private final GoogleIdTokenVerifier verifier;
+    private final AppUserRepository appUserRepository;
 
     public GoogleOAuthService(
             JwtUtil jwtUtil,
+            AppUserRepository appUserRepository,
             @Value("${oauth2.client.registration.google.client-id}") String clientId
     ) {
         this.jwtUtil = jwtUtil;
+        this.appUserRepository = appUserRepository;
         this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
                 .setAudience(Collections.singletonList(clientId))
                 .build();
@@ -39,18 +45,17 @@ public class GoogleOAuthService implements OAuthService {
             throw new RuntimeException("Invalid Google token");
         }
 
-        System.out.println("PAYLOAD: " + payload.toString());
-
-        String email = (String) payload.get("email");
-        String firstName = (String) payload.get("given_name");
-        String lastName = (String) payload.get("family_name");
+        String email = payload.getEmail();
+        AppUser persistedUser = appUserRepository.findByEmailIgnoreCase(email)
+                .filter(AppUser::isActive)
+                .orElseThrow(InvalidCredentialsException::new);
 
         UserDTO user = UserDTO.builder()
-                .name(firstName)
-                .surname(lastName)
-                .email(email)
+                .name(persistedUser.getName())
+                .surname(persistedUser.getSurname())
+                .email(persistedUser.getEmail())
                 .build();
-        String accessToken = jwtUtil.generateToken(email);
+        String accessToken = jwtUtil.generateToken(persistedUser.getEmail());
 
         return new AuthenticationResponse(user, accessToken);
     }

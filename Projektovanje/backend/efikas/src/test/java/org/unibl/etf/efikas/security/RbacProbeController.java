@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -72,6 +74,36 @@ class RbacProbeController {
 
     @GetMapping("/api/v1/users/me")
     ResponseEntity<Void> profile() {
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/api/v1/users/me")
+    ResponseEntity<Void> deleteProfile() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/users")
+    ResponseEntity<Void> users() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/users")
+    ResponseEntity<Void> createUser() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/hotel-profile")
+    ResponseEntity<Void> hotelProfile() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/api/v1/hotel-profile")
+    ResponseEntity<Void> updateHotelProfile() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/specializations")
+    ResponseEntity<Void> specializations() {
         return ResponseEntity.ok().build();
     }
 }

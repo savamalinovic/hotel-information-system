@@ -26,11 +26,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     // It's not ideal, but it is what it is...
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email not found: " + email));
 
-        if (user.getRole() == null) {
-            throw new UsernameNotFoundException("User has no assigned role: " + email);
+        if (user.getRole() == null || !user.isActive()) {
+            throw new UsernameNotFoundException("Active user with an assigned role was not found: " + email);
         }
 
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().asAuthority()));

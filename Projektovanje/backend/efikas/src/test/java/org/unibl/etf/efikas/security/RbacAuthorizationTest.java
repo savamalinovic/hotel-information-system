@@ -14,7 +14,9 @@ import org.unibl.etf.efikas.models.enums.UserRole;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -122,6 +124,39 @@ class RbacAuthorizationTest {
             mockMvc.perform(get("/api/v1/users/me").with(role(role)))
                     .andExpect(status().isOk());
         }
+    }
+
+    @Test
+    void onlyManagerCanManageUsers() throws Exception {
+        mockMvc.perform(get("/api/v1/users").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/users").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/users").with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/users").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void hotelProfileIsReadableByAllRolesButWritableOnlyByManager() throws Exception {
+        for (UserRole role : UserRole.values()) {
+            mockMvc.perform(get("/api/v1/hotel-profile").with(role(role)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/specializations").with(role(role)))
+                    .andExpect(status().isOk());
+        }
+
+        mockMvc.perform(put("/api/v1/hotel-profile").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(put("/api/v1/hotel-profile").with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void selfServiceCannotHardDeleteAccount() throws Exception {
+        mockMvc.perform(delete("/api/v1/users/me").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
     }
 
     private static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor role(
