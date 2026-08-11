@@ -15,6 +15,7 @@ import org.unibl.etf.efikas.models.responses.LeaveRequestResponse;
 import org.unibl.etf.efikas.models.responses.PageResponse;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.repositories.LeaveRequestRepository;
+import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
 import java.time.Instant;
 
@@ -23,6 +24,7 @@ import java.time.Instant;
 public class LeaveRequestService {
     private final AppUserRepository appUserRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public LeaveRequestResponse create(String workerEmail, CreateLeaveRequest input) {
@@ -44,7 +46,11 @@ public class LeaveRequestService {
         request.setReason(input.reason().trim());
         request.setStatus(LeaveRequestStatus.PENDING);
         request.setCreatedAt(now);
-        return toResponse(leaveRequestRepository.saveAndFlush(request));
+        LeaveRequest saved = leaveRequestRepository.saveAndFlush(request);
+        notificationService.notify(appUserRepository.findAllByRoleAndActiveTrue(UserRole.MANAGER),
+                "LEAVE_REQUEST_SUBMITTED", "Novi zahtjev za odsustvo",
+                worker.getName() + " " + worker.getSurname() + " je poslao/la zahtjev za odsustvo.");
+        return toResponse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -131,6 +137,9 @@ public class LeaveRequestService {
         request.setDecidedAt(Instant.now());
         request.setDecisionReason(reason);
         leaveRequestRepository.flush();
+        notificationService.notify(java.util.List.of(worker), "LEAVE_REQUEST_DECIDED",
+                "Zahtjev za odsustvo je obrađen",
+                status == LeaveRequestStatus.APPROVED ? "Vaš zahtjev je odobren." : "Vaš zahtjev je odbijen.");
         return toResponse(request);
     }
 

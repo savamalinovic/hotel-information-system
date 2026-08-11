@@ -3,12 +3,14 @@ package org.unibl.etf.efikas.models.requests;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class PushNotificationTokenRequest {
-    private String token;
-    private String platform;
-    private String email;
+    @NotBlank @Size(max = 150) private String token;
+    @NotBlank @Pattern(regexp = "android|ios") private String platform;
 }

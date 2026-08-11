@@ -171,8 +171,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasRole(UserRole.MANAGER.name())
 
                         // Self-service and shared authenticated infrastructure.
-                        .requestMatchers("/api/v1/users/me", "/api/v1/notifications/push-token",
-                                "/api/v1/notifications/toggle", "/api/v1/settings/register-error")
+                        .requestMatchers("/api/v1/users/me", "/api/v1/notifications/**",
+                                "/api/v1/settings/register-error")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers("/api/v1/users/**")
                         .hasRole(UserRole.MANAGER.name())
