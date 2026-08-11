@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -91,6 +92,10 @@ class RbacAuthorizationTest {
         mockMvc.perform(get("/api/v1/apartments/1/reservations").with(role(UserRole.AGENT)))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/reservations/1").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/v1/reservations/1/status").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/v1/reservations/1/status").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
     }
 

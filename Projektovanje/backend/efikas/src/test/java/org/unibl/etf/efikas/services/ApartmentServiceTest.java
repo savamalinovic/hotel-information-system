@@ -26,6 +26,7 @@ class ApartmentServiceTest {
     @Mock ApartmentPictureRepository apartmentPictureRepository;
     @Mock ApartmentUnavailabilityRepository unavailabilityRepository;
     @Mock ApartmentStatusHistoryRepository statusHistoryRepository;
+    @Mock ReservationRepository reservationRepository;
     @Mock AppUserRepository appUserRepository;
     @Mock S3Service s3Service;
 

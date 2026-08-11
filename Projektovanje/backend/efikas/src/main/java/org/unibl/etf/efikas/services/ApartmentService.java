@@ -16,6 +16,7 @@ import org.unibl.etf.efikas.exceptions.S3UploadException;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.enums.ApartmentEffectiveStatus;
 import org.unibl.etf.efikas.models.enums.ApartmentOperationalStatus;
+import org.unibl.etf.efikas.models.enums.ReservationStatus;
 import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.models.responses.*;
 import org.unibl.etf.efikas.repositories.*;
@@ -36,6 +37,7 @@ public class ApartmentService {
     private final ApartmentPictureRepository apartmentPictureRepository;
     private final ApartmentUnavailabilityRepository unavailabilityRepository;
     private final ApartmentStatusHistoryRepository statusHistoryRepository;
+    private final ReservationRepository reservationRepository;
     private final AppUserRepository appUserRepository;
     private final S3Service s3Service;
 
@@ -97,7 +99,14 @@ public class ApartmentService {
 
     @Transactional
     public ApartmentDetailsResponse deactivate(Integer id) {
-        Apartment apartment = requireApartment(id);
+        Apartment apartment = apartmentRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new EntityNotFoundException("Apartment not found."));
+        if (reservationRepository.existsByApartmentApartmentIdAndStatusIn(
+                id, List.of(
+                        ReservationStatus.CONFIRMED,
+                        ReservationStatus.CHECKED_IN))) {
+            throw new DomainConflictException("An apartment with a blocking reservation cannot be deactivated.");
+        }
         apartment.setActive(false);
         return toDetails(apartmentRepository.saveAndFlush(apartment), LocalDate.now());
     }
@@ -268,6 +277,10 @@ public class ApartmentService {
         if (unavailabilityRepository.existsOverlapping(
                 apartmentId, request.startDate(), request.endDate(), excludedId)) {
             throw new DomainConflictException("The apartment already has an overlapping unavailability period.");
+        }
+        if (reservationRepository.existsBlockingDuringUnavailability(
+                apartmentId, request.startDate(), request.endDate())) {
+            throw new DomainConflictException("The apartment has a blocking reservation during this period.");
         }
     }
 

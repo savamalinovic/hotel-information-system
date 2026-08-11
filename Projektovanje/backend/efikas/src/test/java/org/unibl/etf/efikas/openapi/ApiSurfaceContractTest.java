@@ -18,6 +18,7 @@ class ApiSurfaceContractTest {
 
     private static final List<Class<?>> API_CONTROLLERS = List.of(
             ApartmentController.class,
+            ApartmentTypeController.class,
             ApartmentDamageController.class,
             ApartmentExpenseController.class,
             ApartmentTaskController.class,
@@ -75,6 +76,7 @@ class ApiSurfaceContractTest {
     void protectedControllerGroupsDeclareJwtSecurity() {
         List<Class<?>> protectedControllers = List.of(
                 ApartmentController.class,
+                ApartmentTypeController.class,
                 ApartmentDamageController.class,
                 ApartmentTaskController.class,
                 ApartmentTraitController.class,

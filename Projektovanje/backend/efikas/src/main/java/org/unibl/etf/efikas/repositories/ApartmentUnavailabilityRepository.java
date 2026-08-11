@@ -28,4 +28,11 @@ public interface ApartmentUnavailabilityRepository extends JpaRepository<Apartme
               and :date between u.startDate and u.endDate
             """)
     boolean existsOnDate(Integer apartmentId, LocalDate date);
+
+    @Query("""
+            select count(u) > 0 from ApartmentUnavailability u
+            where u.apartment.apartmentId = :apartmentId
+              and u.startDate < :checkOutDate and u.endDate >= :checkInDate
+            """)
+    boolean existsForStay(Integer apartmentId, LocalDate checkInDate, LocalDate checkOutDate);
 }
