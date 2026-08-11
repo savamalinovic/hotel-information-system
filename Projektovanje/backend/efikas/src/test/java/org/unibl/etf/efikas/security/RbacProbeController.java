@@ -63,6 +63,11 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/reservations/1/check-out")
+    ResponseEntity<Void> checkOut() {
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/v1/reservations/1/check-in/claim")
     ResponseEntity<Void> claimCheckIn() {
         return ResponseEntity.ok().build();

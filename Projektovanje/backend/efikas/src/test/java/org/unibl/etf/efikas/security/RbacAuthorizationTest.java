@@ -113,6 +113,12 @@ class RbacAuthorizationTest {
                 .andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/reservations/1/check-in").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
     }
 
     @Test

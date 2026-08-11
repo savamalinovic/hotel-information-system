@@ -23,6 +23,8 @@ public record ReservationDetailsResponse(
         Instant checkInClaimedAt,
         Integer checkedInByUserId,
         Instant checkedInAt,
+        Integer checkedOutByUserId,
+        Instant checkedOutAt,
         Long version,
         Instant createdAt,
         Instant updatedAt
