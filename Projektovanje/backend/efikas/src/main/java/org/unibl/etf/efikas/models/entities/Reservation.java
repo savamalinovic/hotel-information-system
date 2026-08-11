@@ -54,6 +54,20 @@ public class Reservation {
     @JoinColumn(name = "\"CreatedBy\"", nullable = false)
     private AppUser createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"CheckInClaimedBy\"")
+    private AppUser checkInClaimedBy;
+
+    @Column(name = "\"CheckInClaimedAt\"")
+    private Instant checkInClaimedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"CheckedInBy\"")
+    private AppUser checkedInBy;
+
+    @Column(name = "\"CheckedInAt\"")
+    private Instant checkedInAt;
+
     @Version
     @Column(name = "\"Version\"", nullable = false)
     private Long version;

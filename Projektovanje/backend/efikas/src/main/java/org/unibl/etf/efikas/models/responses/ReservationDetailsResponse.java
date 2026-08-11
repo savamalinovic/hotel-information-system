@@ -19,6 +19,10 @@ public record ReservationDetailsResponse(
         String note,
         ReservationStatus status,
         Integer createdByUserId,
+        Integer checkInClaimedByUserId,
+        Instant checkInClaimedAt,
+        Integer checkedInByUserId,
+        Instant checkedInAt,
         Long version,
         Instant createdAt,
         Instant updatedAt
