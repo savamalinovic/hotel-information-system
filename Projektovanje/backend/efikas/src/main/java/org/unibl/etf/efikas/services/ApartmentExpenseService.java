@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +31,6 @@ public class ApartmentExpenseService {
     private final ExpenseTypeRepository expenseTypeRepository;
 
     // Obtain all apartment expenses for a given apartment
-    // Perform ownership check before executing the method logic itself
-    @PreAuthorize("@userSecurity.isApartmentOwner(authentication, #apartmentId)")
     public List<ApartmentExpenseResponse> getAllApartmentExpensesForApartment(Integer apartmentId, Authentication authentication) {
         return apartmentExpenseRepository.findApartmentExpenseByApartmentApartmentId(apartmentId)
                 .stream().map((element) -> modelMapper.map(element, ApartmentExpenseResponse.class))
@@ -41,8 +38,6 @@ public class ApartmentExpenseService {
     }
 
     // Create a new expense for a given apartment
-    // Perform ownership check before executing the method logic itself
-    @PreAuthorize("@userSecurity.isApartmentOwner(authentication, #apartmentId)")
     public ApartmentExpenseResponse createNewApartmentExpense(Integer apartmentId, Authentication authentication, ApartmentExpenseDTO expense) {
         ApartmentExpense apartmentExpense = modelMapper.map(expense, ApartmentExpense.class);
 
@@ -67,7 +62,6 @@ public class ApartmentExpenseService {
     }
 
     @Transactional
-    @PreAuthorize("@userSecurity.isApartmentOwner(authentication, #apartmentId)")
     public ApartmentExpenseResponse updateApartmentExpense(Integer apartmentId, Authentication authentication, ApartmentExpenseDTO expenseDTO, String oldName) {
 
         ApartmentExpenseId oldId = new ApartmentExpenseId();
@@ -101,7 +95,6 @@ public class ApartmentExpenseService {
         return modelMapper.map(saved, ApartmentExpenseResponse.class);
     }
 
-    @PreAuthorize("@userSecurity.isApartmentOwner(authentication, #apartmentId)")
     public ApartmentExpenseResponse deleteApartmentExpense(Integer apartmentId, Authentication authentication, String apartmentExpenseName) {
         ApartmentExpenseId apartmentExpenseId = new ApartmentExpenseId();
         apartmentExpenseId.setApartmentId(apartmentId);

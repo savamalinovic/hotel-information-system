@@ -15,6 +15,7 @@ import org.unibl.etf.efikas.models.dto.UserDTO;
 import org.unibl.etf.efikas.models.dto.books.StoreDTO;
 import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.entities.Store;
+import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.models.requests.RegistrationRequest;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.models.responses.AppUserResponse;
@@ -50,6 +51,7 @@ public class AppUserService {
         String phoneNumber = user.getPhoneNumber();
 
         AppUser newUser = modelMapper.map(user, AppUser.class);
+        newUser.setRole(UserRole.AGENT);
         newUser.setPhoneNumber(normalizePhoneNumber(phoneNumber));
         // hashing the password
         newUser.setPasswordHash(passwordEncoder.encode(user.getPassword()));

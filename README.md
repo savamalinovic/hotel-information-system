@@ -96,6 +96,10 @@ A01 dodaje ponovljiv PostgreSQL 16 Compose servis, odvojenu testnu bazu, sigurne
 
 A02 uvodi Flyway i verzionisani V1 baseline naslijeđene šeme. Prazna baza se migrira automatski, a postojeća naslijeđena baza može se baselineovati bez ponovnog DDL-a i gubitka podataka. Eksplicitna Hibernate naming strategija usklađuje JPA sa postojećim quoted imenima, dok `ddl-auto=validate` ostaje zaštitna validacija.
 
+## A03 RBAC osnova
+
+A03 dodaje persisted uloge `MANAGER`, `AGENT` i `OPERATIONAL_WORKER`, zatvara legacy self-registration i pristup uklonjenim fiskalnim/store rutama, te uvodi eksplicitnu deny-by-default serversku matricu. JWT identifikuje korisnika, dok se aktuelna uloga učitava iz baze pri svakom zahtjevu.
+
 ## Git tok
 
 - `main` je stabilna početna verzija;
