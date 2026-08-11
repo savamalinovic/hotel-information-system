@@ -222,4 +222,29 @@ class RbacProbeController {
     ResponseEntity<Void> createLeaveRequest() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/v1/expense-categories")
+    ResponseEntity<Void> expenseCategories() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/expense-categories")
+    ResponseEntity<Void> createExpenseCategory() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/expenses")
+    ResponseEntity<Void> operationalExpenses() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/expenses")
+    ResponseEntity<Void> createOperationalExpense() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/expenses/1/void")
+    ResponseEntity<Void> voidOperationalExpense() {
+        return ResponseEntity.ok().build();
+    }
 }
