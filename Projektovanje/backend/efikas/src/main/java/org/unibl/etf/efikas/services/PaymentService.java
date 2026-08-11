@@ -11,6 +11,7 @@ import org.unibl.etf.efikas.models.entities.Reservation;
 import org.unibl.etf.efikas.models.enums.PaymentStatus;
 import org.unibl.etf.efikas.models.enums.PaymentType;
 import org.unibl.etf.efikas.models.enums.ReservationStatus;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.CorrectPaymentRequest;
 import org.unibl.etf.efikas.models.requests.RecordPaymentRequest;
 import org.unibl.etf.efikas.models.requests.ReversePaymentRequest;
@@ -35,6 +36,7 @@ public class PaymentService {
     private final ReservationRepository reservationRepository;
     private final AppUserRepository appUserRepository;
     private final DemoReceiptRepository demoReceiptRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<PaymentResponse> findAll(Integer reservationId) {
@@ -69,8 +71,12 @@ public class PaymentService {
         payment.setReason(normalizeNullable(request.note()) == null
                 ? "Payment recorded."
                 : normalizeNullable(request.note()));
-        payment.setRecordedBy(requireActor(actorEmail));
-        return toResponse(paymentRepository.saveAndFlush(payment));
+        AppUser actor = requireActor(actorEmail);
+        payment.setRecordedBy(actor);
+        Payment saved = paymentRepository.saveAndFlush(payment);
+        auditLogService.record(AuditEvent.PAYMENT_RECORDED, actor, reservation, reservation.getApartment(), null,
+                "Payment recorded.");
+        return toResponse(saved);
     }
 
     @Transactional
@@ -94,7 +100,10 @@ public class PaymentService {
 
         Payment payment = referencedEntry(
                 reservation, original, PaymentType.CORRECTION, correction, request.reason(), actorEmail);
-        return toResponse(paymentRepository.saveAndFlush(payment));
+        Payment saved = paymentRepository.saveAndFlush(payment);
+        auditLogService.record(AuditEvent.PAYMENT_CORRECTED, saved.getRecordedBy(), reservation,
+                reservation.getApartment(), null, "Payment corrected.");
+        return toResponse(saved);
     }
 
     @Transactional
@@ -115,7 +124,10 @@ public class PaymentService {
 
         Payment payment = referencedEntry(
                 reservation, original, PaymentType.REVERSAL, reversal, request.reason(), actorEmail);
-        return toResponse(paymentRepository.saveAndFlush(payment));
+        Payment saved = paymentRepository.saveAndFlush(payment);
+        auditLogService.record(AuditEvent.PAYMENT_REVERSED, saved.getRecordedBy(), reservation,
+                reservation.getApartment(), null, "Payment reversed.");
+        return toResponse(saved);
     }
 
     private Payment referencedEntry(

@@ -81,6 +81,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasRole(UserRole.MANAGER.name())
                         .requestMatchers("/api/v1/books/**")
                         .denyAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/audit-logs/**")
+                        .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers("/api/v1/audit-logs/**")
+                        .denyAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/send")
                         .hasRole(UserRole.MANAGER.name())
 

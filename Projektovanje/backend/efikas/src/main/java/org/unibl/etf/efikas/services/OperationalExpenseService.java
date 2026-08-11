@@ -11,6 +11,7 @@ import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.entities.ExpenseCategory;
 import org.unibl.etf.efikas.models.entities.OperationalExpense;
 import org.unibl.etf.efikas.models.enums.UserRole;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.CreateExpenseCategoryRequest;
 import org.unibl.etf.efikas.models.requests.CreateOperationalExpenseRequest;
 import org.unibl.etf.efikas.models.requests.UpdateExpenseCategoryRequest;
@@ -30,6 +31,7 @@ public class OperationalExpenseService {
     private final AppUserRepository appUserRepository;
     private final ExpenseCategoryRepository categoryRepository;
     private final OperationalExpenseRepository expenseRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<ExpenseCategoryResponse> categories(Boolean active, Pageable pageable) {
@@ -53,7 +55,10 @@ public class OperationalExpenseService {
         category.setCreatedAt(now);
         category.setUpdatedBy(manager);
         category.setUpdatedAt(now);
-        return toCategory(categoryRepository.saveAndFlush(category));
+        ExpenseCategory saved = categoryRepository.saveAndFlush(category);
+        auditLogService.record(AuditEvent.EXPENSE_CATEGORY_CREATED, manager, null, null, null,
+                "Expense category created.");
+        return toCategory(saved);
     }
 
     @Transactional
@@ -73,6 +78,8 @@ public class OperationalExpenseService {
         category.setUpdatedBy(manager);
         category.setUpdatedAt(after(category.getUpdatedAt()));
         categoryRepository.flush();
+        auditLogService.record(AuditEvent.EXPENSE_CATEGORY_UPDATED, manager, null, null, null,
+                "Expense category updated.");
         return toCategory(category);
     }
 
@@ -95,7 +102,10 @@ public class OperationalExpenseService {
         expense.setExpenseDate(input.expenseDate());
         expense.setCreatedBy(actor);
         expense.setCreatedAt(Instant.now());
-        return toExpense(expenseRepository.saveAndFlush(expense));
+        OperationalExpense saved = expenseRepository.saveAndFlush(expense);
+        auditLogService.record(AuditEvent.OPERATIONAL_EXPENSE_RECORDED, actor, null, null, null,
+                "Operational expense recorded.");
+        return toExpense(saved);
     }
 
     @Transactional(readOnly = true)
@@ -147,6 +157,8 @@ public class OperationalExpenseService {
             expense.setVoidedAt(Instant.now());
             expense.setVoidReason(reason.trim());
             expenseRepository.flush();
+            auditLogService.record(AuditEvent.OPERATIONAL_EXPENSE_VOIDED, manager, null, null, null,
+                    "Operational expense voided.");
         }
         return toExpense(expense);
     }

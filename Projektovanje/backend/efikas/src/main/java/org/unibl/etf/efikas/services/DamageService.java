@@ -12,6 +12,7 @@ import org.unibl.etf.efikas.exceptions.S3UploadException;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.enums.TaskStatus;
 import org.unibl.etf.efikas.models.enums.UserRole;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.CreateDamageRequest;
 import org.unibl.etf.efikas.models.requests.UpdateDamageRequest;
 import org.unibl.etf.efikas.models.responses.DamageAttachmentResponse;
@@ -40,6 +41,7 @@ public class DamageService {
     private final DamageAttachmentRepository attachmentRepository;
     private final S3Service storage;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<DamageResponse> list(String actorEmail, Integer apartmentId, Pageable pageable) {
@@ -74,6 +76,7 @@ public class DamageService {
         damage.setUpdatedBy(actor);
         damage.setUpdatedAt(now);
         Damage saved = damageRepository.saveAndFlush(damage);
+        auditLogService.record(AuditEvent.DAMAGE_REPORTED, actor, null, apartment, null, "Damage reported.");
         List<AppUser> managers = appUserRepository.findAllByRoleAndActiveTrue(UserRole.MANAGER).stream()
                 .filter(user -> !user.getUserId().equals(actor.getUserId())).toList();
         notificationService.notify(managers, "DAMAGE_REPORTED", "Prijavljena šteta",
@@ -92,6 +95,8 @@ public class DamageService {
         damage.setUpdatedBy(manager);
         damage.setUpdatedAt(after(damage.getUpdatedAt()));
         damageRepository.flush();
+        auditLogService.record(AuditEvent.DAMAGE_UPDATED, manager, null, damage.getApartment(), null,
+                "Damage updated.");
         return toDamage(damage);
     }
 
@@ -125,7 +130,10 @@ public class DamageService {
             attachment.setSizeBytes(file.getSize());
             attachment.setUploadedBy(actor);
             attachment.setUploadedAt(Instant.now());
-            return toAttachment(attachmentRepository.saveAndFlush(attachment));
+            DamageAttachment saved = attachmentRepository.saveAndFlush(attachment);
+            auditLogService.record(AuditEvent.DAMAGE_ATTACHMENT_ADDED, actor, null, damage.getApartment(), null,
+                    "Damage attachment added.");
+            return toAttachment(saved);
         } catch (IOException exception) {
             throw new S3UploadException();
         }
