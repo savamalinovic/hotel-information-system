@@ -3,9 +3,9 @@ package org.unibl.etf.efikas.models.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.unibl.etf.efikas.models.enums.ApartmentOperationalStatus;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,25 +25,29 @@ public class Apartment {
     @Column(name = "\"Address\"", nullable = false, length = 100)
     private String address;
 
-    @Column(name = "\"NumberOfBeds\"", nullable = false)
-    private Integer numberOfBeds;
-
-    @Column(name = "\"NumberOfRooms\"", nullable = false)
-    private Integer numberOfRooms;
-
-    @Column(name = "\"Capacity\"", nullable = false)
-    private Integer capacity;
-
-    @Column(name = "\"PricePerDay\"", nullable = false)
-    private Double pricePerDay;
-
-    @Column(name = "\"PricePerNight\"", nullable = false)
-    private Double pricePerNight;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "\"UserId\"", nullable = false)
-    private AppUser user;
+    @JoinColumn(name = "\"ApartmentTypeId\"", nullable = false)
+    private ApartmentType type;
+
+    @Column(name = "\"Floor\"")
+    private Integer floor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "\"OperationalStatus\"", nullable = false, length = 32)
+    private ApartmentOperationalStatus operationalStatus = ApartmentOperationalStatus.READY;
+
+    @Column(name = "\"Active\"", nullable = false)
+    private boolean active = true;
+
+    @Version
+    @Column(name = "\"Version\"", nullable = false)
+    private Long version;
+
+    @Column(name = "\"CreatedAt\"", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "\"UpdatedAt\"", nullable = false)
+    private Instant updatedAt;
 
     @ElementCollection
     @CollectionTable(
@@ -54,5 +58,17 @@ public class Apartment {
     @MapKeyColumn(name = "\"TraitName\"")
     @Column(name = "\"TraitValue\"")
     private Map<String, Boolean> traits = new HashMap<>();
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
+    }
 
 }

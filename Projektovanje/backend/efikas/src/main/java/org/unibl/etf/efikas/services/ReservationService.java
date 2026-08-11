@@ -161,9 +161,8 @@ public class ReservationService {
     }
 
     public List<ReservationResponse> getAllReservationsForUser(Authentication authentication) {
-        String email = authentication.getName();
-
-        List<Reservation> reservations = reservationRepository.findReservationByApartmentUserEmail(email);
+        // Reservations belong to the single hotel, not to the legacy apartment owner.
+        List<Reservation> reservations = reservationRepository.findAll();
 
         return reservations.stream()
                 .map((element) -> modelMapper.map(element, ReservationResponse.class))

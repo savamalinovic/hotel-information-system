@@ -59,17 +59,11 @@ class RbacAuthorizationTest {
     }
 
     @Test
-    void managerAndAgentCanReadApartmentsButWorkerCannot() throws Exception {
-        mockMvc.perform(get("/api/v1/apartments").with(role(UserRole.MANAGER)))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/api/v1/apartments").with(role(UserRole.AGENT)))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/api/v1/apartments").with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isForbidden())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
-                .andExpect(jsonPath("$.path").value("/api/v1/apartments"));
+    void everyBusinessRoleCanReadApartmentCatalog() throws Exception {
+        for (UserRole role : UserRole.values()) {
+            mockMvc.perform(get("/api/v1/apartments").with(role(role)))
+                    .andExpect(status().isOk());
+        }
     }
 
     @Test

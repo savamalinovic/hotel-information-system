@@ -24,7 +24,7 @@ public class ApartmentRepositoryTest {
             apartments.forEach(a -> System.out.println(
                     "ID: " + a.getApartmentId() +
                             ", Address: " + a.getAddress() +
-                            ", Rooms: " + a.getNumberOfRooms()
+                            ", Type: " + a.getType().getName()
             ));
         }
     }
