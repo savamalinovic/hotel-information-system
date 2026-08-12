@@ -53,6 +53,23 @@ public class WorkforceAvailabilityService {
         return PageResponse.from(page);
     }
 
+    @Transactional(readOnly = true)
+    public WorkforceSnapshot analyticsSnapshot() {
+        Instant now = Instant.now();
+        long present = 0;
+        long available = 0;
+        long busy = 0;
+        for (AppUser worker : appUserRepository.findAllByRoleAndActiveTrue(UserRole.OPERATIONAL_WORKER)) {
+            WorkerAvailabilityResponse current = currentAvailability(worker, now);
+            if (current.attendanceSessionId() != null) present++;
+            if (current.status() == WorkerAvailabilityStatus.AVAILABLE) available++;
+            if (current.status() == WorkerAvailabilityStatus.BUSY) busy++;
+        }
+        return new WorkforceSnapshot(present, available, busy);
+    }
+
+    public record WorkforceSnapshot(long present, long available, long busy) {}
+
     @Transactional
     public WorkerAvailabilityResponse clockIn(String workerEmail) {
         AppUser worker = lockWorker(workerEmail);

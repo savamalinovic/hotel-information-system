@@ -23,6 +23,10 @@ public class Reservation {
     @JoinColumn(name = "\"ApartmentId\"", nullable = false)
     private Apartment apartment;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "\"ApartmentTypeSnapshotId\"", nullable = false, updatable = false)
+    private ApartmentType apartmentTypeSnapshot;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "\"GuestId\"")
     private GuestsBook guest;

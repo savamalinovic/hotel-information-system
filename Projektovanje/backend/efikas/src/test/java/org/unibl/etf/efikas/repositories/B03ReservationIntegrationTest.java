@@ -35,6 +35,28 @@ class B03ReservationIntegrationTest {
     @MockitoBean S3Service s3Service;
 
     @Test
+    void snapshotsApartmentTypeForHistoricalAnalytics() {
+        AppUser manager = appUserRepository.save(manager("b16-type@example.invalid", "9700000000098"));
+        var originalType = apartmentTypeService.create(new ApartmentTypeRequest(
+                "B16 Original Type", null, 2, new BigDecimal("90.00")));
+        var laterType = apartmentTypeService.create(new ApartmentTypeRequest(
+                "B16 Later Type", null, 2, new BigDecimal("110.00")));
+        var apartment = apartmentService.create(new ApartmentRequest(
+                "B16-SNAPSHOT", "Snapshot address", 1, originalType.apartmentTypeId()), manager.getEmail());
+        var reservation = reservationService.create(new CreateReservationRequest(
+                apartment.apartmentId(), LocalDate.now().plusDays(40), LocalDate.now().plusDays(42),
+                1, null, null), manager.getEmail());
+
+        apartmentService.update(apartment.apartmentId(), new ApartmentRequest(
+                "B16-SNAPSHOT", "Snapshot address", 1, laterType.apartmentTypeId()));
+
+        Integer snapshot = jdbcTemplate.queryForObject("""
+                select "ApartmentTypeSnapshotId" from efikas.reservation where "ReservationId" = ?
+                """, Integer.class, reservation.reservationId());
+        assertThat(snapshot).isEqualTo(originalType.apartmentTypeId());
+    }
+
+    @Test
     void snapshotsPriceAndAvailabilityUsesHalfOpenStayPeriods() {
         AppUser manager = appUserRepository.save(manager("b03-price@example.invalid", "9700000000001"));
         var type = apartmentTypeService.create(new ApartmentTypeRequest(

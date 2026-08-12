@@ -95,6 +95,7 @@ public class ReservationService {
 
         Reservation reservation = new Reservation();
         reservation.setApartment(apartment);
+        reservation.setApartmentTypeSnapshot(apartment.getType());
         reservation.setCheckInDate(request.checkInDate());
         reservation.setCheckOutDate(request.checkOutDate());
         reservation.setGuestQuantity(request.guestCount());

@@ -64,9 +64,10 @@ class B03ReservationConcurrencyIntegrationTest {
             start.await();
             jdbcTemplate.update("""
                     insert into efikas.reservation
-                        ("ApartmentId", "GuestQuantity", "CheckInDate", "CheckOutDate", "NightlyRate", "Status", "CreatedBy")
-                    values (?, 1, ?, ?, 90.00, 'CONFIRMED', ?)
-                    """, seed.apartmentId(), checkIn, checkOut, seed.userId());
+                        ("ApartmentId", "ApartmentTypeSnapshotId", "GuestQuantity", "CheckInDate", "CheckOutDate",
+                         "NightlyRate", "Status", "CreatedBy")
+                    values (?, ?, 1, ?, ?, 90.00, 'CONFIRMED', ?)
+                    """, seed.apartmentId(), seed.apartmentTypeId(), checkIn, checkOut, seed.userId());
             return true;
         } catch (DataIntegrityViolationException ex) {
             return false;
@@ -92,9 +93,9 @@ class B03ReservationConcurrencyIntegrationTest {
                 "B03 Concurrent " + suffix, null, 2, new BigDecimal("90.00")));
         var apartment = apartmentService.create(new ApartmentRequest(
                 "B03 Concurrent " + suffix, "Concurrency address", null, type.apartmentTypeId()), savedUser.getEmail());
-        return new Seed(apartment.apartmentId(), savedUser.getUserId());
+        return new Seed(apartment.apartmentId(), type.apartmentTypeId(), savedUser.getUserId());
     }
 
-    private record Seed(Integer apartmentId, Integer userId) {
+    private record Seed(Integer apartmentId, Integer apartmentTypeId, Integer userId) {
     }
 }
