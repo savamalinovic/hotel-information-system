@@ -1,6 +1,5 @@
 package org.unibl.etf.efikas.configs;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.security.JwtAuthFilter;
+import org.unibl.etf.efikas.security.JwtAccessDeniedHandler;
 import org.unibl.etf.efikas.security.JwtAuthenticationEntryPoint;
 import org.unibl.etf.efikas.util.Constants;
 
@@ -31,6 +31,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -112,8 +113,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .anyRequest().denyAll())
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler((request, response, exception) ->
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")))
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

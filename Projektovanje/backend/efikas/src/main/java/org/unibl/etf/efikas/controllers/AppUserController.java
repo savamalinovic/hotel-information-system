@@ -1,33 +1,25 @@
 package org.unibl.etf.efikas.controllers;
 
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.unibl.etf.efikas.models.dto.ChangePasswordDTO;
 import org.unibl.etf.efikas.models.dto.UserDTO;
 import org.unibl.etf.efikas.models.dto.books.StoreDTO;
-import org.unibl.etf.efikas.models.entities.AppUser;
+import org.unibl.etf.efikas.exceptions.DomainConflictException;
+import org.unibl.etf.efikas.exceptions.InvalidCredentialsException;
 import org.unibl.etf.efikas.models.requests.CreateStoreRequest;
-import org.unibl.etf.efikas.models.requests.OtpSendRequest;
-import org.unibl.etf.efikas.models.requests.OtpVerifyRequest;
+import org.unibl.etf.efikas.models.requests.LoginRequest;
 import org.unibl.etf.efikas.models.requests.RegistrationRequest;
 import org.unibl.etf.efikas.models.responses.AppUserResponse;
-import org.unibl.etf.efikas.models.responses.AuthenticationResponse;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.AppUserService;
 import org.unibl.etf.efikas.services.StoreService;
-import org.unibl.etf.efikas.services.impl.EmailOtpService;
-import org.unibl.etf.efikas.services.interfaces.OAuthService;
-import org.unibl.etf.efikas.services.interfaces.OtpService;
 
-import java.io.IOException;
 import java.net.URI;
-import java.security.GeneralSecurityException;
 import java.util.Map;
 
 @RestController
@@ -42,22 +34,22 @@ public class AppUserController {
 
     // This is temporary, for compatibility with old code till migration can be done to AuthController
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegistrationRequest user) {
-        return appUserService.register(user)
-                .map(error -> ResponseEntity.badRequest().body(error))
-                .orElseGet(() -> ResponseEntity.ok("User registered successfully."));
+    public ResponseEntity<String> register(@Valid @RequestBody RegistrationRequest user) {
+        appUserService.register(user).ifPresent(error -> {
+            throw new DomainConflictException(error);
+        });
+        return ResponseEntity.ok("User registered successfully.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> userCredentials) {
-        String email = userCredentials.get("email");
-        String password = userCredentials.get("password");
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest userCredentials) {
+        String email = userCredentials.email();
+        String password = userCredentials.password();
 
         boolean isAuthenticated = appUserService.authenticate(email, password);
 
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid credentials"));
+            throw new InvalidCredentialsException();
         }
 
         // Generate token

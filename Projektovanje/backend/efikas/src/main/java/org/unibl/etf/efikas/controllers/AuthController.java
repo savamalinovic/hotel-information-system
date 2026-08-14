@@ -1,17 +1,15 @@
 package org.unibl.etf.efikas.controllers;
 
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.unibl.etf.efikas.models.dto.ChangePasswordDTO;
-import org.unibl.etf.efikas.models.entities.AppUser;
-import org.unibl.etf.efikas.models.requests.OtpSendRequest;
-import org.unibl.etf.efikas.models.requests.OtpVerifyRequest;
-import org.unibl.etf.efikas.models.requests.RegistrationRequest;
+import org.unibl.etf.efikas.exceptions.DomainConflictException;
+import org.unibl.etf.efikas.exceptions.InvalidCredentialsException;
+import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.models.responses.AuthenticationResponse;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.AppUserService;
@@ -32,22 +30,22 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegistrationRequest user) {
-        return appUserService.register(user)
-                .map(error -> ResponseEntity.badRequest().body(error))
-                .orElseGet(() -> ResponseEntity.ok("User registered successfully."));
+    public ResponseEntity<String> register(@Valid @RequestBody RegistrationRequest user) {
+        appUserService.register(user).ifPresent(error -> {
+            throw new DomainConflictException(error);
+        });
+        return ResponseEntity.ok("User registered successfully.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> userCredentials) {
-        String email = userCredentials.get("email");
-        String password = userCredentials.get("password");
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest userCredentials) {
+        String email = userCredentials.email();
+        String password = userCredentials.password();
 
         boolean isAuthenticated = appUserService.authenticate(email, password);
 
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid credentials"));
+            throw new InvalidCredentialsException();
         }
 
         // Generate token
@@ -63,8 +61,8 @@ public class AuthController {
     }
 
     @PostMapping("/google/login")
-    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody OAuthLoginRequest body) {
+        String token = body.token();
 
         try{
             AuthenticationResponse authResponse = oAuthService.authenticateOAuth(token);
@@ -72,16 +70,13 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(Map.of("accessToken", authResponse.getAccessToken()));
         } catch (GeneralSecurityException | IOException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new InvalidCredentialsException();
         }
     }
 
     @PostMapping("/otp/request")
-    public ResponseEntity<?> requestOtp(@RequestBody OtpSendRequest otpSendRequest) {
-        AppUser appUser = appUserService.getUserByEmail(otpSendRequest.getEmail());
-        if(appUser == null) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> requestOtp(@Valid @RequestBody OtpSendRequest otpSendRequest) {
+        appUserService.getUserByEmail(otpSendRequest.getEmail());
 
         String response = otpService.sendOtp(otpSendRequest.getEmail());
 
@@ -89,19 +84,19 @@ public class AuthController {
     }
 
     @PostMapping("/otp/verify")
-    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerifyRequest otpVerifyRequest) {
-        AppUser appUser = appUserService.getUserByEmail(otpVerifyRequest.getEmail());
-        if(appUser == null) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpVerifyRequest otpVerifyRequest) {
+        appUserService.getUserByEmail(otpVerifyRequest.getEmail());
 
         boolean verified = otpService.verifyOtp(otpVerifyRequest.getEmail(), otpVerifyRequest.getOtp());
 
-        return verified ? ResponseEntity.ok("OTP verified") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("OTP not valid");
+        if (!verified) {
+            throw new IllegalArgumentException("OTP is invalid or expired.");
+        }
+        return ResponseEntity.ok("OTP verified");
     }
 
     @PutMapping("/reset-password")
-    public ResponseEntity<?> updatePassword(@RequestBody ChangePasswordDTO passwordChangeRequest) {
+    public ResponseEntity<?> updatePassword(@Valid @RequestBody ChangePasswordDTO passwordChangeRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         appUserService.changeUserPassword(passwordChangeRequest, authentication);
