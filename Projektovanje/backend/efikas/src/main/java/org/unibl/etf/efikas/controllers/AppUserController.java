@@ -32,7 +32,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/users")
 @AllArgsConstructor
-@Tag(name = "Users", description = "Current-user profile and legacy login compatibility.")
+@Tag(name = "Users", description = "Current-user profile and legacy login compatibility. Manager lifecycle routes are documented separately.")
 public class AppUserController {
 
     private final AppUserService appUserService;
@@ -128,8 +128,7 @@ public class AppUserController {
 
 
     @DeleteMapping("/me")
-    @Operation(summary = "Delete the current user account")
-    @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
+    @Hidden
     public ResponseEntity<?> deleteAccount() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

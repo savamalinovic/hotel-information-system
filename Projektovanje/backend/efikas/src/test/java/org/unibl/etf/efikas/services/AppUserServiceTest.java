@@ -40,7 +40,7 @@ class AppUserServiceTest {
         request.setEmail("new-agent@example.invalid");
         request.setPassword("plain-password");
 
-        when(appUserRepository.existsByEmail(request.getEmail())).thenReturn(false);
+        when(appUserRepository.existsByEmailIgnoreCase(request.getEmail())).thenReturn(false);
         when(modelMapper.map(request, AppUser.class)).thenReturn(new AppUser());
         when(passwordEncoder.encode(request.getPassword())).thenReturn("encoded-password");
         when(appUserRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -50,5 +50,16 @@ class AppUserServiceTest {
         ArgumentCaptor<AppUser> savedUser = ArgumentCaptor.forClass(AppUser.class);
         verify(appUserRepository).save(savedUser.capture());
         assertThat(savedUser.getValue().getRole()).isEqualTo(UserRole.AGENT);
+    }
+
+    @Test
+    void inactiveUserCannotAuthenticate() {
+        AppUser user = new AppUser();
+        user.setEmail("inactive@example.invalid");
+        user.setPasswordHash("encoded-password");
+        user.setActive(false);
+        when(appUserRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(java.util.Optional.of(user));
+
+        assertThat(appUserService.authenticate(user.getEmail(), "plain-password")).isFalse();
     }
 }

@@ -26,10 +26,13 @@ class ApiSurfaceContractTest {
             AuthController.class,
             BooksController.class,
             CashRegisterController.class,
+            HotelProfileController.class,
             NotificationsController.class,
             ReservationController.class,
             S3Controller.class,
-            SettingsController.class
+            SpecializationController.class,
+            SettingsController.class,
+            UserManagementController.class
     );
 
     @Test
@@ -59,6 +62,8 @@ class ApiSurfaceContractTest {
                 .isAnnotationPresent(Hidden.class)).isTrue();
         assertThat(AppUserController.class.getDeclaredMethod("getAccountStoreInfo")
                 .isAnnotationPresent(Hidden.class)).isTrue();
+        assertThat(AppUserController.class.getDeclaredMethod("deleteAccount")
+                .isAnnotationPresent(Hidden.class)).isTrue();
 
         assertThat(BooksController.class.getDeclaredMethods())
                 .filteredOn(ApiSurfaceContractTest::isLegacyBookWrite)
@@ -74,10 +79,13 @@ class ApiSurfaceContractTest {
                 ApartmentTaskController.class,
                 ApartmentTraitController.class,
                 BooksController.class,
+                HotelProfileController.class,
                 NotificationsController.class,
                 ReservationController.class,
                 S3Controller.class,
-                SettingsController.class
+                SpecializationController.class,
+                SettingsController.class,
+                UserManagementController.class
         );
 
         assertThat(protectedControllers)

@@ -73,6 +73,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/v1/cash-registers/**", "/api/v1/users/register/store",
                                 "/api/v1/users/me/store", "/api/v1/apartments/*/expenses/**")
                         .denyAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/me")
+                        .denyAll()
 
                         // Manager-only read models and privileged operations.
                         .requestMatchers(HttpMethod.GET, "/api/v1/books/**")
@@ -81,6 +83,14 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .denyAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/send")
                         .hasRole(UserRole.MANAGER.name())
+
+                        // Singleton hotel profile and stable specialization catalog.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/hotel-profile", "/api/v1/specializations")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/hotel-profile")
+                        .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers("/api/v1/hotel-profile/**", "/api/v1/specializations/**")
+                        .denyAll()
 
                         // Specific nested apartment routes must precede the apartment rules.
                         .requestMatchers("/api/v1/reservations/**", "/api/v1/apartments/*/reservations/**")
@@ -106,6 +116,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/api/v1/users/me", "/api/v1/notifications/push-token",
                                 "/api/v1/notifications/toggle", "/api/v1/settings/register-error")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers("/api/v1/users/**")
+                        .hasRole(UserRole.MANAGER.name())
                         .requestMatchers("/api/v1/s3/**")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
 
