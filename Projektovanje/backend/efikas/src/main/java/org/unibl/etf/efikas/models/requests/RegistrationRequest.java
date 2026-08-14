@@ -1,6 +1,7 @@
 package org.unibl.etf.efikas.models.requests;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import lombok.Data;
 import java.util.Objects;
 
 @Data
+@Schema(description = "Legacy self-registration request. The route is closed and omitted from OpenAPI.")
 public class RegistrationRequest {
     @NotBlank(message = "Email is required.")
     @Email(message = "Email must be valid.")

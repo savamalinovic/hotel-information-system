@@ -1,5 +1,7 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,10 +10,13 @@ import org.unibl.etf.efikas.models.dto.NotificationMessageDTO;
 import org.unibl.etf.efikas.models.requests.PushNotificationTokenRequest;
 import org.unibl.etf.efikas.models.requests.ToggleNotificationRequest;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
 @AllArgsConstructor
+@Tag(name = "Notifications")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class NotificationsController {
     private final NotificationService notificationService;
 

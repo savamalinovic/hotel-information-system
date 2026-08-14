@@ -1,5 +1,8 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,6 +28,7 @@ import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.models.responses.AppUserResponse;
 import org.unibl.etf.efikas.services.*;
 import org.unibl.etf.efikas.services.impl.books.BaseBookPdfService;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +38,8 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/books")
 @AllArgsConstructor
+@Tag(name = "Business books")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class BooksController {
     private final BookPdfFactory bookPdfFactory;
     private final AppUserService appUserService;
@@ -112,6 +118,7 @@ public class BooksController {
     // =========================================== POST endpoints ===========================================
 
     @PostMapping("/income")
+    @Hidden
     public ResponseEntity<?> addIncomeEntry(@Validated @RequestBody CreateIncomeBookRequest createIncomeBookRequest) {
         IncomeEntry saved = incomeBookService.createNewIncome(createIncomeBookRequest);
 
@@ -123,6 +130,7 @@ public class BooksController {
     }
 
     @PostMapping("/expenses")
+    @Hidden
     public ResponseEntity<?> addExpensesEntry(@RequestBody IncomeEntry incomeEntry) {
 
 
@@ -130,6 +138,7 @@ public class BooksController {
     }
 
     @PostMapping("/domestic-guests")
+    @Hidden
     public ResponseEntity<?> addDomesticGuestsEntry(@Validated @RequestBody DomesticGuestDTO createDomesticGuestRequest) {
         DomesticGuestsEntry saved = domesticGuestsBookService.createNewDomesticGuest(createDomesticGuestRequest);
 
@@ -141,6 +150,7 @@ public class BooksController {
     }
 
     @PostMapping("/foreign-guests")
+    @Hidden
     public ResponseEntity<?> addForeignGuestsEntry(@Validated @RequestBody ForeignGuestDTO createForeignGuestRequest) {
         ForeignGuestsEntry saved = foreignGuestsBookService.createNewForeignGuest(createForeignGuestRequest);
 
@@ -153,6 +163,7 @@ public class BooksController {
 
     // =========================================== PUT endpoints ===========================================
     @PutMapping("/domestic-guests/{id}")
+    @Hidden
     public ResponseEntity<?> addDomesticGuestsEntry(@PathVariable int id, @Validated @RequestBody DomesticGuestDTO createDomesticGuestRequest) {
         DomesticGuestsEntry saved = domesticGuestsBookService.updateDomesticGuest(id, createDomesticGuestRequest);
 
@@ -160,6 +171,7 @@ public class BooksController {
     }
 
     @PutMapping("/foreign-guests/{id}")
+    @Hidden
     public ResponseEntity<?> addForeignGuestsEntry(@PathVariable int id, @Validated @RequestBody ForeignGuestDTO createForeignGuestRequest) {
         ForeignGuestsEntry saved = foreignGuestsBookService.updateForeignGuest(id, createForeignGuestRequest);
 

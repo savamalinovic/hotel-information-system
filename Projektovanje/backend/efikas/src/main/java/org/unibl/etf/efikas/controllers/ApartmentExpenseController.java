@@ -1,5 +1,6 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/apartments/")
 @RequiredArgsConstructor
+@Hidden
 public class ApartmentExpenseController {
 
     private final ApartmentExpenseService apartmentExpenseService;

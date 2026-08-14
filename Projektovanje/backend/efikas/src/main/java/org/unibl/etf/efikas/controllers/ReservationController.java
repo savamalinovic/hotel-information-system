@@ -1,5 +1,7 @@
 package org.unibl.etf.efikas.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.websocket.server.PathParam;
@@ -16,12 +18,15 @@ import org.unibl.etf.efikas.models.dto.ReservationDTO;
 import org.unibl.etf.efikas.models.requests.UpdateReservationRequest;
 import org.unibl.etf.efikas.models.responses.ReservationResponse;
 import org.unibl.etf.efikas.services.ReservationService;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Reservations")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class ReservationController {
 
     private final ReservationService reservationService;

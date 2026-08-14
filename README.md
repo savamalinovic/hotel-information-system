@@ -100,6 +100,14 @@ A02 uvodi Flyway i verzionisani V1 baseline naslijeđene šeme. Prazna baza se m
 
 A03 dodaje persisted uloge `MANAGER`, `AGENT` i `OPERATIONAL_WORKER`, zatvara legacy self-registration i pristup uklonjenim fiskalnim/store rutama, te uvodi eksplicitnu deny-by-default serversku matricu. JWT identifikuje korisnika, dok se aktuelna uloga učitava iz baze pri svakom zahtjevu.
 
+## A04 greške i validacija
+
+A04 uvodi zajednički JSON error envelope, stabilne mašinske kodove i Bean Validation za autentikacione ulaze. MVC, DB/domain konflikti i Spring Security `401`/`403` odgovori koriste isti ugovor bez izlaganja SQL-a ili infrastrukturnih detalja.
+
+## A05 izvršivi API ugovor
+
+A05 uvodi OpenAPI 3 specifikaciju za verzionisani `/api/v1` surface. Kada backend radi, JSON ugovor je na [`/v3/api-docs/v1`](http://localhost:8080/v3/api-docs/v1), a Swagger UI na [`/swagger-ui.html`](http://localhost:8080/swagger-ui.html). Početne auth i error DTO sheme su tipizirane i test čita stvarno generisani dokument. Zatvorene legacy rute nisu dio specifikacije.
+
 ## Git tok
 
 - `main` je stabilna početna verzija;
