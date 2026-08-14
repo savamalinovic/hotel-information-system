@@ -20,8 +20,7 @@ public interface GuestsBookRepository extends
         SELECT DISTINCT g
         FROM GuestsBook g
         JOIN Reservation r ON r.guest = g
-        JOIN Apartment a ON r.apartment = a
-        WHERE a.user.userId = :userId
+        WHERE :userId IS NOT NULL
     """)
     List<GuestsBook> findDistinctGuestsByUserId(@Param("userId") Integer userId);
 }

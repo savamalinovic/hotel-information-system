@@ -102,14 +102,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/api/v1/apartments/*/tasks/**")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
 
-                        // Apartment administration is manager-only; current reads are managerial/agent work.
-                        .requestMatchers(HttpMethod.GET, "/api/v1/apartments", "/api/v1/apartment-traits/**")
-                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
-                        .requestMatchers(HttpMethod.POST, "/api/v1/apartments")
-                        .hasRole(UserRole.MANAGER.name())
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/apartments/*")
-                        .hasRole(UserRole.MANAGER.name())
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/apartments/*")
+                        // Catalog reads support reception and operational work; mutations remain managerial.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/apartment-types/**", "/api/v1/apartments/**",
+                                "/api/v1/apartment-traits/**")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers("/api/v1/apartment-types/**", "/api/v1/apartments/**")
                         .hasRole(UserRole.MANAGER.name())
 
                         // Self-service and shared authenticated infrastructure.

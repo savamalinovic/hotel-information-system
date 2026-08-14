@@ -1,11 +1,7 @@
 package org.unibl.etf.efikas.repositories.specifications;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
-import org.unibl.etf.efikas.models.entities.Apartment;
 import org.unibl.etf.efikas.models.entities.GuestsBook;
-import org.unibl.etf.efikas.models.entities.Reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,19 +61,7 @@ public final class GuestsPdfSpecifications {
     }
 
     public static Specification<GuestsBook> belongsToUser(Integer userId) {
-        return (root, query, cb) -> {
-            query.distinct(true);
-
-            Join<GuestsBook, Reservation> reservationJoin =
-                    root.join("reservations", JoinType.INNER);
-
-            Join<Reservation, Apartment> apartmentJoin =
-                    reservationJoin.join("apartment", JoinType.INNER);
-
-            return cb.equal(
-                    apartmentJoin.get("user").get("userId"),
-                    userId
-            );
-        };
+        // The application manages one hotel; books are no longer partitioned by legacy apartment ownership.
+        return (root, query, cb) -> userId == null ? cb.disjunction() : cb.conjunction();
     }
 }
