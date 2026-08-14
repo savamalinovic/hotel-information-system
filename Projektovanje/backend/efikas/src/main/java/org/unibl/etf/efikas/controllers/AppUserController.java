@@ -62,10 +62,12 @@ public class AppUserController {
 
         // Generate token
         String token = jwtUtil.generateToken(email);
+        String role = appUserService.getUserByEmail(email).getRole().name();
 
         // Prepare JWT to be returned to the user in JSON form
         return ResponseEntity.ok(Map.of(
                 "email", email,
+                "role", role,
                 "token", token
         ));
     }
@@ -115,6 +117,7 @@ public class AppUserController {
         // Prepare JWT to be returned to the user in JSON form
         return ResponseEntity.ok(Map.of(
                 "email", email,
+                "role", response.getRole().name(),
                 "token", token
         ));
     }

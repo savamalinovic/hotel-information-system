@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,6 @@ public class ReservationService {
     private final DomesticGuestsBookService domesticGuestsBookService;
     private final ForeignGuestsBookService foreignGuestsBookService;
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
     @Transactional
     public ReservationResponse createNewReservation(Integer apartmentId,
                                                     Authentication authentication,
@@ -82,7 +80,6 @@ public class ReservationService {
         return response;
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
     public List<ReservationResponse> getAllReservations(Integer apartmentId, Authentication authentication) {
         List<Reservation> reservations = reservationRepository.findReservationByApartmentApartmentId(apartmentId);
 
@@ -90,7 +87,6 @@ public class ReservationService {
                 .map((element) -> modelMapper.map(element, ReservationResponse.class)).collect(Collectors.toList());
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
     public ReservationResponse getReservation(Integer reservationId, Integer apartmentId, Authentication authentication) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found!"));
@@ -104,7 +100,6 @@ public class ReservationService {
         return reservationResponse;
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #updateReservationRequest.getApartmentId())")
     public ReservationResponse updateReservation(Integer reservationId,
                                                  Authentication authentication,
                                                  ReservationDTO updateReservationRequest,
@@ -155,7 +150,6 @@ public class ReservationService {
         return modelMapper.map(updateReservationRequest.getGuest(), GuestsBook.class);
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #reservationId)")
     public ReservationResponse deleteReservation(Integer reservationId, Authentication authentication) {
         Reservation reservation = reservationRepository.findReservationByReservationId(reservationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found!"));

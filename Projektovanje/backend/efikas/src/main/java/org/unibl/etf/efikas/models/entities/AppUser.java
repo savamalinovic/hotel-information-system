@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.unibl.etf.efikas.models.enums.UserRole;
 
 @Getter
 @Setter
@@ -35,6 +36,10 @@ public class AppUser {
 
     @Column(name = "\"Email\"", nullable = false, length = 50)
     private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "\"Role\"", nullable = false, length = 32)
+    private UserRole role = UserRole.AGENT;
 
     @Size(max = 50)
     @NotNull

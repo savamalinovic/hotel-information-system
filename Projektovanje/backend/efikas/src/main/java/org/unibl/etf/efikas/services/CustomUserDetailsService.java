@@ -29,7 +29,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         AppUser user = appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email not found: " + email));
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (user.getRole() == null) {
+            throw new UsernameNotFoundException("User has no assigned role: " + email);
+        }
+
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().asAuthority()));
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPasswordHash(), authorities);
