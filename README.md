@@ -1,36 +1,104 @@
-# 🚀 eFikas - Elektronski Fiskalni i Kontrolni Administrativni Sistem
+# eFikas — hotelski informacioni sistem
 
-**eFikas** je sistem osmišljen za rad sa elektronskim fiskalnim kasama, sa ciljem da olakša upotrebu osobama koje nisu tehnički potkovane.  
-Fleksibilan je i može se specijalizovati za različite domene. Trenutno razvijamo **mobilno rešenje za iznajmljivanje stanova na dan**. 📲🏠
+eFikas se razvija kao interni informacioni sistem za jedan hotel. Ciljna platforma objedinjuje rezervacije, goste, naplate, apartmane, operativne zadatke, radnike, poslovne knjige, audit i analitiku za uloge `MANAGER`, `AGENT` i `OPERATIONAL_WORKER`.
 
----
+Repozitorijum je nastao iz ranijeg projekta za elektronsku fiskalnu i kontrolnu administraciju. Postojeći kod i Git istorija su sačuvani, a aktuelni razvoj je usmjeren na hotelski informacioni sistem. Integracija fizičke fiskalne kase nije dio ciljnog sistema; zamjenjuje je jasno označen demo PDF račun.
 
-## 🎯 Ključne funkcionalnosti
+## Struktura
 
-✅ Intuitivan interfejs za lakše upravljanje fiskalnim kasama  
-✅ Podrška za različite primene i domene poslovanja  
-✅ Automatsko izdavanje fiskalnih računa  
-✅ Mobilna aplikacija prilagođena korisnicima  
-✅ Sigurno čuvanje i pregled fiskalnih podataka  
+- `Projektovanje/backend/efikas` — Spring Boot 3.5.7, Java 17, Maven i PostgreSQL backend;
+- `Projektovanje/frontend/eFikas-mobile` — Expo 54, React Native i TypeScript mobilna aplikacija za agente i operativne radnike;
+- `Projektovanje/database` — postojeći SQL model i mock podaci; do uvođenja migracija nisu autoritativan produkcijski migration tok;
+- `Projektovanje/esir` — naslijeđeni ESIR materijal, van budućeg funkcionalnog opsega;
+- `Dokumentacija` — naslijeđena projektna dokumentacija;
 
----
+Menadžerska web aplikacija je planirana kao zasebna aplikacija, ali se ne kreira u A00.
 
-## 🏗️ Tehnologije koje koristimo
+## Preduslovi
 
-🔹 **Backend:** Java Spring Boot  
-🔹 **Frontend:** React Native / Flutter  
-🔹 **Baza podataka:** MySQL   
+- JDK 17 (lokalni bootstrap je provjeren i sa JDK 21 koji kompajlira target 17);
+- Docker Desktop sa Compose v2 (preporučeno) ili PostgreSQL 16;
+- Node.js i npm kompatibilni sa zaključanim Expo dependencyjima;
+- Android Studio/emulator ili fizički uređaj za native mobile razvoj.
 
----
+Stvarne lozinke, tokene, privatne ključeve i service-account fajlove ne commitovati.
 
-## 👨‍💻 Tim
+Za podrazumijevani lokalni PostgreSQL iz root direktorijuma:
 
-💡 Razvoj ovog sistema sprovodi naš tim stručnjaka sa ciljem da digitalizujemo i unapredimo fiskalne procese.  
+```powershell
+docker compose up -d --wait postgres
+```
 
-📩 **Kontakt:**  
-- Marko Maksimović – [marko.maksimovic@student.etf.unibl.org](mailto:marko.maksimovic@student.etf.unibl.org)  
-- Anđela Balaban – [andjela.balaban@student.etf.unibl.org](mailto:andjela.balaban@student.etf.unibl.org)  
-- Ivan Kuruzović – [ivan.kuruzovic@student.etf.unibl.org](mailto:ivan.kuruzovic@student.etf.unibl.org)  
-- Sava Malinović – [sava.malinovic@student.etf.unibl.org](mailto:sava.malinovic@student.etf.unibl.org)  
-- Nikolina Gatarić – [nikolina.gataric@student.etf.unibl.org](mailto:nikolina.gataric@student.etf.unibl.org)  
-- Sonja Galić – [sonja.galic@student.etf.unibl.org](mailto:sonja.galic@student.etf.unibl.org)  
+Compose inicijalizuje razvojnu bazu `efikas` i testnu bazu `efikas_test` postojećim DDL-om. To je privremeni bootstrap do A02 migracija.
+
+## Backend
+
+Iz direktorijuma `Projektovanje/backend/efikas`:
+
+```powershell
+Copy-Item src/main/resources/application.example.properties src/main/resources/application-local.properties
+./mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Provjere:
+
+```powershell
+./mvnw.cmd compile
+./mvnw.cmd test
+./mvnw.cmd package
+```
+
+Backend compile/package ne zahtijevaju aktivnu bazu. Testovi koriste lokalnu `efikas_test` bazu i zato zahtijevaju pokrenut i inicijalizovan PostgreSQL. `ddl-auto=validate` ne mijenja šemu.
+
+## Mobilna aplikacija
+
+Iz direktorijuma `Projektovanje/frontend/eFikas-mobile`:
+
+```powershell
+Copy-Item .env.example .env.local
+npm ci
+npm start
+```
+
+Za lokalni API koriste se javne Expo varijable `EXPO_PUBLIC_API_SCHEME`, `EXPO_PUBLIC_API_ADDRESS` i `EXPO_PUBLIC_API_PORT`. One nisu mjesto za tajne. API sloj gradi adresu iz tih vrijednosti; za Android emulator koristi `10.0.2.2`, a za fizički uređaj LAN IP razvojnog računara.
+
+Korisne komande:
+
+```powershell
+npm run android
+npm run ios
+npm run web
+npm run lint
+npm run typecheck
+```
+
+`npm run start:prod` koristi prenosive Expo argumente `--no-dev --minify` i radi bez POSIX-specifične sintakse za varijable okruženja.
+
+## A00 početne provjere (2026-08-10)
+
+Rezultati su evidentirani bez mijenjanja produkcijskog koda radi prikrivanja postojećih problema:
+
+- `./mvnw.cmd compile` — **prolazi**;
+- `./mvnw.cmd package -DskipTests` — **prolazi** i pravi executable JAR;
+- `./mvnw.cmd test` — **ne prolazi**: svih 5 postojećih `@SpringBootTest` testova završava context greškom jer default/test datasource nije konfigurisan (`url` nedostaje); isti problem je postojao u ranijim Surefire izvještajima prije A00;
+- `npm ci` — **prolazi** iz postojećeg lock fajla; dependency fajlovi nisu mijenjani;
+- `npm run lint` — **ne prolazi**: 3 postojeće `react-hooks/rules-of-hooks` greške u `src/util/ToastConfig.tsx` i 202 upozorenja;
+- `npx tsc --noEmit` — **ne prolazi**: 8 postojećih grešaka, jedna zbog obaveznog `documentType` polja u `ExpenseBookScreen.tsx` i sedam zbog nepostojećih `dateTimeOfArrival`/`dateTimeOfDeparture` polja u `apartmentsListHelper.ts`;
+- mobile nema postojeću test skriptu ni pronađene test/spec fajlove.
+
+Ovi problemi nisu nastali dokumentacionim izmjenama A00. Testno okruženje pripada A01/A02, a postojeći mobile lint/typecheck dug treba zasebno riješiti prije ili u C01.
+
+## A01 lokalno okruženje
+
+A01 dodaje ponovljiv PostgreSQL 16 Compose servis, odvojenu testnu bazu, sigurne backend/mobile primjere konfiguracije i konfigurabilan mobile API URL. Izolovana native PostgreSQL provjera potvrdila je inicijalizaciju obje baze. Backend se povezuje, ali validacija zatim otkriva postojeći DDL/JPA naming nesklad (`apartment_id` naspram quoted `"ApartmentId"`) koji pripada A02. Docker CLI nije dostupan na A01 radnoj mašini, pa Compose runtime nije potvrđen.
+
+## Git tok
+
+- `main` je stabilna početna verzija;
+- `develop` je integraciona grana;
+- budući rad koristi `feature/<task-id>-<naziv>` i pull request prema `develop`;
+- A00 je jedini bootstrap koji se direktno commitira na `develop`.
+
+## Originalni tim
+
+Koristan istorijski kontekst i doprinosi originalnog tima ostaju sačuvani u Git istoriji i direktorijumu `Dokumentacija`. Originalni remote je zadržan kao `upstream`.

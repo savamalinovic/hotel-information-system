@@ -1,0 +1,26 @@
+name: efikas-local
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-efikas}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-efikas_test}
+      POSTGRES_USER: ${POSTGRES_USER:-efikas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-efikas_local_only}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - efikas-postgres-data:/var/lib/postgresql/data
+      - ./Projektovanje/database/efikas_ddl.sql:/opt/efikas/efikas_ddl.sql:ro
+      - ./scripts/postgres/10-initialize-databases.sh:/docker-entrypoint-initdb.d/10-initialize-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  efikas-postgres-data:

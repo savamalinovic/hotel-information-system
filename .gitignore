@@ -4,14 +4,19 @@ target/
 *.iml
 application*.properties
 !**/application.example.properties
+!**/src/test/resources/application.properties
 
 # Local secrets and credentials
-**/.env.local
-**/.env.*.local
+**/.env
+**/.env.*
+!**/.env.example
 **/application*.yml
 **/application*.yaml
 **/*.pem
 **/*.key
 **/*service-account*.json
+
+# Local development state
+.local/
 
 efikas-firebase-service-account.json
