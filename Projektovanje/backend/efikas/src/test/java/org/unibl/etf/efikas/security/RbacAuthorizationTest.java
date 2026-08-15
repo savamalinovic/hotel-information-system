@@ -276,6 +276,26 @@ class RbacAuthorizationTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void receptionReportsDamageWhileManagerUpdatesAndRelevantWorkerMayReadOrAttach() throws Exception {
+        mockMvc.perform(get("/api/v1/apartments/1/damages").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/apartments/1/damages").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/apartments/1/damages").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/apartments/1/damages")
+                        .with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/v1/apartments/1/damages/1").with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/v1/apartments/1/damages/1").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/apartments/1/damages/1/attachments")
+                        .with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isOk());
+    }
+
     private static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor role(
             UserRole role
     ) {
