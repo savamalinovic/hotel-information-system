@@ -116,6 +116,25 @@ class RbacAuthorizationTest {
     }
 
     @Test
+    void paymentReadsAllowManagerAndAgentButLedgerWritesRequireAgent() throws Exception {
+        mockMvc.perform(get("/api/v1/reservations/1/payments").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/reservations/1/payments").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/reservations/1/payments").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/v1/reservations/1/payments").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/payments/1/corrections").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/payments/1/reversal").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/payments").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void workerCanReadTasksButCannotUseLegacyTaskWrite() throws Exception {
         mockMvc.perform(get("/api/v1/apartments/1/tasks").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isOk());

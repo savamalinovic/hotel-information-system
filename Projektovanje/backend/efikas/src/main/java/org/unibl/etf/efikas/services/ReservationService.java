@@ -31,6 +31,7 @@ public class ReservationService {
     private final ApartmentRepository apartmentRepository;
     private final ApartmentUnavailabilityRepository unavailabilityRepository;
     private final AppUserRepository appUserRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<AvailableApartmentResponse> findAvailability(
@@ -121,6 +122,12 @@ public class ReservationService {
         ensureAvailable(
                 reservation.getApartment().getApartmentId(), reservation.getCheckInDate(),
                 request.checkOutDate(), reservationId);
+        BigDecimal updatedTotal = reservation.getNightlyRate().multiply(BigDecimal.valueOf(
+                ChronoUnit.DAYS.between(reservation.getCheckInDate(), request.checkOutDate())));
+        if (paymentRepository.netPaid(reservationId).compareTo(updatedTotal) > 0) {
+            throw new DomainConflictException(
+                    "Adjust or reverse payments before shortening the stay below the paid amount.");
+        }
         reservation.setCheckOutDate(request.checkOutDate());
         reservationRepository.saveAndFlush(reservation);
         return toResponse(reservation);
