@@ -115,6 +115,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .denyAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/workforce/availability")
                         .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers("/api/v1/workforce/leave-requests/**")
+                        .hasRole(UserRole.MANAGER.name())
                         .requestMatchers("/api/v1/workforce/me/**")
                         .hasRole(UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers("/api/v1/workforce/**")

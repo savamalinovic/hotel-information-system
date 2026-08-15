@@ -14,6 +14,9 @@ public record WorkerAvailabilityResponse(
         Instant breakStartedAt,
         Long availabilityOverrideId,
         Instant unavailableUntil,
-        String unavailabilityReason
+        String unavailabilityReason,
+        Long leaveRequestId,
+        Instant leaveUntil,
+        String leaveReason
 ) {
 }
