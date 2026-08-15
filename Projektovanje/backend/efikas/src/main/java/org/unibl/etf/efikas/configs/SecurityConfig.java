@@ -121,6 +121,17 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasRole(UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers("/api/v1/workforce/**")
                         .denyAll()
+                        // Hotel-level operational expenses; legacy apartment expenses stay closed.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/expense-categories/**", "/api/v1/expenses/**")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/expenses/*/void")
+                        .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/expenses")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers("/api/v1/expense-categories/**")
+                        .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers("/api/v1/expenses/**")
+                        .denyAll()
                         // Stable operational task API; workers claim and execute their own work.
                         .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/claim", "/api/v1/tasks/*/start",
                                 "/api/v1/tasks/*/block", "/api/v1/tasks/*/resume", "/api/v1/tasks/*/complete")
