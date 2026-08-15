@@ -19,6 +19,7 @@ import org.unibl.etf.efikas.models.responses.DamageResponse;
 import org.unibl.etf.efikas.models.responses.PageResponse;
 import org.unibl.etf.efikas.repositories.*;
 import org.unibl.etf.efikas.services.interfaces.S3Service;
+import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import org.unibl.etf.efikas.util.Constants;
 
 import java.io.IOException;
@@ -38,6 +39,7 @@ public class DamageService {
     private final DamageRepository damageRepository;
     private final DamageAttachmentRepository attachmentRepository;
     private final S3Service storage;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public PageResponse<DamageResponse> list(String actorEmail, Integer apartmentId, Pageable pageable) {
@@ -71,7 +73,12 @@ public class DamageService {
         damage.setCreatedAt(now);
         damage.setUpdatedBy(actor);
         damage.setUpdatedAt(now);
-        return toDamage(damageRepository.saveAndFlush(damage));
+        Damage saved = damageRepository.saveAndFlush(damage);
+        List<AppUser> managers = appUserRepository.findAllByRoleAndActiveTrue(UserRole.MANAGER).stream()
+                .filter(user -> !user.getUserId().equals(actor.getUserId())).toList();
+        notificationService.notify(managers, "DAMAGE_REPORTED", "Prijavljena šteta",
+                "Prijavljena je šteta u apartmanu " + apartment.getName() + ": " + saved.getTitle());
+        return toDamage(saved);
     }
 
     @Transactional

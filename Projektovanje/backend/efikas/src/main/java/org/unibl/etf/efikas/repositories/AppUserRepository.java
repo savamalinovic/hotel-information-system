@@ -33,6 +33,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Integer>, JpaS
     @Query("select user from AppUser user where user.role = :role and user.active = true order by user.userId")
     List<AppUser> findActiveByRoleForUpdate(UserRole role);
     Page<AppUser> findByRoleAndActiveTrue(UserRole role, Pageable pageable);
+    List<AppUser> findAllByRoleAndActiveTrue(UserRole role);
 
     //Optional<AppUser> findByUserId(int userId);
 }
