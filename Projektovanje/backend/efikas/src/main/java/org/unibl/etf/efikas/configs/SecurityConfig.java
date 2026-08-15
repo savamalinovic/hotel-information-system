@@ -98,7 +98,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/v1/reservations/*/payments/*/reversal")
                         .hasRole(UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.POST, "/api/v1/reservations/*/guests",
-                                "/api/v1/reservations/*/check-in", "/api/v1/reservations/*/check-in/claim")
+                                "/api/v1/reservations/*/check-in", "/api/v1/reservations/*/check-in/claim",
+                                "/api/v1/reservations/*/check-out")
                         .hasRole(UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.PUT, "/api/v1/reservations/*/guests/*",
                                 "/api/v1/reservations/*/check-in/claim")
@@ -112,12 +113,34 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
                         .requestMatchers("/api/v1/guests/**")
                         .denyAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/workforce/availability")
+                        .hasRole(UserRole.MANAGER.name())
+                        .requestMatchers("/api/v1/workforce/me/**")
+                        .hasRole(UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers("/api/v1/workforce/**")
+                        .denyAll()
+                        // Stable operational task API; workers claim and execute their own work.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/claim", "/api/v1/tasks/*/start",
+                                "/api/v1/tasks/*/block", "/api/v1/tasks/*/resume", "/api/v1/tasks/*/complete")
+                        .hasRole(UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/cancel")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/attachments")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tasks")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tasks/available")
+                        .hasRole(UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tasks")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tasks/**")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers("/api/v1/tasks/**")
+                        .denyAll()
                         .requestMatchers("/api/v1/apartments/*/damages/**")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
-                        .requestMatchers(HttpMethod.GET, "/api/v1/apartments/*/tasks/**")
-                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers("/api/v1/apartments/*/tasks/**")
-                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .denyAll()
 
                         // Catalog reads support reception and operational work; mutations remain managerial.
                         .requestMatchers(HttpMethod.GET, "/api/v1/apartment-types/**", "/api/v1/apartments/**",

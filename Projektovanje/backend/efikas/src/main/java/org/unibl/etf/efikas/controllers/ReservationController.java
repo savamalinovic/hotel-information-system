@@ -24,6 +24,7 @@ import org.unibl.etf.efikas.models.responses.*;
 import org.unibl.etf.efikas.services.ReservationService;
 import org.unibl.etf.efikas.services.CheckInService;
 import org.unibl.etf.efikas.services.GuestService;
+import org.unibl.etf.efikas.services.CheckOutService;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ public class ReservationController {
     private final ReservationService reservationService;
     private final GuestService guestService;
     private final CheckInService checkInService;
+    private final CheckOutService checkOutService;
 
     @GetMapping("/availability")
     public PageResponse<AvailableApartmentResponse> findAvailability(
@@ -95,6 +97,14 @@ public class ReservationController {
             Authentication authentication
     ) {
         return reservationService.changeStatus(reservationId, request, authentication.getName());
+    }
+
+    @PostMapping("/{reservationId}/check-out")
+    public CheckOutResponse checkOut(
+            @PathVariable Integer reservationId,
+            Authentication authentication
+    ) {
+        return checkOutService.checkOut(reservationId, authentication.getName());
     }
 
     @GetMapping("/{reservationId}/status-history")

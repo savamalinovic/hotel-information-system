@@ -249,7 +249,9 @@ public class ReservationService {
                 reservation.getCheckInClaimedBy() == null ? null : reservation.getCheckInClaimedBy().getUserId(),
                 reservation.getCheckInClaimedAt(),
                 reservation.getCheckedInBy() == null ? null : reservation.getCheckedInBy().getUserId(),
-                reservation.getCheckedInAt(), reservation.getVersion(),
+                reservation.getCheckedInAt(),
+                reservation.getCheckedOutBy() == null ? null : reservation.getCheckedOutBy().getUserId(),
+                reservation.getCheckedOutAt(), reservation.getVersion(),
                 reservation.getCreatedAt(), reservation.getUpdatedAt());
     }
 

@@ -35,7 +35,9 @@ class ApiSurfaceContractTest {
             S3Controller.class,
             SpecializationController.class,
             SettingsController.class,
-            UserManagementController.class
+            TaskController.class,
+            UserManagementController.class,
+            WorkforceController.class
     );
 
     @Test
@@ -54,6 +56,7 @@ class ApiSurfaceContractTest {
     void removedLegacySurfacesAreHiddenFromTheExecutableContract() throws Exception {
         assertThat(ApartmentExpenseController.class).hasAnnotation(Hidden.class);
         assertThat(CashRegisterController.class).hasAnnotation(Hidden.class);
+        assertThat(ApartmentTaskController.class).hasAnnotation(Hidden.class);
         assertThat(AuthController.class.getDeclaredMethod("register",
                 org.unibl.etf.efikas.models.requests.RegistrationRequest.class)
                 .isAnnotationPresent(Hidden.class)).isTrue();
@@ -80,7 +83,6 @@ class ApiSurfaceContractTest {
                 ApartmentController.class,
                 ApartmentTypeController.class,
                 ApartmentDamageController.class,
-                ApartmentTaskController.class,
                 ApartmentTraitController.class,
                 BooksController.class,
                 GuestController.class,
@@ -91,7 +93,9 @@ class ApiSurfaceContractTest {
                 S3Controller.class,
                 SpecializationController.class,
                 SettingsController.class,
-                UserManagementController.class
+                TaskController.class,
+                UserManagementController.class,
+                WorkforceController.class
         );
 
         assertThat(protectedControllers)

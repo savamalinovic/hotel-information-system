@@ -113,6 +113,12 @@ class RbacAuthorizationTest {
                 .andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/reservations/1/check-in").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.AGENT)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/reservations/1/check-out").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -135,13 +141,19 @@ class RbacAuthorizationTest {
     }
 
     @Test
-    void workerCanReadTasksButCannotUseLegacyTaskWrite() throws Exception {
+    void legacyApartmentTasksAreClosedAndNewTaskActionsHaveExplicitRoles() throws Exception {
         mockMvc.perform(get("/api/v1/apartments/1/tasks").with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/apartments/1/tasks").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
         mockMvc.perform(post("/api/v1/apartments/1/tasks").with(role(UserRole.AGENT)))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks").with(role(UserRole.AGENT))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/tasks").with(role(UserRole.MANAGER))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/tasks").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/tasks/available").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.AGENT))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isForbidden());
     }
 
     @Test
@@ -190,6 +202,23 @@ class RbacAuthorizationTest {
     @Test
     void selfServiceCannotHardDeleteAccount() throws Exception {
         mockMvc.perform(delete("/api/v1/users/me").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void managerReadsWorkforceWhileOnlyWorkerUsesSelfAttendance() throws Exception {
+        mockMvc.perform(get("/api/v1/workforce/availability").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/workforce/availability").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/workforce/me/availability").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-in")
+                        .with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-in").with(role(UserRole.MANAGER)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/workforce/me/availability").with(role(UserRole.AGENT)))
                 .andExpect(status().isForbidden());
     }
 

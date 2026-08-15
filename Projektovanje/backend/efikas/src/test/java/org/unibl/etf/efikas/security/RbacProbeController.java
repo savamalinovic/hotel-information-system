@@ -63,6 +63,11 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/reservations/1/check-out")
+    ResponseEntity<Void> checkOut() {
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/v1/reservations/1/check-in/claim")
     ResponseEntity<Void> claimCheckIn() {
         return ResponseEntity.ok().build();
@@ -113,6 +118,21 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/tasks")
+    ResponseEntity<Void> createOperationalTask() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/tasks")
+    ResponseEntity<Void> operationalTasks() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/tasks/available")
+    ResponseEntity<Void> availableOperationalTasks() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/tasks/1/claim")
+    ResponseEntity<Void> claimOperationalTask() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/tasks/1/cancel")
+    ResponseEntity<Void> cancelOperationalTask() { return ResponseEntity.ok().build(); }
+
     @GetMapping("/api/v1/cash-registers")
     ResponseEntity<Void> cashRegisters() {
         return ResponseEntity.ok().build();
@@ -155,6 +175,21 @@ class RbacProbeController {
 
     @GetMapping("/api/v1/specializations")
     ResponseEntity<Void> specializations() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/workforce/availability")
+    ResponseEntity<Void> workforceAvailability() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/v1/workforce/me/availability")
+    ResponseEntity<Void> myWorkforceAvailability() {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/workforce/me/attendance/clock-in")
+    ResponseEntity<Void> clockInWorker() {
         return ResponseEntity.ok().build();
     }
 }
