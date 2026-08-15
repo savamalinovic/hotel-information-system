@@ -12,6 +12,7 @@ import org.unibl.etf.efikas.models.entities.Reservation;
 import org.unibl.etf.efikas.models.enums.PaymentStatus;
 import org.unibl.etf.efikas.models.enums.ReservationStatus;
 import org.unibl.etf.efikas.models.enums.UserRole;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.responses.DemoReceiptResponse;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.repositories.DemoReceiptRepository;
@@ -43,6 +44,7 @@ public class DemoReceiptService {
     private final HotelProfileRepository hotelProfileRepository;
     private final BusinessBooksService businessBooksService;
     private final DemoReceiptPdfService pdfService;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public GenerationResult generate(Integer reservationId, String actorEmail) {
@@ -98,6 +100,8 @@ public class DemoReceiptService {
                 reservationId, receipt.getReceiptNumber(), receipt.getIssuedAt().atZone(HOTEL_ZONE).toLocalDate(),
                 "Demo račun " + receipt.getReceiptNumber() + " – usluga smještaja",
                 totalDue, totalDue, ZERO);
+        auditLogService.record(AuditEvent.DEMO_RECEIPT_GENERATED, actor, reservation, reservation.getApartment(), null,
+                "Demo receipt " + receipt.getReceiptNumber() + " generated.");
         return new GenerationResult(toResponse(receipt), true);
     }
 

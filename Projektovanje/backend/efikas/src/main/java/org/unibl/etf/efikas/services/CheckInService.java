@@ -10,6 +10,7 @@ import org.unibl.etf.efikas.models.enums.ApartmentOperationalStatus;
 import org.unibl.etf.efikas.models.enums.CheckInClaimAction;
 import org.unibl.etf.efikas.models.enums.GuestBookType;
 import org.unibl.etf.efikas.models.enums.ReservationStatus;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.responses.CheckInClaimHistoryResponse;
 import org.unibl.etf.efikas.models.responses.CheckInClaimResponse;
 import org.unibl.etf.efikas.models.responses.CheckInResponse;
@@ -31,6 +32,7 @@ public class CheckInService {
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final GuestBookEntryRepository guestBookEntryRepository;
     private final AppUserRepository appUserRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public CheckInClaimResponse claim(Integer reservationId, String actorEmail) {
@@ -47,6 +49,8 @@ public class CheckInService {
         reservation.setCheckInClaimedBy(actor);
         reservation.setCheckInClaimedAt(now);
         appendClaimHistory(reservation, CheckInClaimAction.CLAIMED, null, actor, actor);
+        auditLogService.record(AuditEvent.CHECK_IN_CLAIMED, actor, reservation, reservation.getApartment(), null,
+                "Check-in claimed.");
         reservationRepository.flush();
         return toClaimResponse(reservation);
     }
@@ -66,6 +70,8 @@ public class CheckInService {
         reservation.setCheckInClaimedBy(null);
         reservation.setCheckInClaimedAt(null);
         appendClaimHistory(reservation, CheckInClaimAction.RELEASED, current, null, actor);
+        auditLogService.record(AuditEvent.CHECK_IN_CLAIM_RELEASED, actor, reservation, reservation.getApartment(), null,
+                "Check-in claim released.");
         reservationRepository.flush();
         return toClaimResponse(reservation);
     }
@@ -85,6 +91,8 @@ public class CheckInService {
         reservation.setCheckInClaimedBy(actor);
         reservation.setCheckInClaimedAt(Instant.now());
         appendClaimHistory(reservation, CheckInClaimAction.TAKEN_OVER, current, actor, actor);
+        auditLogService.record(AuditEvent.CHECK_IN_CLAIM_TAKEN_OVER, actor, reservation, reservation.getApartment(), null,
+                "Check-in claim taken over.");
         reservationRepository.flush();
         return toClaimResponse(reservation);
     }
@@ -142,6 +150,8 @@ public class CheckInService {
         reservation.setCheckInClaimedBy(null);
         reservation.setCheckInClaimedAt(null);
         appendStatus(reservation, actor);
+        auditLogService.record(AuditEvent.RESERVATION_CHECKED_IN, actor, reservation, apartment, null,
+                "Reservation checked in.");
         reservationRepository.flush();
 
         return new CheckInResponse(

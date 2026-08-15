@@ -11,6 +11,7 @@ import org.unibl.etf.efikas.exceptions.DomainConflictException;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.enums.ReservationStatus;
 import org.unibl.etf.efikas.models.enums.CheckInClaimAction;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.ChangeReservationStatusRequest;
 import org.unibl.etf.efikas.models.requests.CreateReservationRequest;
 import org.unibl.etf.efikas.models.requests.UpdateReservationStayRequest;
@@ -32,6 +33,7 @@ public class ReservationService {
     private final ApartmentUnavailabilityRepository unavailabilityRepository;
     private final AppUserRepository appUserRepository;
     private final PaymentRepository paymentRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<AvailableApartmentResponse> findAvailability(
@@ -106,6 +108,8 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
         appendStatus(saved, ReservationStatus.CONFIRMED, actor, "Reservation created.");
+        auditLogService.record(AuditEvent.RESERVATION_CREATED, actor, saved, apartment, null,
+                "Reservation created.");
         reservationRepository.flush();
         return toResponse(saved);
     }
@@ -130,6 +134,8 @@ public class ReservationService {
         }
         reservation.setCheckOutDate(request.checkOutDate());
         reservationRepository.saveAndFlush(reservation);
+        auditLogService.record(AuditEvent.RESERVATION_STAY_UPDATED, requireActor(actorEmail), reservation,
+                reservation.getApartment(), null, "Reservation stay updated.");
         return toResponse(reservation);
     }
 
@@ -153,6 +159,9 @@ public class ReservationService {
         clearCheckInClaim(reservation, actor);
         reservation.setStatus(request.status());
         appendStatus(reservation, request.status(), actor, request.reason().trim());
+        auditLogService.record(request.status() == ReservationStatus.CANCELLED
+                        ? AuditEvent.RESERVATION_CANCELLED : AuditEvent.RESERVATION_NO_SHOW,
+                actor, reservation, reservation.getApartment(), null, request.reason().trim());
         reservationRepository.flush();
         return toResponse(reservation);
     }

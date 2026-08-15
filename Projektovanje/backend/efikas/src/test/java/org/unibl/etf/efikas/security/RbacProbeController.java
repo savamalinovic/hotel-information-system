@@ -43,6 +43,11 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/api/v1/audit-logs")
+    ResponseEntity<Void> auditLogs() {
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/api/v1/reservations/1")
     ResponseEntity<Void> reservation() {
         return ResponseEntity.ok().build();

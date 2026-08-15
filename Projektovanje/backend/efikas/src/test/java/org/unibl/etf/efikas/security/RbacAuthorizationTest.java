@@ -86,6 +86,16 @@ class RbacAuthorizationTest {
     }
 
     @Test
+    void onlyManagerCanReadAuditLogs() throws Exception {
+        mockMvc.perform(get("/api/v1/audit-logs").with(role(UserRole.MANAGER)))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/audit-logs").with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/audit-logs").with(role(UserRole.OPERATIONAL_WORKER)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void reservationsAreUnavailableToOperationalWorker() throws Exception {
         mockMvc.perform(get("/api/v1/reservations/1").with(role(UserRole.AGENT)))
                 .andExpect(status().isOk());

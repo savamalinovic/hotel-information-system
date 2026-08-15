@@ -23,6 +23,7 @@ public class CheckOutService {
     private final TaskStatusHistoryRepository taskHistoryRepository;
     private final SpecializationRepository specializationRepository;
     private final AppUserRepository appUserRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public CheckOutResponse checkOut(Integer reservationId, String actorEmail) {
@@ -76,6 +77,8 @@ public class CheckOutService {
         reservation.setCheckedOutAt(after(reservation.getCheckedInAt()));
         reservation.setStatus(ReservationStatus.CHECKED_OUT);
         reservationRepository.saveAndFlush(reservation);
+        auditLogService.record(AuditEvent.RESERVATION_CHECKED_OUT, actor, reservation, apartment, task,
+                "Reservation checked out and cleaning task created.");
 
         return toResponse(reservation, task);
     }
