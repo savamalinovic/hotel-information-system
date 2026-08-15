@@ -1,212 +1,105 @@
 package org.unibl.etf.efikas.controllers;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.unibl.etf.efikas.exceptions.BookPdfGenerationException;
-import org.unibl.etf.efikas.design_patterns.factory.BookPdfFactory;
-import org.unibl.etf.efikas.exceptions.InvalidBookPeriodException;
-import org.unibl.etf.efikas.models.dto.DateRangeDTO;
-import org.unibl.etf.efikas.models.dto.DomesticGuestDTO;
-import org.unibl.etf.efikas.models.dto.ForeignGuestDTO;
-import org.unibl.etf.efikas.models.dto.books.*;
-import org.unibl.etf.efikas.models.dto.books.entries.DomesticGuestsEntry;
-import org.unibl.etf.efikas.models.dto.books.entries.ForeignGuestsEntry;
-import org.unibl.etf.efikas.models.dto.books.entries.IncomeEntry;
-import org.unibl.etf.efikas.models.enums.BookType;
-import org.unibl.etf.efikas.models.requests.*;
-import org.unibl.etf.efikas.models.responses.AppUserResponse;
-import org.unibl.etf.efikas.services.*;
-import org.unibl.etf.efikas.services.impl.books.BaseBookPdfService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
+import org.unibl.etf.efikas.models.responses.GuestBookEntryResponse;
+import org.unibl.etf.efikas.models.responses.IncomeBookEntryResponse;
+import org.unibl.etf.efikas.models.responses.PageResponse;
+import org.unibl.etf.efikas.services.BusinessBooksService;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/books")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Tag(name = "Business books")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class BooksController {
-    private final BookPdfFactory bookPdfFactory;
-    private final AppUserService appUserService;
-    private final StoreService storeService;
-    private final IncomeBookService incomeBookService;
-    private final ForeignGuestsBookService foreignGuestsBookService;
-    private final DomesticGuestsBookService domesticGuestsBookService;
+    private static final MediaType CSV_MEDIA_TYPE = MediaType.parseMediaType("text/csv;charset=UTF-8");
 
+    private final BusinessBooksService businessBooksService;
 
-    // =========================================== PDF endpoints ===========================================
-
-    @GetMapping("/pdf/INCOME")
-    public ResponseEntity<StreamingResponseBody> downloadIncomeBookPdf(
-            @RequestParam Integer taxpayerId,
-            @RequestParam(required = false) Integer storeId,
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to
-    ) throws IOException {
-        System.out.println("IN book CONTROLLER");
-        AppUserResponse appUserResponse = appUserService.getUserById(taxpayerId);
-        if(from.isAfter(to)) {
-            throw new InvalidBookPeriodException("From date can not come after To date range");
-        }
-
-        TaxpayerDTO taxpayer = getTaxpayerDTO(appUserResponse);
-        StoreDTO store = getStoreDTO();
-        FinancialBookPdfRequest financialBookPdfRequest = FinancialBookPdfRequest.builder()
-                .taxpayer(taxpayer)
-                .store(store)
-                .period(DateRangeDTO.builder()
-                        .from(from)
-                        .to(to)
-                        .build()
-                )
-                .build();
-
-        var pdfService = bookPdfFactory.get(BookType.INCOME);
-        IncomeBookDTO request = incomeBookService.getIncomeBookByTime(financialBookPdfRequest);
-
-        return getStreamingResponseBodyResponseEntity(pdfService, request, BookType.INCOME);
-    }
-
-    @GetMapping("/pdf/FOREIGN_GUESTS")
-    public ResponseEntity<StreamingResponseBody> downloadForeignGuestsBookPdf(
-            @RequestParam(required = false) Boolean active,
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to
-    ) throws IOException {
-        if(from.isAfter(to)) {
-            throw new InvalidBookPeriodException("From date can not come after To date range");
-        }
-
-        var pdfService = bookPdfFactory.get(BookType.FOREIGN_GUESTS);
-        ForeignGuestsBookDTO request = foreignGuestsBookService.findForPdf(from, to, active);
-
-        return getStreamingResponseBodyResponseEntity(pdfService, request, BookType.FOREIGN_GUESTS);
-    }
-
-    @GetMapping("/pdf/DOMESTIC_GUESTS")
-    public ResponseEntity<StreamingResponseBody> downloadDomesticGuestsBookPdf(
-            @RequestParam(required = false) Boolean active,
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to
-    ) throws IOException {  //@RequestBody GuestsBookRequest guestsBookRequest
-        if(from.isAfter(to)) {
-            throw new InvalidBookPeriodException("From date can not come after To date range");
-        }
-
-        var pdfService = bookPdfFactory.get(BookType.DOMESTIC_GUESTS);
-        DomesticGuestsBookDTO request = domesticGuestsBookService.findForPdf(from, to, active);
-
-        return getStreamingResponseBodyResponseEntity(pdfService, request, BookType.DOMESTIC_GUESTS);
-    }
-
-
-    // =========================================== POST endpoints ===========================================
-
-    @PostMapping("/income")
-    public ResponseEntity<?> addIncomeEntry(@Validated @RequestBody CreateIncomeBookRequest createIncomeBookRequest) {
-        IncomeEntry saved = incomeBookService.createNewIncome(createIncomeBookRequest);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(saved.getId()).toUri();
-
-        return ResponseEntity.created(location).body(saved);
-    }
-
-    @PostMapping("/expenses")
-    public ResponseEntity<?> addExpensesEntry(@RequestBody IncomeEntry incomeEntry) {
-
-
-        return ResponseEntity.created(URI.create("test")).build();
-    }
-
-    @PostMapping("/domestic-guests")
-    public ResponseEntity<?> addDomesticGuestsEntry(@Validated @RequestBody DomesticGuestDTO createDomesticGuestRequest) {
-        DomesticGuestsEntry saved = domesticGuestsBookService.createNewDomesticGuest(createDomesticGuestRequest);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(saved).toUri();
-
-        return ResponseEntity.created(location).body(saved);
-    }
-
-    @PostMapping("/foreign-guests")
-    public ResponseEntity<?> addForeignGuestsEntry(@Validated @RequestBody ForeignGuestDTO createForeignGuestRequest) {
-        ForeignGuestsEntry saved = foreignGuestsBookService.createNewForeignGuest(createForeignGuestRequest);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(saved.getId()).toUri();
-
-        return ResponseEntity.created(location).body(saved);
-    }
-
-    // =========================================== PUT endpoints ===========================================
-    @PutMapping("/domestic-guests/{id}")
-    public ResponseEntity<?> addDomesticGuestsEntry(@PathVariable int id, @Validated @RequestBody DomesticGuestDTO createDomesticGuestRequest) {
-        DomesticGuestsEntry saved = domesticGuestsBookService.updateDomesticGuest(id, createDomesticGuestRequest);
-
-        return ResponseEntity.ok(saved);
-    }
-
-    @PutMapping("/foreign-guests/{id}")
-    public ResponseEntity<?> addForeignGuestsEntry(@PathVariable int id, @Validated @RequestBody ForeignGuestDTO createForeignGuestRequest) {
-        ForeignGuestsEntry saved = foreignGuestsBookService.updateForeignGuest(id, createForeignGuestRequest);
-
-        return ResponseEntity.ok(saved);
-    }
-
-
-    // =========================================== GET endpoints ===========================================
-
-
-    // =========================================== Private helpers ===========================================
-    private TaxpayerDTO getTaxpayerDTO(AppUserResponse appUserResponse) {
-        return TaxpayerDTO.builder()
-                .fullName(appUserResponse.getName() + " " +  appUserResponse.getSurname())
-                .jmbg(appUserResponse.getJmbg())
-                .address(appUserResponse.getAddress())
-                .build();
-    }
-
-    private StoreDTO getStoreDTO() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("IN getStoreDTO CONTROLLER");
-        System.out.println("AUTH: " + authentication);
-        return storeService.getStoreForActiveUser(authentication);
-    }
-
-    private ResponseEntity<StreamingResponseBody> getStreamingResponseBodyResponseEntity(
-            BaseBookPdfService<BookRequest> pdfService,
-            BookRequest request,
-            BookType type
+    @GetMapping("/domestic-guests")
+    @Operation(summary = "Read the immutable domestic guest book")
+    public PageResponse<GuestBookEntryResponse> domesticGuests(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query,
+            @PageableDefault(size = 20, sort = "arrivedAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        try (InputStream pdfStream = pdfService.generatePdf(request)) {  // try-with-resources without resource leaks
-            StreamingResponseBody responseBody = outputStream -> {
-                try {
-                    pdfStream.transferTo(outputStream);
-                } catch (IOException e) {
-                    throw new BookPdfGenerationException("Failed to stream PDF content");
-                }
-            };
+        return businessBooksService.domesticGuests(from, to, query, pageable);
+    }
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + type + "_" + System.currentTimeMillis() + ".pdf\"")
-                    .body(responseBody);
-        } catch (IOException e) {
-            throw new BookPdfGenerationException("Failed to generate PDF");
-        }
+    @GetMapping("/foreign-guests")
+    @Operation(summary = "Read the immutable foreign guest book")
+    public PageResponse<GuestBookEntryResponse> foreignGuests(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query,
+            @PageableDefault(size = 20, sort = "arrivedAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return businessBooksService.foreignGuests(from, to, query, pageable);
+    }
+
+    @GetMapping("/income")
+    @Operation(summary = "Read the automatic income book")
+    public PageResponse<IncomeBookEntryResponse> income(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query,
+            @PageableDefault(size = 20, sort = "accountingDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return businessBooksService.income(from, to, query, pageable);
+    }
+
+    @GetMapping("/domestic-guests/export")
+    @Operation(summary = "Export the filtered domestic guest book as CSV")
+    public ResponseEntity<byte[]> exportDomesticGuests(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query
+    ) {
+        return csv("domestic-guests.csv", businessBooksService.exportDomesticGuests(from, to, query));
+    }
+
+    @GetMapping("/foreign-guests/export")
+    @Operation(summary = "Export the filtered foreign guest book as CSV")
+    public ResponseEntity<byte[]> exportForeignGuests(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query
+    ) {
+        return csv("foreign-guests.csv", businessBooksService.exportForeignGuests(from, to, query));
+    }
+
+    @GetMapping("/income/export")
+    @Operation(summary = "Export the filtered income book as CSV")
+    public ResponseEntity<byte[]> exportIncome(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String query
+    ) {
+        return csv("income-book.csv", businessBooksService.exportIncome(from, to, query));
+    }
+
+    private static ResponseEntity<byte[]> csv(String filename, byte[] body) {
+        return ResponseEntity.ok()
+                .contentType(CSV_MEDIA_TYPE)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(body);
     }
 }

@@ -15,10 +15,12 @@ import org.unibl.etf.efikas.models.dto.UserDTO;
 import org.unibl.etf.efikas.models.dto.books.StoreDTO;
 import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.entities.Store;
+import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.models.requests.RegistrationRequest;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.models.responses.AppUserResponse;
 import org.unibl.etf.efikas.services.interfaces.OtpService;
+import org.unibl.etf.efikas.util.PhoneNumbers;
 
 import java.util.Map;
 import java.util.Optional;
@@ -39,18 +41,19 @@ public class AppUserService {
     }
 
     public AppUser getUserByEmail(String email) {
-        return appUserRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return appUserRepository.findByEmailIgnoreCase(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     public Optional<String> register(RegistrationRequest user) {
 
-        if (appUserRepository.existsByEmail(user.getEmail())) {
+        if (appUserRepository.existsByEmailIgnoreCase(user.getEmail())) {
             return Optional.of("Email already exists.");
         }
         String phoneNumber = user.getPhoneNumber();
 
         AppUser newUser = modelMapper.map(user, AppUser.class);
-        newUser.setPhoneNumber(normalizePhoneNumber(phoneNumber));
+        newUser.setRole(UserRole.AGENT);
+        newUser.setPhoneNumber(PhoneNumbers.normalize(phoneNumber));
         // hashing the password
         newUser.setPasswordHash(passwordEncoder.encode(user.getPassword()));
 
@@ -59,7 +62,9 @@ public class AppUserService {
     }
 
     public boolean authenticate(String email, String password) {
-        return appUserRepository.findByEmail(email).map(user -> passwordEncoder.matches(password, user.getPasswordHash()))
+        return appUserRepository.findByEmailIgnoreCase(email)
+                .filter(AppUser::isActive)
+                .map(user -> passwordEncoder.matches(password, user.getPasswordHash()))
                 .orElse(false);
     }
 
@@ -74,7 +79,7 @@ public class AppUserService {
 
     public AppUserResponse getCurrentUserInfo(Authentication authentication) {
         String email = authentication.getName();
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
         return modelMapper.map(user, AppUserResponse.class);
@@ -84,7 +89,7 @@ public class AppUserService {
     public AppUserResponse updateUserAccount(UserDTO userDto, Authentication authentication) {
         String email = authentication.getName();
 
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
         user.setName(userDto.getName());
@@ -98,7 +103,7 @@ public class AppUserService {
 
     public void changeUserPassword(ChangePasswordDTO changePasswordDTO, Authentication authentication) {
         String email = changePasswordDTO.getEmail();
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
         if(!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getConfirmPassword())) {
@@ -117,39 +122,11 @@ public class AppUserService {
 
     public AppUserResponse deleteUserAccount(Authentication authentication) {
         String email = authentication.getName();
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
         appUserRepository.delete(user);
         return modelMapper.map(user, AppUserResponse.class);
-    }
-
-    // Translates the phone number to E.164 format (+38765...)
-    private String normalizePhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.isBlank()) {
-            return null;
-        }
-
-        // 1. Remove all non-numeric characters (slashes, hyphens, spaces)
-        String digitsOnly = phoneNumber.replaceAll("[^0-9]", "");
-
-        // 2. Handle the Bosnian local prefix
-        // If it starts with '0', replace that first '0' with '+387'
-        if (digitsOnly.startsWith("0")) {
-            return "+387" + digitsOnly.substring(1);
-        }
-
-        // 3. If it already starts with '387', just add the '+'
-        if (digitsOnly.startsWith("387")) {
-            return "+" + digitsOnly;
-        }
-
-        // 4. If it's already +387, return as is
-        if (phoneNumber.startsWith("+387")) {
-            return "+" + digitsOnly;
-        }
-
-        return null;
     }
 
 }

@@ -1,43 +1,35 @@
 package org.unibl.etf.efikas.controllers;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import org.unibl.etf.efikas.models.dto.NotificationMessageDTO;
-import org.unibl.etf.efikas.models.requests.PushNotificationTokenRequest;
-import org.unibl.etf.efikas.models.requests.ToggleNotificationRequest;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
+import org.unibl.etf.efikas.models.requests.*;
+import org.unibl.etf.efikas.models.responses.*;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
-@RestController
-@RequestMapping("/api/v1/notifications")
-@AllArgsConstructor
+@RestController @RequestMapping("/api/v1/notifications") @RequiredArgsConstructor
+@Tag(name = "Notifications") @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class NotificationsController {
-    private final NotificationService notificationService;
-
-    @PostMapping("/push-token")
-    public ResponseEntity<?> pushRegistrationToken(@RequestBody PushNotificationTokenRequest pushNotificationTokenRequest) {
-        System.out.println("Push token request: " + pushNotificationTokenRequest);
-        String resp = notificationService.addPushToken(pushNotificationTokenRequest);
-
-        return ResponseEntity.ok(resp);
+    private final NotificationService service;
+    @GetMapping public PageResponse<NotificationResponse> list(Authentication auth,
+            @RequestParam(defaultValue = "false") boolean unreadOnly, Pageable pageable) {
+        return service.list(auth.getName(), unreadOnly, pageable);
     }
-
-    @PostMapping("/send")
-    public ResponseEntity<?> sendPushToken(@RequestBody NotificationMessageDTO notificationMessageDTO) {
-        System.out.println("Push token request: " + notificationMessageDTO);
-
-        notificationService.sendNotificationByToken(notificationMessageDTO);
-
-        return ResponseEntity.ok("Notification sent successfully");
+    @PostMapping("/{id}/read") public NotificationResponse read(Authentication auth, @PathVariable Long id) {
+        return service.markRead(auth.getName(), id);
     }
-
-    @PutMapping("/toggle")
-    public ResponseEntity<?> updateNotifications(@RequestBody ToggleNotificationRequest toggleNotificationRequest)
-    {
-        System.out.println("Toggle notification request: " + toggleNotificationRequest);
-        String resp = notificationService.toggleNotification(toggleNotificationRequest);
-
-        return ResponseEntity.ok(resp);
+    @PostMapping("/push-token") public ResponseEntity<Void> register(Authentication auth,
+            @Valid @RequestBody PushNotificationTokenRequest request) {
+        service.addPushToken(auth.getName(), request); return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/toggle") public ResponseEntity<Void> toggle(Authentication auth,
+            @Valid @RequestBody ToggleNotificationRequest request) {
+        service.toggleNotification(auth.getName(), request); return ResponseEntity.noContent().build();
     }
 }

@@ -26,10 +26,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     // It's not ideal, but it is what it is...
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AppUser user = appUserRepository.findByEmail(email)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email not found: " + email));
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (user.getRole() == null || !user.isActive()) {
+            throw new UsernameNotFoundException("Active user with an assigned role was not found: " + email);
+        }
+
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().asAuthority()));
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPasswordHash(), authorities);

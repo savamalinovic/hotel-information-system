@@ -1,108 +1,183 @@
 package org.unibl.etf.efikas.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.websocket.server.PathParam;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.unibl.etf.efikas.models.dto.ApartmentDTO;
-import org.unibl.etf.efikas.models.dto.DomesticGuestDTO;
-import org.unibl.etf.efikas.models.dto.ReservationDTO;
-import org.unibl.etf.efikas.models.requests.UpdateReservationRequest;
-import org.unibl.etf.efikas.models.responses.ReservationResponse;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.unibl.etf.efikas.configs.OpenApiConfig;
+import org.unibl.etf.efikas.models.enums.ReservationStatus;
+import org.unibl.etf.efikas.models.requests.ChangeReservationStatusRequest;
+import org.unibl.etf.efikas.models.requests.CreateReservationRequest;
+import org.unibl.etf.efikas.models.requests.AddReservationGuestRequest;
+import org.unibl.etf.efikas.models.requests.UpdateReservationGuestRequest;
+import org.unibl.etf.efikas.models.requests.UpdateReservationStayRequest;
+import org.unibl.etf.efikas.models.responses.*;
 import org.unibl.etf.efikas.services.ReservationService;
+import org.unibl.etf.efikas.services.CheckInService;
+import org.unibl.etf.efikas.services.GuestService;
+import org.unibl.etf.efikas.services.CheckOutService;
 
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
+@Validated
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/reservations")
 @RequiredArgsConstructor
+@Tag(name = "Reservations")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 public class ReservationController {
-
     private final ReservationService reservationService;
-    private final ObjectMapper objectMapper;
+    private final GuestService guestService;
+    private final CheckInService checkInService;
+    private final CheckOutService checkOutService;
 
-    @PostMapping(value = "/apartments/{apartmentId}/reservations", consumes = "multipart/form-data")//
-    public ResponseEntity<?> createReservation(
-            @PathVariable Integer apartmentId,
-            //@RequestPart("reservation") ReservationDTO reservationDTO,
-            @RequestPart("reservation") String createReservationJson,
-            @RequestPart(name = "picture", required = false) MultipartFile documentPicture
-    ) throws JsonProcessingException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        System.out.println("Email: " + email);
-
-        ReservationDTO dto = objectMapper.readValue(createReservationJson, ReservationDTO.class);
-        System.out.println("RESERVATION DTO: " + dto);
-
-        // For POST, we are extracting apartmentId from the endpoint URL itself.
-        // We are not relying on the value found in DTO.
-        ReservationResponse response = reservationService.createNewReservation(apartmentId, authentication,
-                dto, documentPicture);
-
-        return ResponseEntity.ok(response); //response
+    @GetMapping("/availability")
+    public PageResponse<AvailableApartmentResponse> findAvailability(
+            @RequestParam @NotNull LocalDate checkInDate,
+            @RequestParam @NotNull LocalDate checkOutDate,
+            @RequestParam @NotNull @Positive Integer guestCount,
+            @RequestParam(required = false) Integer apartmentTypeId,
+            @PageableDefault(size = 20, sort = "name") Pageable pageable
+    ) {
+        return reservationService.findAvailability(
+                checkInDate, checkOutDate, guestCount, apartmentTypeId, pageable);
     }
 
-    @GetMapping(value = "/apartments/{apartmentId}/reservations")
-    public ResponseEntity<?> getReservations(@PathVariable Integer apartmentId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        List<ReservationResponse> response = reservationService.getAllReservations(apartmentId, authentication);
-
-        return ResponseEntity.ok(response);
+    @GetMapping
+    public PageResponse<ReservationDetailsResponse> findAll(
+            @RequestParam(required = false) Integer apartmentId,
+            @RequestParam(required = false) ReservationStatus status,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
+            @PageableDefault(size = 20, sort = "checkInDate") Pageable pageable
+    ) {
+        return reservationService.findAll(apartmentId, status, from, to, pageable);
     }
 
-    @GetMapping(value = "/reservations/{reservationId}")
-    public ResponseEntity<?> getReservation(@PathVariable Integer reservationId, @RequestParam Integer apartmentId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        ReservationResponse response = reservationService.getReservation(reservationId, apartmentId, authentication);
-
-        return ResponseEntity.ok(response);
+    @GetMapping("/{reservationId}")
+    public ReservationDetailsResponse findById(@PathVariable Integer reservationId) {
+        return reservationService.findById(reservationId);
     }
 
-    @PutMapping(value = "/reservations/{reservationId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateReservation(@PathVariable Integer reservationId,
-                                               //@RequestPart("reservation") ReservationDTO updateReservationRequest,
-                                               @RequestPart("reservation") String updateReservationJson,
-                                               @RequestPart(name = "picture", required = false) MultipartFile documentPicture) throws JsonProcessingException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-
-        ReservationDTO dto = objectMapper.readValue(updateReservationJson, ReservationDTO.class);
-
-        ReservationResponse response = reservationService
-                .updateReservation(reservationId, authentication, dto, documentPicture);
-
-        // TODO: implement upsert behavior
-
-        return ResponseEntity.ok(response);
+    @PostMapping
+    public ResponseEntity<ReservationDetailsResponse> create(
+            @Valid @RequestBody CreateReservationRequest request,
+            Authentication authentication
+    ) {
+        ReservationDetailsResponse response = reservationService.create(request, authentication.getName());
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(response.reservationId()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
-    @DeleteMapping(value = "/reservations/{reservationId}")
-    public ResponseEntity<?> deleteReservation(@PathVariable Integer reservationId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        ReservationResponse response = reservationService.deleteReservation(reservationId, authentication);
-
-        return ResponseEntity.ok(response);
+    @PatchMapping("/{reservationId}/stay")
+    public ReservationDetailsResponse updateStay(
+            @PathVariable Integer reservationId,
+            @Valid @RequestBody UpdateReservationStayRequest request,
+            Authentication authentication
+    ) {
+        return reservationService.updateStay(reservationId, request, authentication.getName());
     }
 
-    @GetMapping(value = "/reservations")
-    public ResponseEntity<?> getAllUserReservations() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        List<ReservationResponse> response = reservationService.getAllReservationsForUser(authentication);
-
-        return ResponseEntity.ok(response);
+    @PatchMapping("/{reservationId}/status")
+    public ReservationDetailsResponse changeStatus(
+            @PathVariable Integer reservationId,
+            @Valid @RequestBody ChangeReservationStatusRequest request,
+            Authentication authentication
+    ) {
+        return reservationService.changeStatus(reservationId, request, authentication.getName());
     }
 
+    @PostMapping("/{reservationId}/check-out")
+    public CheckOutResponse checkOut(
+            @PathVariable Integer reservationId,
+            Authentication authentication
+    ) {
+        return checkOutService.checkOut(reservationId, authentication.getName());
+    }
+
+    @GetMapping("/{reservationId}/status-history")
+    public List<ReservationStatusHistoryResponse> statusHistory(@PathVariable Integer reservationId) {
+        return reservationService.statusHistory(reservationId);
+    }
+
+    @GetMapping("/{reservationId}/guests")
+    public List<ReservationGuestResponse> guests(@PathVariable Integer reservationId) {
+        return guestService.findReservationGuests(reservationId);
+    }
+
+    @PostMapping("/{reservationId}/guests")
+    public ResponseEntity<ReservationGuestResponse> addGuest(
+            @PathVariable Integer reservationId,
+            @Valid @RequestBody AddReservationGuestRequest request,
+            Authentication authentication
+    ) {
+        ReservationGuestResponse response = guestService.addToReservation(
+                reservationId, request, authentication.getName());
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{guestId}")
+                .buildAndExpand(response.guest().guestId()).toUri();
+        return ResponseEntity.created(location).body(response);
+    }
+
+    @PutMapping("/{reservationId}/guests/{guestId}")
+    public ReservationGuestResponse updateGuest(
+            @PathVariable Integer reservationId,
+            @PathVariable Integer guestId,
+            @Valid @RequestBody UpdateReservationGuestRequest request
+    ) {
+        return guestService.updateForReservation(reservationId, guestId, request);
+    }
+
+    @DeleteMapping("/{reservationId}/guests/{guestId}")
+    public ResponseEntity<Void> removeGuest(
+            @PathVariable Integer reservationId,
+            @PathVariable Integer guestId
+    ) {
+        guestService.removeFromReservation(reservationId, guestId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{reservationId}/check-in/claim")
+    public CheckInClaimResponse claimCheckIn(
+            @PathVariable Integer reservationId, Authentication authentication
+    ) {
+        return checkInService.claim(reservationId, authentication.getName());
+    }
+
+    @DeleteMapping("/{reservationId}/check-in/claim")
+    public CheckInClaimResponse releaseCheckIn(
+            @PathVariable Integer reservationId, Authentication authentication
+    ) {
+        return checkInService.release(reservationId, authentication.getName());
+    }
+
+    @PutMapping("/{reservationId}/check-in/claim")
+    public CheckInClaimResponse takeoverCheckIn(
+            @PathVariable Integer reservationId, Authentication authentication
+    ) {
+        return checkInService.takeover(reservationId, authentication.getName());
+    }
+
+    @GetMapping("/{reservationId}/check-in/claim-history")
+    public List<CheckInClaimHistoryResponse> checkInClaimHistory(@PathVariable Integer reservationId) {
+        return checkInService.claimHistory(reservationId);
+    }
+
+    @PostMapping("/{reservationId}/check-in")
+    public CheckInResponse checkIn(
+            @PathVariable Integer reservationId, Authentication authentication
+    ) {
+        return checkInService.checkIn(reservationId, authentication.getName());
+    }
 }

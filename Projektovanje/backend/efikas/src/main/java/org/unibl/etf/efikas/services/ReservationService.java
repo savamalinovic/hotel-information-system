@@ -1,258 +1,277 @@
 package org.unibl.etf.efikas.services;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-import org.unibl.etf.efikas.exceptions.S3UploadException;
-import org.unibl.etf.efikas.models.dto.DomesticGuestDTO;
-import org.unibl.etf.efikas.models.dto.ForeignGuestDTO;
-import org.unibl.etf.efikas.models.dto.GuestDTO;
-import org.unibl.etf.efikas.models.dto.ReservationDTO;
-import org.unibl.etf.efikas.models.dto.books.entries.DomesticGuestsEntry;
-import org.unibl.etf.efikas.models.dto.books.entries.ForeignGuestsEntry;
-import org.unibl.etf.efikas.models.entities.Apartment;
-import org.unibl.etf.efikas.models.entities.GuestsBook;
-import org.unibl.etf.efikas.models.entities.Reservation;
-import org.unibl.etf.efikas.models.entities.ReservationType;
-import org.unibl.etf.efikas.models.requests.UpdateReservationRequest;
-import org.unibl.etf.efikas.models.responses.ApartmentResponse;
-import org.unibl.etf.efikas.models.responses.FileUploadResponse;
-import org.unibl.etf.efikas.models.responses.ReservationResponse;
-import org.unibl.etf.efikas.repositories.ApartmentRepository;
-import org.unibl.etf.efikas.repositories.GuestsBookRepository;
-import org.unibl.etf.efikas.repositories.ReservationRepository;
-import org.unibl.etf.efikas.repositories.ReservationTypeRepository;
-import org.unibl.etf.efikas.services.interfaces.S3Service;
-import org.unibl.etf.efikas.util.Constants;
+import org.unibl.etf.efikas.exceptions.DomainConflictException;
+import org.unibl.etf.efikas.models.entities.*;
+import org.unibl.etf.efikas.models.enums.ReservationStatus;
+import org.unibl.etf.efikas.models.enums.CheckInClaimAction;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
+import org.unibl.etf.efikas.models.requests.ChangeReservationStatusRequest;
+import org.unibl.etf.efikas.models.requests.CreateReservationRequest;
+import org.unibl.etf.efikas.models.requests.UpdateReservationStayRequest;
+import org.unibl.etf.efikas.models.responses.*;
+import org.unibl.etf.efikas.repositories.*;
 
-import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
-
     private final ReservationRepository reservationRepository;
-    private final ReservationTypeRepository reservationTypeRepository;
+    private final ReservationStatusHistoryRepository statusHistoryRepository;
+    private final ReservationCheckInClaimHistoryRepository claimHistoryRepository;
     private final ApartmentRepository apartmentRepository;
+    private final ApartmentUnavailabilityRepository unavailabilityRepository;
+    private final AppUserRepository appUserRepository;
+    private final PaymentRepository paymentRepository;
+    private final AuditLogService auditLogService;
 
-    private final ApartmentService apartmentService;
-    private final ModelMapper modelMapper;
-    private final S3Service s3Service;
-    private final GuestsBookRepository guestsBookRepository;
-
-    private final DomesticGuestsBookService domesticGuestsBookService;
-    private final ForeignGuestsBookService foreignGuestsBookService;
-
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
-    @Transactional
-    public ReservationResponse createNewReservation(Integer apartmentId,
-                                                    Authentication authentication,
-                                                    ReservationDTO reservationDTO,
-                                                    MultipartFile documentPicture
+    @Transactional(readOnly = true)
+    public PageResponse<AvailableApartmentResponse> findAvailability(
+            LocalDate checkInDate,
+            LocalDate checkOutDate,
+            Integer guestCount,
+            Integer apartmentTypeId,
+            Pageable pageable
     ) {
+        validatePeriod(checkInDate, checkOutDate);
+        Page<AvailableApartmentResponse> page = apartmentRepository
+                .findAvailable(checkInDate, checkOutDate, guestCount, apartmentTypeId, pageable)
+                .map(ReservationService::toAvailableApartment);
+        return PageResponse.from(page);
+    }
 
-        Reservation reservation = persistGuestIfNonExistant(reservationDTO, documentPicture);
+    @Transactional(readOnly = true)
+    public PageResponse<ReservationDetailsResponse> findAll(
+            Integer apartmentId,
+            ReservationStatus status,
+            LocalDate from,
+            LocalDate to,
+            Pageable pageable
+    ) {
+        if ((from == null) != (to == null)) {
+            throw new IllegalArgumentException("Both from and to are required when filtering by stay period.");
+        }
+        if (from != null) {
+            validatePeriod(from, to);
+        }
+        Specification<Reservation> specification = Specification.unrestricted();
+        if (apartmentId != null) {
+            specification = specification.and((root, query, builder) ->
+                    builder.equal(root.get("apartment").get("apartmentId"), apartmentId));
+        }
+        if (status != null) {
+            specification = specification.and((root, query, builder) -> builder.equal(root.get("status"), status));
+        }
+        if (from != null) {
+            specification = specification.and((root, query, builder) -> builder.and(
+                    builder.lessThan(root.get("checkInDate"), to),
+                    builder.greaterThan(root.get("checkOutDate"), from)));
+        }
+        return PageResponse.from(reservationRepository.findAll(specification, pageable).map(ReservationService::toResponse));
+    }
 
-        ReservationType reservationType = reservationTypeRepository
-                .findReservationTypeByTypeName(reservationDTO.getReservationType())
-                .orElseThrow(() -> new EntityNotFoundException("Reservation type not found!"));
-        reservation.setType(reservationType);
+    @Transactional(readOnly = true)
+    public ReservationDetailsResponse findById(Integer reservationId) {
+        return toResponse(requireReservation(reservationId));
+    }
 
-        Apartment apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Apartment not found!"));
+    @Transactional
+    public ReservationDetailsResponse create(CreateReservationRequest request, String actorEmail) {
+        validatePeriod(request.checkInDate(), request.checkOutDate());
+        Apartment apartment = apartmentRepository.findByIdForUpdate(request.apartmentId())
+                .orElseThrow(() -> new EntityNotFoundException("Apartment not found."));
+        validateApartment(apartment, request.guestCount());
+        ensureAvailable(apartment.getApartmentId(), request.checkInDate(), request.checkOutDate(), null);
+
+        Reservation reservation = new Reservation();
         reservation.setApartment(apartment);
-
+        reservation.setApartmentTypeSnapshot(apartment.getType());
+        reservation.setCheckInDate(request.checkInDate());
+        reservation.setCheckOutDate(request.checkOutDate());
+        reservation.setGuestQuantity(request.guestCount());
+        reservation.setNightlyRate(request.nightlyRate() == null
+                ? apartment.getType().getDefaultNightlyRate()
+                : request.nightlyRate());
+        reservation.setNote(normalizeNullable(request.note()));
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        AppUser actor = requireActor(actorEmail);
+        reservation.setCreatedBy(actor);
 
         Reservation saved = reservationRepository.save(reservation);
-        String url = documentPicture != null ? s3Service.getPresignedUrl(saved.getGuest().getPersonalDocumentURL()) : null;
-        ReservationResponse response = modelMapper.map(reservation, ReservationResponse.class);
-        response.getGuest().setPersonalDocumentURL(url);  // User gets the downloadable URL
-
-        return response;
+        appendStatus(saved, ReservationStatus.CONFIRMED, actor, "Reservation created.");
+        auditLogService.record(AuditEvent.RESERVATION_CREATED, actor, saved, apartment, null,
+                "Reservation created.");
+        reservationRepository.flush();
+        return toResponse(saved);
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
-    public List<ReservationResponse> getAllReservations(Integer apartmentId, Authentication authentication) {
-        List<Reservation> reservations = reservationRepository.findReservationByApartmentApartmentId(apartmentId);
-
-        return reservations.stream()
-                .map((element) -> modelMapper.map(element, ReservationResponse.class)).collect(Collectors.toList());
-    }
-
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #apartmentId)")
-    public ReservationResponse getReservation(Integer reservationId, Integer apartmentId, Authentication authentication) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found!"));
-
-        ApartmentResponse apartment = apartmentService.getApartmentById(apartmentId);
-
-        ReservationResponse reservationResponse = modelMapper.map(reservation, ReservationResponse.class);
-        reservationResponse.setApartment(apartment);
-        reservationResponse.setGuest(getConcreteGuest(reservation.getGuest()));
-
-        return reservationResponse;
-    }
-
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #updateReservationRequest.getApartmentId())")
-    public ReservationResponse updateReservation(Integer reservationId,
-                                                 Authentication authentication,
-                                                 ReservationDTO updateReservationRequest,
-                                                 MultipartFile documentPicture
+    @Transactional
+    public ReservationDetailsResponse updateStay(
+            Integer reservationId, UpdateReservationStayRequest request, String actorEmail
     ) {
-
-        //Reservation reservation = persistGuestIfNonExistant(updateReservationRequest);
-        Reservation reservation = modelMapper.map(updateReservationRequest, Reservation.class);
-
-        Apartment apartment = apartmentRepository.findById(updateReservationRequest.getApartmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Apartment not found!"));
-
-        ReservationType reservationType = reservationTypeRepository
-                .findReservationTypeByTypeName(updateReservationRequest.getReservationType())
-                .orElseThrow(() -> new EntityNotFoundException("Reservation type not found!"));
-
-        reservation.setReservationId(reservationId);
-        reservation.setType(reservationType);
-        reservation.setNote(updateReservationRequest.getNote());
-        reservation.setPrice(updateReservationRequest.getPrice());
-        reservation.setApartment(apartment);
-        reservation.setGuestQuantity(updateReservationRequest.getGuestQuantity());
-        reservation.setGuest(getGuestFromReservationDTO(updateReservationRequest));
-
-
-        if(documentPicture != null && !documentPicture.isEmpty()) {
-            // Delete old picture from S3 bucket
-            s3Service.deleteFile(reservation.getGuest().getPersonalDocumentURL());
-
-            FileUploadResponse fileUploadResponse;
-            try {
-                fileUploadResponse = s3Service.uploadFile(Constants.Aws.S3_BUCKET_IMAGES_FOLDER_PREFIX, documentPicture);
-            } catch (IOException e) {
-                throw new S3UploadException(e.getMessage());
-            }
-            String pictureUrl = fileUploadResponse.getFilePath();
-            reservation.getGuest().setPersonalDocumentURL(pictureUrl);  // Database gets the key stored
+        Reservation reservation = lockReservation(reservationId);
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new DomainConflictException("Only a confirmed reservation stay can be changed.");
         }
-
-
-        Reservation saved = saveReservationWithUpdatedGuest(reservation);
-        String url = documentPicture != null ? s3Service.getPresignedUrl(saved.getGuest().getPersonalDocumentURL()) : null;
-        saved.getGuest().setPersonalDocumentURL(url);  // User gets the downloadable URL
-        return modelMapper.map(saved, ReservationResponse.class);
+        validatePeriod(reservation.getCheckInDate(), request.checkOutDate());
+        ensureAvailable(
+                reservation.getApartment().getApartmentId(), reservation.getCheckInDate(),
+                request.checkOutDate(), reservationId);
+        BigDecimal updatedTotal = reservation.getNightlyRate().multiply(BigDecimal.valueOf(
+                ChronoUnit.DAYS.between(reservation.getCheckInDate(), request.checkOutDate())));
+        if (paymentRepository.netPaid(reservationId).compareTo(updatedTotal) > 0) {
+            throw new DomainConflictException(
+                    "Adjust or reverse payments before shortening the stay below the paid amount.");
+        }
+        reservation.setCheckOutDate(request.checkOutDate());
+        reservationRepository.saveAndFlush(reservation);
+        auditLogService.record(AuditEvent.RESERVATION_STAY_UPDATED, requireActor(actorEmail), reservation,
+                reservation.getApartment(), null, "Reservation stay updated.");
+        return toResponse(reservation);
     }
 
-    private GuestsBook getGuestFromReservationDTO(ReservationDTO updateReservationRequest) {
-        return modelMapper.map(updateReservationRequest.getGuest(), GuestsBook.class);
+    @Transactional
+    public ReservationDetailsResponse changeStatus(
+            Integer reservationId, ChangeReservationStatusRequest request, String actorEmail
+    ) {
+        Reservation reservation = lockReservation(reservationId);
+        if (reservation.getStatus() == request.status()) {
+            return toResponse(reservation);
+        }
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED
+                || (request.status() != ReservationStatus.CANCELLED && request.status() != ReservationStatus.NO_SHOW)) {
+            throw new DomainConflictException("B03 allows only CONFIRMED to CANCELLED or NO_SHOW transitions.");
+        }
+        if (request.status() == ReservationStatus.NO_SHOW
+                && LocalDate.now().isBefore(reservation.getCheckInDate())) {
+            throw new DomainConflictException("A reservation cannot be marked no-show before its check-in date.");
+        }
+        AppUser actor = requireActor(actorEmail);
+        clearCheckInClaim(reservation, actor);
+        reservation.setStatus(request.status());
+        appendStatus(reservation, request.status(), actor, request.reason().trim());
+        auditLogService.record(request.status() == ReservationStatus.CANCELLED
+                        ? AuditEvent.RESERVATION_CANCELLED : AuditEvent.RESERVATION_NO_SHOW,
+                actor, reservation, reservation.getApartment(), null, request.reason().trim());
+        reservationRepository.flush();
+        return toResponse(reservation);
     }
 
-    @PreAuthorize("@userSecurity.isReservationOwner(authentication, #reservationId)")
-    public ReservationResponse deleteReservation(Integer reservationId, Authentication authentication) {
-        Reservation reservation = reservationRepository.findReservationByReservationId(reservationId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found!"));
-
-        s3Service.deleteFile(reservation.getGuest().getPersonalDocumentURL());
-        reservationRepository.delete(reservation);
-
-        return modelMapper.map(reservation, ReservationResponse.class);
+    @Transactional(readOnly = true)
+    public List<ReservationStatusHistoryResponse> statusHistory(Integer reservationId) {
+        requireReservation(reservationId);
+        return statusHistoryRepository
+                .findByReservationReservationIdOrderByChangedAtDescReservationStatusHistoryIdDesc(reservationId)
+                .stream().map(ReservationService::toHistoryResponse).toList();
     }
 
-    public List<ReservationResponse> getAllReservationsForUser(Authentication authentication) {
-        String email = authentication.getName();
-
-        List<Reservation> reservations = reservationRepository.findReservationByApartmentUserEmail(email);
-
-        return reservations.stream()
-                .map((element) -> modelMapper.map(element, ReservationResponse.class))
-                .collect(Collectors.toList());
+    private void ensureAvailable(
+            Integer apartmentId, LocalDate checkInDate, LocalDate checkOutDate, Integer excludedReservationId
+    ) {
+        boolean reservationConflict = excludedReservationId == null
+                ? reservationRepository.existsBlocking(apartmentId, checkInDate, checkOutDate)
+                : reservationRepository.existsBlockingExcluding(
+                        apartmentId, checkInDate, checkOutDate, excludedReservationId);
+        if (reservationConflict || unavailabilityRepository.existsForStay(apartmentId, checkInDate, checkOutDate)) {
+            throw new DomainConflictException("The apartment is not available for the requested stay.");
+        }
     }
 
-    private Reservation persistGuestIfNonExistant(ReservationDTO reservationDTO, MultipartFile documentPicture) {
-        String citizenId = reservationDTO.getGuest().getCitizenId();
-        GuestsBook guest1 = guestsBookRepository.findByCitizenId(citizenId).orElse(null);
-        if(guest1 != null) {
-            // Honestly makes no sense, but it works for UNIQUE constraints so we can make multiple reservations
-            // per guest... sorry ¯\_(ツ)_/¯
-            reservationDTO.getGuest().setId(guest1.getId());
-            reservationDTO.getGuest().setPhoneNumber(guest1.getPhoneNumber());
+    private static void validateApartment(Apartment apartment, Integer guestCount) {
+        if (!apartment.isActive() || !apartment.getType().isActive()) {
+            throw new DomainConflictException("The apartment or its type is inactive.");
         }
-
-
-        String pictureUrl = null;
-        if (documentPicture != null && !documentPicture.isEmpty()) {
-            try {
-                FileUploadResponse response = s3Service.uploadFile(Constants.Aws.S3_BUCKET_IMAGES_FOLDER_PREFIX, documentPicture);
-                pictureUrl = response.getFilePath();
-            } catch (IOException e) {
-                throw new S3UploadException(e.getMessage());
-            }
+        if (guestCount > apartment.getType().getCapacity()) {
+            throw new DomainConflictException("Guest count exceeds the apartment type capacity.");
         }
-
-        // Lookup by CitizenId (Unique Key)
-        String finalPictureUrl = pictureUrl;
-        String finalPictureUrl1 = pictureUrl;
-        GuestsBook guest = guestsBookRepository.findByCitizenId(citizenId)
-                .map(existingGuest -> {
-                    modelMapper.typeMap(GuestDTO.class, GuestsBook.class)
-                            .addMappings(mapper -> mapper.skip(GuestsBook::setId));
-                    // Update existing guest info with new data from DTO
-                    modelMapper.map(reservationDTO.getGuest(), existingGuest);
-
-                    
-                    // Ensure ID doesn't get overwritten incorrectly if DTO has a null ID
-                    if (finalPictureUrl != null) existingGuest.setPersonalDocumentURL(finalPictureUrl);
-                    return guestsBookRepository.save(existingGuest);
-                })
-                .orElseGet(() -> {
-                    // Not found? Create brand new
-                    GuestsBook newGuest = modelMapper.map(reservationDTO.getGuest(), GuestsBook.class);
-                    if (finalPictureUrl1 != null) newGuest.setPersonalDocumentURL(finalPictureUrl1);
-                    return guestsBookRepository.save(newGuest);
-                });
-
-        System.out.println("IN STREAM API, EXISTING: " + reservationDTO.getGuest().getDateTimeOfArrival());
-        System.out.println("IN STREAM API, RESERVATION GUEST: " +  guest.getDateTimeOfArrival());
-
-        Reservation reservation = modelMapper.map(reservationDTO, Reservation.class);
-        reservation.setGuest(guest);
-
-        return reservation;
     }
 
-    private Reservation saveReservationWithUpdatedGuest(Reservation reservation) {
-        if(reservation.getGuest().getId() == null) {
-            throw new IllegalArgumentException("Guest ID can not be null.");
+    private static void validatePeriod(LocalDate checkInDate, LocalDate checkOutDate) {
+        if (checkInDate == null || checkOutDate == null || !checkInDate.isBefore(checkOutDate)) {
+            throw new IllegalArgumentException("Check-in date must be before check-out date.");
         }
-
-        GuestDTO guestDTO = getConcreteGuest(reservation.getGuest());
-
-        if(guestDTO instanceof DomesticGuestDTO domesticGuestDTO) {
-            domesticGuestsBookService.updateDomesticGuest(guestDTO.getId(), domesticGuestDTO);
-        }
-        else if(guestDTO instanceof ForeignGuestDTO foreignGuestDTO) {
-            foreignGuestsBookService.updateForeignGuest(guestDTO.getId(), foreignGuestDTO);
-        }
-
-        return reservationRepository.save(reservation);
     }
 
-    public GuestDTO getConcreteGuest(GuestsBook guestsBook) {
-        GuestDTO guest = modelMapper.map(guestsBook, guestsBook.getIsLocal() ? DomesticGuestDTO.class : ForeignGuestDTO.class);
-        if(guest.getPersonalDocumentURL() != null) {
-            String documentUrl = s3Service.getPresignedUrl(guest.getPersonalDocumentURL());
-            guest.setPersonalDocumentURL(documentUrl);
-        }
-
-        return guest;
+    private Reservation requireReservation(Integer id) {
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reservation not found."));
     }
 
+    private Reservation lockReservation(Integer id) {
+        return reservationRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reservation not found."));
+    }
+
+    private AppUser requireActor(String email) {
+        return appUserRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found."));
+    }
+
+    private void appendStatus(Reservation reservation, ReservationStatus status, AppUser actor, String reason) {
+        ReservationStatusHistory history = new ReservationStatusHistory();
+        history.setReservation(reservation);
+        history.setStatus(status);
+        history.setChangedBy(actor);
+        history.setReason(reason);
+        statusHistoryRepository.save(history);
+    }
+
+    private void clearCheckInClaim(Reservation reservation, AppUser actor) {
+        AppUser claimedBy = reservation.getCheckInClaimedBy();
+        if (claimedBy == null) {
+            return;
+        }
+        ReservationCheckInClaimHistory history = new ReservationCheckInClaimHistory();
+        history.setReservation(reservation);
+        history.setAction(CheckInClaimAction.RELEASED);
+        history.setPreviousClaimedBy(claimedBy);
+        history.setPerformedBy(actor);
+        claimHistoryRepository.save(history);
+        reservation.setCheckInClaimedBy(null);
+        reservation.setCheckInClaimedAt(null);
+    }
+
+    private static AvailableApartmentResponse toAvailableApartment(Apartment apartment) {
+        ApartmentType type = apartment.getType();
+        return new AvailableApartmentResponse(
+                apartment.getApartmentId(), apartment.getName(), apartment.getAddress(), apartment.getFloor(),
+                type.getApartmentTypeId(), type.getName(), type.getCapacity(), type.getDefaultNightlyRate());
+    }
+
+    static ReservationDetailsResponse toResponse(Reservation reservation) {
+        long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+        BigDecimal total = reservation.getNightlyRate().multiply(BigDecimal.valueOf(nights));
+        return new ReservationDetailsResponse(
+                reservation.getReservationId(), reservation.getApartment().getApartmentId(),
+                reservation.getApartment().getName(), reservation.getCheckInDate(), reservation.getCheckOutDate(),
+                nights, reservation.getGuestQuantity(), reservation.getNightlyRate(), total, reservation.getNote(),
+                reservation.getStatus(), reservation.getCreatedBy().getUserId(),
+                reservation.getCheckInClaimedBy() == null ? null : reservation.getCheckInClaimedBy().getUserId(),
+                reservation.getCheckInClaimedAt(),
+                reservation.getCheckedInBy() == null ? null : reservation.getCheckedInBy().getUserId(),
+                reservation.getCheckedInAt(),
+                reservation.getCheckedOutBy() == null ? null : reservation.getCheckedOutBy().getUserId(),
+                reservation.getCheckedOutAt(), reservation.getVersion(),
+                reservation.getCreatedAt(), reservation.getUpdatedAt());
+    }
+
+    private static ReservationStatusHistoryResponse toHistoryResponse(ReservationStatusHistory history) {
+        return new ReservationStatusHistoryResponse(
+                history.getReservationStatusHistoryId(), history.getStatus(), history.getReason(),
+                history.getChangedBy() == null ? null : history.getChangedBy().getUserId(), history.getChangedAt());
+    }
+
+    private static String normalizeNullable(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
 }

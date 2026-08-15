@@ -24,12 +24,14 @@ public interface ApartmentTaskRepository extends JpaRepository<ApartmentTask, Lo
             task.dateTime,
             notification.enabled
         )
-        FROM ApartmentTask task
-        JOIN task.apartment a
-        JOIN a.user u
-        JOIN NotificationPushToken notification ON notification.user = u
+        FROM ApartmentTask task, NotificationPushToken notification
         WHERE task.dateTime BETWEEN :from AND :to
         AND task.status = false
+        AND notification.user.active = true
+        AND notification.user.role IN (
+            org.unibl.etf.efikas.models.enums.UserRole.MANAGER,
+            org.unibl.etf.efikas.models.enums.UserRole.AGENT
+        )
     """)
     List<ApartmentTaskNotificationDTO> findUpcomingTaskNotifications(
             @Param("from") Instant from,

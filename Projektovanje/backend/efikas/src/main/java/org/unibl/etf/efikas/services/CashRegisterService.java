@@ -3,7 +3,6 @@ package org.unibl.etf.efikas.services;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +24,6 @@ public class CashRegisterService {
     private final AppUserRepository appUserRepository;
     private final ModelMapper modelMapper;
 
-    @PreAuthorize("@userSecurity.isCashRegisterOwner(authentication, #cashRegisterId)")
     public CashRegisterResponse getCashRegister(Authentication authentication, Integer cashRegisterId) {
         CashRegister cashRegister = cashRegisterRepository.findCashRegisterByCashRegisterId(cashRegisterId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cash register not found!"));
@@ -53,7 +51,6 @@ public class CashRegisterService {
         return modelMapper.map(cashRegisterEntity, CashRegisterResponse.class);
     }
 
-    @PreAuthorize("@userSecurity.isCashRegisterOwner(authentication, #cashRegisterId)")
     public CashRegisterResponse deleteCashRegister(Authentication authentication, Integer cashRegisterId) {
         String email = authentication.getName();
         CashRegister cashRegister = cashRegisterRepository.findCashRegisterByCashRegisterId(cashRegisterId)
