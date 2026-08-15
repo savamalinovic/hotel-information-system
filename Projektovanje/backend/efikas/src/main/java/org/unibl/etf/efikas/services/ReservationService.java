@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.unibl.etf.efikas.exceptions.DomainConflictException;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.enums.ReservationStatus;
+import org.unibl.etf.efikas.models.enums.CheckInClaimAction;
 import org.unibl.etf.efikas.models.requests.ChangeReservationStatusRequest;
 import org.unibl.etf.efikas.models.requests.CreateReservationRequest;
 import org.unibl.etf.efikas.models.requests.UpdateReservationStayRequest;
@@ -26,6 +27,7 @@ import java.util.List;
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationStatusHistoryRepository statusHistoryRepository;
+    private final ReservationCheckInClaimHistoryRepository claimHistoryRepository;
     private final ApartmentRepository apartmentRepository;
     private final ApartmentUnavailabilityRepository unavailabilityRepository;
     private final AppUserRepository appUserRepository;
@@ -141,6 +143,7 @@ public class ReservationService {
             throw new DomainConflictException("A reservation cannot be marked no-show before its check-in date.");
         }
         AppUser actor = requireActor(actorEmail);
+        clearCheckInClaim(reservation, actor);
         reservation.setStatus(request.status());
         appendStatus(reservation, request.status(), actor, request.reason().trim());
         reservationRepository.flush();
@@ -206,6 +209,21 @@ public class ReservationService {
         statusHistoryRepository.save(history);
     }
 
+    private void clearCheckInClaim(Reservation reservation, AppUser actor) {
+        AppUser claimedBy = reservation.getCheckInClaimedBy();
+        if (claimedBy == null) {
+            return;
+        }
+        ReservationCheckInClaimHistory history = new ReservationCheckInClaimHistory();
+        history.setReservation(reservation);
+        history.setAction(CheckInClaimAction.RELEASED);
+        history.setPreviousClaimedBy(claimedBy);
+        history.setPerformedBy(actor);
+        claimHistoryRepository.save(history);
+        reservation.setCheckInClaimedBy(null);
+        reservation.setCheckInClaimedAt(null);
+    }
+
     private static AvailableApartmentResponse toAvailableApartment(Apartment apartment) {
         ApartmentType type = apartment.getType();
         return new AvailableApartmentResponse(
@@ -213,14 +231,18 @@ public class ReservationService {
                 type.getApartmentTypeId(), type.getName(), type.getCapacity(), type.getDefaultNightlyRate());
     }
 
-    private static ReservationDetailsResponse toResponse(Reservation reservation) {
+    static ReservationDetailsResponse toResponse(Reservation reservation) {
         long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
         BigDecimal total = reservation.getNightlyRate().multiply(BigDecimal.valueOf(nights));
         return new ReservationDetailsResponse(
                 reservation.getReservationId(), reservation.getApartment().getApartmentId(),
                 reservation.getApartment().getName(), reservation.getCheckInDate(), reservation.getCheckOutDate(),
                 nights, reservation.getGuestQuantity(), reservation.getNightlyRate(), total, reservation.getNote(),
-                reservation.getStatus(), reservation.getCreatedBy().getUserId(), reservation.getVersion(),
+                reservation.getStatus(), reservation.getCreatedBy().getUserId(),
+                reservation.getCheckInClaimedBy() == null ? null : reservation.getCheckInClaimedBy().getUserId(),
+                reservation.getCheckInClaimedAt(),
+                reservation.getCheckedInBy() == null ? null : reservation.getCheckedInBy().getUserId(),
+                reservation.getCheckedInAt(), reservation.getVersion(),
                 reservation.getCreatedAt(), reservation.getUpdatedAt());
     }
 

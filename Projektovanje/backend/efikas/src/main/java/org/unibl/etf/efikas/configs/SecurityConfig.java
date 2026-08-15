@@ -93,8 +93,21 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .denyAll()
 
                         // Specific nested apartment routes must precede the apartment rules.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reservations/*/guests",
+                                "/api/v1/reservations/*/check-in", "/api/v1/reservations/*/check-in/claim")
+                        .hasRole(UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/reservations/*/guests/*",
+                                "/api/v1/reservations/*/check-in/claim")
+                        .hasRole(UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/reservations/*/guests/*",
+                                "/api/v1/reservations/*/check-in/claim")
+                        .hasRole(UserRole.AGENT.name())
                         .requestMatchers("/api/v1/reservations/**", "/api/v1/apartments/*/reservations/**")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/guests/**")
+                        .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
+                        .requestMatchers("/api/v1/guests/**")
+                        .denyAll()
                         .requestMatchers("/api/v1/apartments/*/damages/**")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.GET, "/api/v1/apartments/*/tasks/**")
