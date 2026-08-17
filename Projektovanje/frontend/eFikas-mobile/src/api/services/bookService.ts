@@ -7,10 +7,9 @@ import ReactNativeBlobUtil, { FetchBlobResponse } from "react-native-blob-util";
 
 
 import { File, Directory, Paths } from 'expo-file-system';
-import { SECURE_STORE_KEYS } from "@/src/util/secureStoreKeys";
-import { secureStoreService } from "@/src/services/secureStoreService";
 import { AxiosError, AxiosResponse } from "axios";
 import axiosInstance from "../axiosInstance";
+import { sessionStore } from "@/src/session/sessionStore";
 
 type BlobFetchOptions = {
 	downloadPath?: string; // full file path INCLUDING filename
@@ -60,18 +59,11 @@ export const fetchPdfHelper = async (
 
 	// Ensure parent directory exists
 	//await new Directory(file.parentDirectory).create({ intermediates: true });
-	// 2. Manually get the token just like your interceptor does
-    const authResponseString = await secureStoreService.getItemAsync(
-        SECURE_STORE_KEYS.authenticationResponseKey
-    );
-    
-    let token = "";
-    if (authResponseString) {
-        const authResponse = JSON.parse(authResponseString);
-        token = authResponse.token;
-    }
+	const token = sessionStore.getToken();
+	if (!token) {
+		throw new Error("Authentication is required.");
+	}
 
-    // 3. Pass the token into the headers
     const result = await File.downloadFileAsync(url, file, {
         headers: {
             'Accept': 'application/pdf',
@@ -84,8 +76,6 @@ export const fetchPdfHelper = async (
 		fileService.deleteFile(file.uri); // Clean up the empty file
 		throw new AxiosError('Downloaded file is empty.', '204');
 	}
-
-	console.log("RESULT DOWNLOAD: ", result.uri);
 
 	if (!result.exists) {
 		throw new Error('PDF download failed');
@@ -117,10 +107,12 @@ export const bookService = {
 	/* ==================================== STREAMING BOOKS ==================================== */
 	streamIncomeBook: async (request: DownloadIncomeBookRequest): Promise<PdfResult> => {
 		const url = buildIncomeBookUrl(request);
-		console.log("URL FOR BOOK: ", url);
-		const savedUser = await secureStoreService.getItemAsync(SECURE_STORE_KEYS.authenticationResponseKey);
+		const token = sessionStore.getToken();
+		if (!token) {
+			throw new Error("Authentication is required.");
+		}
 
-		const uriResult = await getStreamUri(url, JSON.parse(savedUser).token);
+		const uriResult = await getStreamUri(url, token);
 
 		return { uri: uriResult };
 	},
@@ -131,10 +123,12 @@ export const bookService = {
 		// return fetchPdfHelper(url);
 
 		const url = buildGuestsBookUrl(type, request);
-		console.log("URL FOR BOOK: ", url);
-		const savedUser = await secureStoreService.getItemAsync(SECURE_STORE_KEYS.authenticationResponseKey);
+		const token = sessionStore.getToken();
+		if (!token) {
+			throw new Error("Authentication is required.");
+		}
 
-		const uriResult = await getStreamUri(url, JSON.parse(savedUser).token);
+		const uriResult = await getStreamUri(url, token);
 
 		return { uri: uriResult };
 	},

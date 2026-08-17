@@ -109,6 +109,19 @@
       "enterValidOtpError": "Please enter a valid OTP code."
     }
   },
+  "session": {
+    "bootstrapping": "Loading secure session...",
+    "logout": "Log out",
+    "logoutLoading": "Logging out...",
+    "worker": {
+      "title": "Operational worker",
+      "description": "The work area will be available in a later delivery."
+    },
+    "manager": {
+      "title": "Manager access",
+      "description": "Manager work is available in the web application."
+    }
+  },
   "dialogs": {
     "logout": {
       "message": "Are you sure you want to log out from this account?",

@@ -1,5 +1,5 @@
 export const SECURE_STORE_KEYS = {
-    authenticationResponseKey: "authenticationResponse"
+    session: "authenticationResponse",
 }
 
 export const ASYNC_STORAGE_KEYS = {

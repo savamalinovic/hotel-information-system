@@ -9,20 +9,32 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
-    name: string;
-    surname: string;
-    email: string;
-    password: string;
-    repeatPassword: string;
-    jmbg: string;
-    address: string;
-	phoneNumber: string;
-}
+export const USER_ROLES = ["MANAGER", "AGENT", "OPERATIONAL_WORKER"] as const;
+
+export type UserRole = (typeof USER_ROLES)[number];
 
 export interface AuthenticationResponse {
   email: string;
+  role: UserRole;
   token: string;
+}
+
+export interface OAuthLoginResponse {
+  accessToken: string;
+}
+
+export interface ApiErrorViolation {
+  field: string;
+  message: string;
+}
+
+export interface ApiErrorResponse {
+  timestamp: string;
+  status: number;
+  code: string;
+  message: string;
+  path: string;
+  violations: ApiErrorViolation[];
 }
 
 export interface OtpSendRequest {
