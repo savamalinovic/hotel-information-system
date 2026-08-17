@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { Text, View, StyleSheet, ScrollView } from "react-native";
 import { MenuItem } from "@/src/components/molecules/MenuItem/MenuItem";
-import { router } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { LogoutDialog } from "@/src/components/organisms/Dialogs/LogoutDialog/LogoutDialog";
 import { useAuth } from "@/src/hooks/useAuth";
-import { LucideIconName } from "@/src/types/types";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { LucideIconName } from "@/src/types/types";
+import { router } from "expo-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 type MenuItemType = {
   id: string;
-  icon: LucideIconName; 
+  icon: LucideIconName;
   i18nKey: string;
 };
 
@@ -25,17 +25,16 @@ const MENU_SECTIONS: MenuSection[] = [
     items: [
       { id: "profile", icon: "User", i18nKey: "menu.item.profile" },
       { id: "notifications", icon: "Bell", i18nKey: "menu.item.notifications" },
-      { id: "myApartments", icon: "Home", i18nKey: "menu.item.myApartments" },
     ],
   },
   {
-    i18nTitleKey: "menu.title.accounting",
+    i18nTitleKey: "menu.title.operations",
     items: [
+      { id: "apartments", icon: "House", i18nKey: "menu.item.apartments" },
+      { id: "reservations", icon: "BookOpen", i18nKey: "menu.item.reservations" },
+      { id: "tasks", icon: "Wrench", i18nKey: "menu.item.tasks" },
       { id: "expenses", icon: "Wallet", i18nKey: "menu.item.expenses" },
-      { id: "statistics", icon: "ChartNoAxesCombined", i18nKey: "menu.item.statistics" },
-      { id: "incomeBook", icon: "BookDown", i18nKey: "menu.item.incomeBook" },
-      //{ id: "expenseBook", icon: "BookUp", i18nKey: "menu.item.expenseBook" },
-      { id: "guestBook", icon: "Users", i18nKey: "menu.item.guestBook" },
+      { id: "damages", icon: "TriangleAlert", i18nKey: "menu.item.damages" },
     ],
   },
   {
@@ -49,69 +48,37 @@ const MENU_SECTIONS: MenuSection[] = [
 ];
 
 export default function Menu() {
-  const { Colors } = useTheme(); 
+  const { Colors } = useTheme();
   const { t } = useTranslation();
   const { logout } = useAuth();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
-  
-  // --- Logika za odjavu ---
-  const handleLogoutConfirm = async () => {
-    setLogoutDialogVisible(false);
-    await logout();
-  };
-
-  const handleLogoutCancel = () => {
-    setLogoutDialogVisible(false);
-  };
 
   const handleItemPress = (itemId: string) => {
     switch (itemId) {
       case "profile":
-        router.push('/(menu)/(profile)/profile');
+        router.push("/(menu)/(profile)/profile");
         break;
-
       case "notifications":
-        router.push('/(menu)/(profile)/notifications');
+        router.push("/(menu)/(profile)/notifications");
         break;
-
-      case "myApartments":
-        router.push('/(menu)/(profile)/myApartments');
+      case "reservations":
+        router.push("/(tabs)/reservations");
         break;
-
+      case "apartments":
+      case "tasks":
       case "expenses":
-        router.push("/(home)/expenses");
+      case "damages":
+        router.push(`/(home)/${itemId}`);
         break;
-
-      case "statistics":
-        router.push("/(home)/analytics");
-        break;
-
-      case "incomeBook":
-        router.push('/(menu)/(bookkeeping)/incomeBook');
-        break;
-
-      case "expenseBook":
-        router.push('/(menu)/(bookkeeping)/expensesBook');
-        break;
-
-      case "guestBook":
-        router.push('/(menu)/(bookkeeping)/guestBook');
-        break;
-
       case "settings":
-        router.push('/(menu)/(mainSettings)/settings');
+        router.push("/(menu)/(mainSettings)/settings");
         break;
-
       case "aboutApp":
         router.push("/(menu)/(mainSettings)/aboutApp");
         break;
-
       case "logout":
         setLogoutDialogVisible(true);
         break;
-
-      default:
-        console.log(`Greška: Nije definisana akcija za nepoznatu stavku: ${itemId}`);
     }
   };
 
@@ -121,57 +88,46 @@ export default function Menu() {
       style={[styles.screenContainer, { backgroundColor: Colors.screenBackground }]}
     >
       {MENU_SECTIONS.map((section, sectionIndex) => (
-        <React.Fragment key={section.i18nTitleKey}>
+        <View key={section.i18nTitleKey}>
           <Text
             style={[
-              styles.sectionTitle, 
-              {color: Colors.primary},
-              sectionIndex > 0 && styles.sectionMargin, 
+              styles.sectionTitle,
+              { color: Colors.primary },
+              sectionIndex > 0 && styles.sectionMargin,
             ]}
           >
-            {t(section.i18nTitleKey)} 
-          </Text> 
+            {t(section.i18nTitleKey)}
+          </Text>
           <View style={styles.listContainer}>
             {section.items.map((item, itemIndex) => (
               <MenuItem
-                key={item.id} 
-                leftIconName={item.icon} 
-                text={t(item.i18nKey)} 
+                key={item.id}
+                leftIconName={item.icon}
+                text={t(item.i18nKey)}
                 onPress={() => handleItemPress(item.id)}
                 showDivider={itemIndex < section.items.length - 1}
               />
             ))}
           </View>
-        </React.Fragment>
+        </View>
       ))}
       <View style={{ height: 50 }} />
       <LogoutDialog
         visible={logoutDialogVisible}
-        onConfirm={handleLogoutConfirm}
-        onCancel={handleLogoutCancel}
+        onConfirm={async () => {
+          setLogoutDialogVisible(false);
+          await logout();
+        }}
+        onCancel={() => setLogoutDialogVisible(false)}
       />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screenContainer: {
-      flex: 1,
-  },
-  scrollContent: {
-      padding: 15,
-  },
-  sectionTitle: {
-      fontSize: 16,
-      fontWeight: 500,
-      marginBottom: 15,
-      marginLeft: 5,
-  },
-  listContainer: {
-      borderRadius: 10,
-      overflow: "hidden",
-  },
-  sectionMargin: {
-      marginTop: 20,
-  },
+  screenContainer: { flex: 1 },
+  scrollContent: { padding: 15 },
+  sectionTitle: { fontSize: 16, fontWeight: "500", marginBottom: 15, marginLeft: 5 },
+  listContainer: { borderRadius: 10, overflow: "hidden" },
+  sectionMargin: { marginTop: 20 },
 });

@@ -1,5 +1,1 @@
-export default function Expenses() {
-    return (
-        <></>
-    );
-}
+export { default } from "@/src/components/navigation/AgentHomeRedirect";

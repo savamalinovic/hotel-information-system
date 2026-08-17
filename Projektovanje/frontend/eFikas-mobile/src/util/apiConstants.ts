@@ -18,9 +18,7 @@ export const API_URLS = {
     profile: {
         get: `${API_BASE_URL}/users/me`,
         update: `${API_BASE_URL}/users/me`,
-		registerStore: `${API_BASE_URL}/users/register/store`,
 		resetPassword: `${API_BASE_URL}/auth/reset-password`,
-		getStore: `${API_BASE_URL}/users/me/store`,
     },
 
 	cashRegisters: {
@@ -37,6 +35,7 @@ export const API_URLS = {
 	},
 
 	reservations: {
+		list: `${API_BASE_URL}/reservations`,
 		listUser: () => `${API_BASE_URL}/reservations`,
 
 		listByApartment: (apartmentId: number) =>
@@ -56,6 +55,7 @@ export const API_URLS = {
 	},
 
 	notifications: {
+		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,
 		toggle: `${API_BASE_URL}/notifications/toggle`,
 	},
@@ -74,8 +74,9 @@ export const API_URLS = {
             `${API_BASE_URL}/apartments/${apartmentId}/damages/${encodeURIComponent(name)}`,
     },
 
-    tasks: {
-        base: (apartmentId: number) => 
+	tasks: {
+		list: `${API_BASE_URL}/tasks`,
+		base: (apartmentId: number) =>
             `${API_BASE_URL}/apartments/${apartmentId}/tasks`,
         byName: (apartmentId: number, name: string) => 
             `${API_BASE_URL}/apartments/${apartmentId}/tasks/${encodeURIComponent(name)}`,

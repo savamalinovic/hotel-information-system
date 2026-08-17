@@ -1,5 +1,1 @@
-export default function Statistics() {
-    return (
-        <></>
-    );
-}
+export { default } from "@/src/components/navigation/AgentHomeRedirect";

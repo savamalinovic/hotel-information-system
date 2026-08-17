@@ -37,6 +37,105 @@ export interface ApiErrorResponse {
   violations: ApiErrorViolation[];
 }
 
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export type ReservationStatus =
+  | "CONFIRMED"
+  | "CHECKED_IN"
+  | "CHECKED_OUT"
+  | "CANCELLED"
+  | "NO_SHOW";
+
+export interface ReservationDetails {
+  reservationId: number;
+  apartmentId: number;
+  apartmentName: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  guestCount: number;
+  nightlyRate: string;
+  totalPrice: string;
+  note: string | null;
+  status: ReservationStatus;
+  createdByUserId: number;
+  checkInClaimedByUserId: number | null;
+  checkInClaimedAt: string | null;
+  checkedInByUserId: number | null;
+  checkedInAt: string | null;
+  checkedOutByUserId: number | null;
+  checkedOutAt: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TaskStatus =
+  | "NEW"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "BLOCKED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export interface OperationalTask {
+  taskId: number;
+  specializationId: number;
+  specializationCode: string;
+  apartmentId: number | null;
+  reservationId: number | null;
+  assignedWorkerId: number | null;
+  title: string;
+  description: string | null;
+  priority: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationItem {
+  notificationId: number;
+  type: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface UserProfile {
+  name: string;
+  surname: string;
+  jmbg: string;
+  email: string;
+  address: string;
+  role: UserRole;
+}
+
+export type TodayReservationKind = "arrival" | "departure" | "arrivalAndDeparture";
+
+export interface TodayAgendaItem {
+  reservation: ReservationDetails;
+  kind: TodayReservationKind;
+}
+
+export interface AgentDashboardData {
+  today: string;
+  profile: UserProfile;
+  arrivals: number;
+  departures: number;
+  checkedIn: number;
+  newTasks: number | null;
+  blockedTasks: number | null;
+  unreadNotifications: number | null;
+  agenda: TodayAgendaItem[];
+}
+
 export interface OtpSendRequest {
 	email: string;
 }

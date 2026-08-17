@@ -19,9 +19,6 @@ export default function HomeRootLayout() {
             <Stack.Screen name="expenses" options={{ title: t('dashboard.navigation.expensesTitle') }} />
             <Stack.Screen name="tasks" options={{ title: t('dashboard.navigation.tasksTitle') }} />
             <Stack.Screen name="damages" options={{ title: t('dashboard.navigation.damagesTitle') }} />
-            <Stack.Screen name="analytics" options={{ title: t('dashboard.navigation.statisticsTitle') }} /> {/* Ista ruta kao meni/statistika? */}
-            <Stack.Screen name="reservations/[id]" options={{ title: t('reservations.navigation.reservationDetailsTitle') }} />
-            <Stack.Screen name="reservations/addReservation" options={{ title: t('reservations.navigation.addReservationTitle') }} />
         </Stack>
     );
 }

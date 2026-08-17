@@ -1,10 +1,5 @@
-import ExpensesScreen from "@/src/components/screens/ExpensesScreen/ExpensesScreen";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
 
 export default function Expenses() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ExpensesScreen />
-    </GestureHandlerRootView>
-  );
+  return <AgentFeaturePlaceholder feature="expenses" />;
 }

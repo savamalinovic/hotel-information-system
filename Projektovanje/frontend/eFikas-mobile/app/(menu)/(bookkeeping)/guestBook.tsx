@@ -1,7 +1,1 @@
-import GuestsBookScreen from "@/src/components/screens/GuestsBookScreen/GuestsBookScreen";
-
-export default function GuestBook() {
-    return (
-        <GuestsBookScreen />
-    );
-}
+export { default } from "@/src/components/navigation/AgentHomeRedirect";

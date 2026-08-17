@@ -1,7 +1,1 @@
-import AddApartmentScreen from "@/src/components/screens/AddApartmentScreen/AddApartmentScreen";
-
-export default function AddApartment() {
-    return (
-        <AddApartmentScreen />
-    );
-}
+export { default } from "@/src/components/navigation/AgentHomeRedirect";
