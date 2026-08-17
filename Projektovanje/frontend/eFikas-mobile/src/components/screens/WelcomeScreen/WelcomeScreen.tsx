@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 const WelcomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const handlePress = () => {
-    router.push("/auth");
+	router.push("/(auth)");
   };
 
   return (

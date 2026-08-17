@@ -103,6 +103,19 @@
       "enterValidOtpError": "Unesite ispravan OTP kôd"
     }
   },
+  "session": {
+    "bootstrapping": "Učitavanje sigurne sesije...",
+    "logout": "Odjavi se",
+    "logoutLoading": "Odjava u toku...",
+    "worker": {
+      "title": "Operativni radnik",
+      "description": "Radni ekran biće dostupan u narednom koraku razvoja."
+    },
+    "manager": {
+      "title": "Menadžerski pristup",
+      "description": "Menadžerski rad je predviđen za web aplikaciju."
+    }
+  },
   "dialogs": {
     "logout": {
       "message": "Da li ste sigurni da želite da se odjavite sa ovog naloga?",

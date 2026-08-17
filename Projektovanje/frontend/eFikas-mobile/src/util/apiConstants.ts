@@ -10,7 +10,6 @@ export const API_URLS = {
     auth: {
         googleLogin: `${API_BASE_URL}/auth/google/login`,
         login: `${API_BASE_URL}/auth/login`,
-        register: `${API_BASE_URL}/auth/register`,
 		requestOtp: `${API_BASE_URL}/auth/otp/request`,
 		verifyOtp: `${API_BASE_URL}/auth/otp/verify`,
 		resetPassword: `${API_BASE_URL}/auth/reset-password`,

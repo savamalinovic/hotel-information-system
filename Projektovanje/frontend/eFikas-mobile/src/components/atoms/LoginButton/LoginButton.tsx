@@ -25,6 +25,7 @@ export const LoginButton = ({
       variant="solid"
       size="lg"
       onPress={onPress}
+      disabled={isLoading}
       className={`w-[346px] h-[46px] rounded-[10px] justify-center items-center self-center bg-[rgb(var(--color-primary-500))] ${className ?? ""}`}
     >
       {isLoading ? (

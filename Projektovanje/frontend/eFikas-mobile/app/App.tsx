@@ -1,78 +1,76 @@
-import '@/global.css';
-import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
-import { useTheme } from '@/src/providers/ThemeProvider';
+import "@/global.css";
+import { GluestackUIProvider } from "@/src/components/ui/gluestack-ui-provider";
+import { SessionProvider, useSession } from "@/src/providers/SessionProvider";
+import { useTheme } from "@/src/providers/ThemeProvider";
 import { ToastConfig } from "@/src/util/ToastConfig";
 import { OverlayProvider } from "@gluestack-ui/overlay";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
-import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
-import { notificationsService } from '@/src/services/notificationsService';
+import Toast from "react-native-toast-message";
+import * as Notifications from "expo-notifications";
+import { useEffect } from "react";
+import { notificationsService } from "@/src/services/notificationsService";
 
 const queryClient = new QueryClient();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true, 
+    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-	shouldShowBanner: false,
-	shouldShowList: true
+    shouldShowBanner: false,
+    shouldShowList: true,
   }),
 });
 
+const AppNavigator = () => {
+  const { status, session } = useSession();
+  const isAuthenticated = status === "authenticated";
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+
+      <Stack.Protected guard={status === "unauthenticated"}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated && session?.role === "AGENT"}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(menu)" options={{ headerShown: false }} />
+        <Stack.Screen name="(home)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated && session?.role === "OPERATIONAL_WORKER"}>
+        <Stack.Screen name="(worker)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated && session?.role === "MANAGER"}>
+        <Stack.Screen name="(manager)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+    </Stack>
+  );
+};
+
 export default function App() {
-    const { t } = useTranslation();
-    const { theme } = useTheme();
+  const { theme } = useTheme();
 
-	useEffect(() => {
-		notificationsService.configureNotifications();
-	}, []);
-    
-    return(
-        <GluestackUIProvider mode={theme}>
-            <OverlayProvider>
-                <QueryClientProvider client={queryClient}>
-                    <Stack screenOptions={{ headerShown: false }}>
-                        {/* Not logged in -> show auth flow (komentarisano za sada za lak pristup meniju, inače radi :D ) */}
-                        <Stack.Screen
-                            name="(auth)"
-                            options={{
-                                headerShown: false,
-                            }}
-                        />
+  useEffect(() => {
+    void notificationsService.configureNotifications();
+  }, []);
 
-                        {/* Authenticated users go to (tabs) */}
-                        <Stack.Screen
-                            name="(tabs)"
-                            options={{
-                                headerShown: false,
-                            }}
-                        />
-
-                        <Stack.Screen
-                            name="(menu)"
-                            options={{
-                                headerShown: false,
-                            }}
-                        />
-
-                        <Stack.Screen
-                            name="(home)"
-                            options={{
-                                headerShown: false,
-                            }}
-                        />
-
-                        <Stack.Screen name="+not-found" options={{}} />
-                    </Stack>
-                    
-                    {/* Toast component for messages */}
-                    <Toast config={ToastConfig} />
-                </QueryClientProvider>
-            </OverlayProvider>
-        </GluestackUIProvider>
-    );
+  return (
+    <GluestackUIProvider mode={theme}>
+      <OverlayProvider>
+        <QueryClientProvider client={queryClient}>
+          <SessionProvider>
+            <AppNavigator />
+            <Toast config={ToastConfig} />
+          </SessionProvider>
+        </QueryClientProvider>
+      </OverlayProvider>
+    </GluestackUIProvider>
+  );
 }

@@ -1,13 +1,12 @@
 import * as Device from 'expo-device';
 import * as Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
-import { secureStoreService } from '@/src/services/secureStoreService';
-import { AuthenticationResponse, PushNotificationTokenRequest, ToggleNotificationRequest } from '@/src/types/types';
-import { SECURE_STORE_KEYS } from '@/src/util/secureStoreKeys';
+import { PushNotificationTokenRequest, ToggleNotificationRequest } from '@/src/types/types';
 import { notificationsService } from '@/src/services/notificationsService';
 import axiosInstance from '../axiosInstance';
 import { API_URLS } from '@/src/util/apiConstants';
 import { AxiosResponse } from 'axios';
+import { sessionStore } from '@/src/session/sessionStore';
 
 export const notificationsApiService = {
 	
@@ -26,8 +25,10 @@ export const notificationsApiService = {
 			if (finalStatus !== 'granted') throw new Error('Permission not granted');
 
 			const token: string = await notificationsService.getPushToken();
-			const json = JSON.parse(await secureStoreService.getItemAsync(SECURE_STORE_KEYS.authenticationResponseKey));
-			const email: string = (json as AuthenticationResponse).email;
+			const session = sessionStore.getSession();
+			if (!session) throw new Error('Authentication is required');
+
+			const email = session.email;
 			const payload: PushNotificationTokenRequest = {
 				token: token,
 				platform: notificationsService.getPlatform(),

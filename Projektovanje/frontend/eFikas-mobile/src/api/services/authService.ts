@@ -1,4 +1,4 @@
-import { AuthenticationResponse, LoginRequest, OtpSendRequest, OtpVerifyRequest, RegisterRequest, ResetPasswordRequest } from "@/src/types/types";
+import { AuthenticationResponse, LoginRequest, OAuthLoginResponse, OtpSendRequest, OtpVerifyRequest, ResetPasswordRequest } from "@/src/types/types";
 import { API_URLS } from "@/src/util/apiConstants";
 import { AxiosResponse } from "axios";
 import axiosInstance from "../axiosInstance";
@@ -6,21 +6,13 @@ import axiosInstance from "../axiosInstance";
 export const authService = {
 
   // Google OAuth Authentication
-  googleLogin: async (googleToken: string): Promise<AxiosResponse> => {
-    const response = await axiosInstance.post<AuthenticationResponse>(API_URLS.auth.googleLogin, { googleToken });
+  googleLogin: async (googleToken: string): Promise<AxiosResponse<OAuthLoginResponse>> => {
+    const response = await axiosInstance.post<OAuthLoginResponse>(API_URLS.auth.googleLogin, { token: googleToken });
     return response;
   },
 
-  login: async (loginRequest: LoginRequest): Promise<AxiosResponse> => {
-    console.log("LOGIN REQ", loginRequest)
-    const response = await axiosInstance.post<string>(API_URLS.auth.login, loginRequest);
-    return response;
-  },
-
-  register: async (registerRequest: RegisterRequest): Promise<AxiosResponse> => {
-    console.log("REG REQ: ", registerRequest);
-
-    const response = await axiosInstance.post<string>(API_URLS.auth.register, registerRequest);
+  login: async (loginRequest: LoginRequest): Promise<AxiosResponse<AuthenticationResponse>> => {
+    const response = await axiosInstance.post<AuthenticationResponse>(API_URLS.auth.login, loginRequest);
     return response;
   },
 
@@ -38,4 +30,4 @@ export const authService = {
     const response = await axiosInstance.put<void>(API_URLS.auth.resetPassword, request);
     return response;
   }
-}; 
+};
