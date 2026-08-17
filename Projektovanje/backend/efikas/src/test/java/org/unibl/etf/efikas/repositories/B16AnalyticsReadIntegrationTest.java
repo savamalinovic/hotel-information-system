@@ -58,6 +58,47 @@ class B16AnalyticsReadIntegrationTest {
     }
 
     @Test
+    void revenueByApartmentTypeUsesReservationSnapshotAfterApartmentTypeChanges() {
+        LocalDate accountingDate = LocalDate.of(2096, 4, 15);
+        AppUser manager = user("snapshot-manager", UserRole.MANAGER);
+        String originalTypeName = "B16 original revenue type " + suffix();
+        String laterTypeName = "B16 later revenue type " + suffix();
+        var originalType = apartmentTypes.create(new ApartmentTypeRequest(
+                originalTypeName, null, 2, new BigDecimal("90.00")));
+        var laterType = apartmentTypes.create(new ApartmentTypeRequest(
+                laterTypeName, null, 2, new BigDecimal("110.00")));
+        var apartment = apartments.create(new ApartmentRequest(
+                "B16 snapshot apartment " + suffix(), "Snapshot analytics address", 1,
+                originalType.apartmentTypeId()), manager.getEmail());
+        var reservation = reservations.create(new CreateReservationRequest(
+                apartment.apartmentId(), accountingDate, accountingDate.plusDays(2),
+                1, null, null), manager.getEmail());
+
+        apartments.update(apartment.apartmentId(), new ApartmentRequest(
+                apartment.name(), apartment.address(), apartment.floor(), laterType.apartmentTypeId()));
+
+        jdbc.update("SET LOCAL session_replication_role = replica");
+        try {
+            jdbc.update("""
+                    INSERT INTO efikas.income_book_entry
+                    ("ReservationId", "ReceiptNumber", "AccountingDate", "Description",
+                     "ServiceSaleRevenue", "TotalRevenue", "VatAmount")
+                    VALUES (?, ?, ?, 'B16 snapshot revenue', 275.50, 275.50, 0.00)
+                    """, reservation.reservationId(), "B16-SNAPSHOT-" + suffix(), accountingDate);
+        } finally {
+            jdbc.update("SET LOCAL session_replication_role = origin");
+        }
+
+        var revenueByType = analytics.revenueByApartmentType(accountingDate, accountingDate);
+
+        assertThat(revenueByType).anySatisfy(row -> {
+            assertThat(row.name()).isEqualTo(originalTypeName);
+            assertThat(row.amount()).isEqualByComparingTo("275.50");
+        });
+        assertThat(revenueByType).noneSatisfy(row -> assertThat(row.name()).isEqualTo(laterTypeName));
+    }
+
+    @Test
     void calculatesFinancialOccupancyTaskAndWorkforceMetricsFromBusinessFacts() {
         LocalDate from = LocalDate.of(2097, 6, 1);
         LocalDate to = LocalDate.of(2097, 6, 3);
