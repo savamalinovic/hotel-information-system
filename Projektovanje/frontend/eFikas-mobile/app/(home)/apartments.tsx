@@ -1,5 +1,5 @@
-import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
+import ApartmentCatalogScreen from "@/src/components/screens/ApartmentCatalogScreen/ApartmentCatalogScreen";
 
 export default function Apartments() {
-    return <AgentFeaturePlaceholder feature="apartments" />;
+    return <ApartmentCatalogScreen />;
 }

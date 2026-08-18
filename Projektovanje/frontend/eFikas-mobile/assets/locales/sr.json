@@ -71,6 +71,76 @@
       "notifications": "Obavještenja"
     }
   },
+  "apartmentCatalog": {
+    "title": "Apartmani",
+    "readOnly": "Operativni katalog samo za pregled",
+    "searchLabel": "Pretraži učitane apartmane po nazivu ili adresi",
+    "searchPlaceholder": "Pretraži učitane apartmane",
+    "reset": "Poništi",
+    "resetFilters": "Poništi sve filtere apartmana",
+    "typeFilter": "Tip apartmana",
+    "statusFilter": "Operativni status",
+    "allTypes": "Svi tipovi",
+    "allStatuses": "Svi statusi",
+    "outOfOrderFilter": "Van upotrebe",
+    "loading": "Učitavanje apartmana",
+    "loadingMore": "Učitavanje dodatnih apartmana...",
+    "loadingTypes": "Učitavanje tipova apartmana...",
+    "loadingDetail": "Učitavanje detalja apartmana...",
+    "retry": "Pokušaj ponovo",
+    "retryTypes": "Pokušaj ponovo učitati tipove apartmana",
+    "typesError": "Tipovi apartmana nisu dostupni.",
+    "currency": "BAM",
+    "floor": "Sprat",
+    "type": "Tip",
+    "capacity": "Kapacitet",
+    "defaultPrice": "Osnovna cijena noćenja",
+    "typeDescription": "Opis tipa",
+    "active": "Aktivan",
+    "activeYes": "Da",
+    "activeNo": "Ne",
+    "details": "Detalji apartmana",
+    "statuses": "Operativni statusi",
+    "operationalStatus": "Upisani operativni status",
+    "effectiveStatus": "Efektivni trenutni status",
+    "statusLabel": "Status: {{status}}",
+    "openDetails": "Otvori detalje apartmana {{name}}, status {{status}}",
+    "image": "Fotografija apartmana {{name}}",
+    "imageOf": "Fotografija {{index}} od {{total}} za apartman {{name}}",
+    "galleryPosition": "Fotografija {{current}} od {{total}}",
+    "noImages": "Fotografija nije dostupna",
+    "unavailability": "Trenutni i budući periodi van upotrebe",
+    "noUnavailability": "Nema trenutnih ni budućih perioda van upotrebe.",
+    "current": "Trenutno",
+    "upcoming": "Buduće",
+    "statusHistory": "Istorija statusa",
+    "noStatusHistory": "Nema evidentiranih promjena statusa.",
+    "partialError": "Ovaj dio nije moguće učitati. Detalji apartmana su i dalje dostupni.",
+    "invalidApartment": "Link apartmana nije ispravan.",
+    "empty": {
+      "title": "Nema aktivnih apartmana",
+      "description": "Nema aktivnih apartmana za prikaz."
+    },
+    "emptyFiltered": {
+      "title": "Nema odgovarajućih apartmana",
+      "description": "Pokušajte promijeniti ili poništiti filtere."
+    },
+    "error": {
+      "title": "Apartmani nisu dostupni",
+      "description": "Katalog apartmana nije moguće učitati. Pokušajte ponovo."
+    },
+    "detailError": {
+      "title": "Detalji apartmana nisu dostupni",
+      "description": "Ovaj apartman nije moguće učitati. Pokušajte ponovo."
+    },
+    "status": {
+      "READY": "Spreman",
+      "DIRTY": "Potrebno čišćenje",
+      "CLEANING": "Čišćenje u toku",
+      "MAINTENANCE": "Održavanje",
+      "OUT_OF_ORDER": "Van upotrebe"
+    }
+  },
   "auth": {
     "orSeparator": "ili",
     "login": {
