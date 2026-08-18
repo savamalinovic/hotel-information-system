@@ -1,10 +1,5 @@
-import DamageScreen from "@/src/components/screens/DamageScreen/DamageScreen";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
 
 export default function Damages() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <DamageScreen />
-    </GestureHandlerRootView>
-  );
+  return <AgentFeaturePlaceholder feature="damages" />;
 }

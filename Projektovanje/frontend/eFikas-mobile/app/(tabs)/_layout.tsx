@@ -10,30 +10,33 @@ export default function TabsRootLayout() {
     const { Colors } = useTheme();
 
     return(
-        // Link ka ikonicama: https://icons.expo.fyi/Index
         <Tabs initialRouteName="index" screenOptions={{
-            // --- In testing phase, can be left commented out for now... ---
             tabBarActiveTintColor: Colors.tabBarActiveTint,
             tabBarInactiveTintColor: Colors.tabBarInactiveTint,
             headerTintColor: Colors.textPrimary,
             headerStyle: {
-                backgroundColor: Colors.tabBackground, // Desired background color here
+                backgroundColor: Colors.tabBackground,
             },
             sceneStyle: { backgroundColor: Colors.screenBackground },
             tabBarStyle: {
-              backgroundColor: Colors.tabBackground // background color of tab bar
-            }, 
+              backgroundColor: Colors.tabBackground,
+              paddingTop: 6,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: "600",
+            },
+            headerShadowVisible: false,
         }}>
-            <Tabs.Screen name="reservations" options={{
-                title: t('tabs.reservations'),
-                headerTitle: t('tabs.reservations'),
-                tabBarIcon: ({ color }) => <Icon name="BookOpen" size={28} color={color} />,
-                
-            }} />
             <Tabs.Screen name="index" options={{
                 title: t('tabs.home'),
                 headerTitle: t('tabs.home'),
                 tabBarIcon: ({ color }) => <Icon name="House" size={28} color={color} />,
+            }} />
+            <Tabs.Screen name="reservations" options={{
+                title: t('tabs.reservations'),
+                headerTitle: t('tabs.reservations'),
+                tabBarIcon: ({ color }) => <Icon name="BookOpen" size={28} color={color} />,
             }} />
             <Tabs.Screen name="menu" options={{
                 title: t('tabs.menu'),

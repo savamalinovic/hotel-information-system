@@ -1,7 +1,5 @@
-import ReservationsScreen from '@/src/components/screens/ReservationsScreen/ReservationsScreen';
+import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
 
 export default function Reservations() {
-    return (
-        <ReservationsScreen />
-    );
+    return <AgentFeaturePlaceholder feature="reservations" />;
 }

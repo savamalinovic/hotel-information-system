@@ -15,6 +15,62 @@
     "home": "Početna",
     "menu": "Meni"
   },
+  "agentDashboard": {
+    "loading": "Učitavanje današnjih operacija...",
+    "greeting": "Dobar dan,",
+    "refresh": "Osvježi početni ekran",
+    "overview": "Današnji operativni pregled",
+    "empty": "Danas nema operativnih stavki.",
+    "unavailable": "Nedostupno",
+    "retry": "Pokušaj ponovo",
+    "metrics": {
+      "arrivals": "Dolasci",
+      "departures": "Odlasci",
+      "checkedIn": "Prijavljeni gosti",
+      "newTasks": "Novi zadaci",
+      "blockedTasks": "Blokirani zadaci",
+      "notifications": "Nepročitana obavještenja"
+    },
+    "agenda": {
+      "title": "Današnja agenda",
+      "viewReservations": "Rezervacije",
+      "empty": "Danas nema dolazaka ni odlazaka.",
+      "arrival": "Dolazak",
+      "departure": "Odlazak",
+      "arrivalAndDeparture": "Dolazak i odlazak"
+    },
+    "status": {
+      "CONFIRMED": "Potvrđena",
+      "CHECKED_IN": "Prijavljena",
+      "CHECKED_OUT": "Odjavljena",
+      "CANCELLED": "Otkazana",
+      "NO_SHOW": "Nije došao"
+    },
+    "actions": {
+      "title": "Brze akcije",
+      "reservations": "Rezervacije",
+      "apartments": "Apartmani",
+      "tasks": "Zadaci",
+      "expenses": "Novi trošak",
+      "damages": "Prijava štete"
+    },
+    "error": {
+      "title": "Početni ekran nije dostupan",
+      "description": "Nije moguće učitati današnje operativne podatke. Pokušajte ponovo."
+    }
+  },
+  "agentFeatures": {
+    "description": "Ovaj dio će biti dostupan u narednoj mobilnoj nadogradnji.",
+    "backHome": "Nazad na početnu",
+    "features": {
+      "apartments": "Apartmani",
+      "reservations": "Rezervacije",
+      "tasks": "Zadaci",
+      "expenses": "Operativni troškovi",
+      "damages": "Prijave štete",
+      "notifications": "Obavještenja"
+    }
+  },
   "auth": {
     "orSeparator": "ili",
     "login": {
@@ -397,13 +453,18 @@
     "title": {
       "profile": "Profil",
       "accounting": "Knjigovodstvo",
+      "operations": "Operacije",
       "settings": "Podešavanja"
     },
     "item": {
       "profile": "Profil",
       "notifications": "Obavještenja",
+      "apartments": "Apartmani",
+      "reservations": "Rezervacije",
+      "tasks": "Zadaci",
       "myApartments": "Moji stanovi",
       "expenses": "Troškovi",
+      "damages": "Prijave štete",
       "statistics": "Statistika",
       "incomeBook": "Knjiga prihoda",
       "expenseBook": "Knjiga rashoda",
@@ -561,7 +622,15 @@
       "firstName": "Ime",
       "lastName": "Prezime",
       "taxId": "JMBG",
-      "email": "Email"
+      "email": "Email",
+      "address": "Adresa",
+      "role": "Uloga"
+    },
+    "loading": "Učitavanje profila...",
+    "retry": "Pokušaj ponovo",
+    "error": {
+      "title": "Profil nije dostupan",
+      "description": "Nije moguće učitati profil. Pokušajte ponovo."
     },
     "buttons": {
       "cancel": "Odustani",

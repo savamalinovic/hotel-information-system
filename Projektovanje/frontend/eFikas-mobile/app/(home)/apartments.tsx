@@ -1,7 +1,5 @@
-import ApartmentsListScreen from '@/src/components/screens/ApartmentsListScreen/ApartmentsListScreen';
+import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
 
-export default function MyApartments() {
-    return (
-        <ApartmentsListScreen />
-    );
+export default function Apartments() {
+    return <AgentFeaturePlaceholder feature="apartments" />;
 }

@@ -13,6 +13,62 @@
     "home": "Home",
     "menu": "Menu"
   },
+  "agentDashboard": {
+    "loading": "Loading today's operations...",
+    "greeting": "Good day,",
+    "refresh": "Refresh dashboard",
+    "overview": "Today's operational overview",
+    "empty": "There are no operational items for today.",
+    "unavailable": "Unavailable",
+    "retry": "Try again",
+    "metrics": {
+      "arrivals": "Arrivals",
+      "departures": "Departures",
+      "checkedIn": "Checked in",
+      "newTasks": "New tasks",
+      "blockedTasks": "Blocked tasks",
+      "notifications": "Unread alerts"
+    },
+    "agenda": {
+      "title": "Today's agenda",
+      "viewReservations": "Reservations",
+      "empty": "There are no arrivals or departures today.",
+      "arrival": "Arrival",
+      "departure": "Departure",
+      "arrivalAndDeparture": "Arrival and departure"
+    },
+    "status": {
+      "CONFIRMED": "Confirmed",
+      "CHECKED_IN": "Checked in",
+      "CHECKED_OUT": "Checked out",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "No-show"
+    },
+    "actions": {
+      "title": "Quick actions",
+      "reservations": "Reservations",
+      "apartments": "Apartments",
+      "tasks": "Tasks",
+      "expenses": "New expense",
+      "damages": "Report damage"
+    },
+    "error": {
+      "title": "Dashboard is unavailable",
+      "description": "We could not load today's operational data. Please try again."
+    }
+  },
+  "agentFeatures": {
+    "description": "This area will be available in a following mobile update.",
+    "backHome": "Back to home",
+    "features": {
+      "apartments": "Apartments",
+      "reservations": "Reservations",
+      "tasks": "Tasks",
+      "expenses": "Operational expenses",
+      "damages": "Damage reports",
+      "notifications": "Notifications"
+    }
+  },
   "auth": {
     "orSeparator": "or",
     "login": {
@@ -400,13 +456,18 @@
     "title": {
       "profile": "Profile",
       "accounting": "Accounting",
+      "operations": "Operations",
       "settings": "Settings"
     },
     "item": {
       "profile": "Profile",
       "notifications": "Notifications",
+      "apartments": "Apartments",
+      "reservations": "Reservations",
+      "tasks": "Tasks",
       "myApartments": "My Apartments",
       "expenses": "Expenses",
+      "damages": "Damage reports",
       "statistics": "Statistics",
       "incomeBook": "Income Book",
       "expenseBook": "Expense Book",
@@ -558,7 +619,15 @@
       "firstName": "First Name",
       "lastName": "Last Name",
       "taxId": "Tax ID (JIB)",
-      "email": "Email"
+      "email": "Email",
+      "address": "Address",
+      "role": "Role"
+    },
+    "loading": "Loading profile...",
+    "retry": "Try again",
+    "error": {
+      "title": "Profile is unavailable",
+      "description": "We could not load your profile. Please try again."
     },
     "buttons": {
       "cancel": "Cancel",
