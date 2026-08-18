@@ -1,1 +1,1 @@
-export { default } from "@/src/components/navigation/AgentHomeRedirect";
+export { default } from "@/src/components/screens/ReservationWorkflowScreen/ReservationWorkflowDetailScreen";
