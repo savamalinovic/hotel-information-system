@@ -66,6 +66,13 @@ export const API_URLS = {
         delete: (id: number) => `${API_BASE_URL}/apartments/${id}`,
         update: (id: number) => `${API_BASE_URL}/apartments/${id}`,
         getById: (id: number) => `${API_BASE_URL}/apartments/${id}`,
+        statusHistory: (id: number) => `${API_BASE_URL}/apartments/${id}/status-history`,
+        unavailability: (id: number) => `${API_BASE_URL}/apartments/${id}/unavailability`,
+    },
+
+    apartmentTypes: {
+        list: `${API_BASE_URL}/apartment-types`,
+        getById: (id: number) => `${API_BASE_URL}/apartment-types/${id}`,
     },
 
     damages: {

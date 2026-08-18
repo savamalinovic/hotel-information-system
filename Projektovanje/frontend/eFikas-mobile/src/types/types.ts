@@ -136,6 +136,67 @@ export interface AgentDashboardData {
   agenda: TodayAgendaItem[];
 }
 
+export type ApartmentOperationalStatus =
+  | "READY"
+  | "DIRTY"
+  | "CLEANING"
+  | "MAINTENANCE";
+
+export type ApartmentEffectiveStatus =
+  | ApartmentOperationalStatus
+  | "OUT_OF_ORDER";
+
+export type ApartmentType = {
+  apartmentTypeId: number;
+  name: string;
+  description: string | null;
+  capacity: number;
+  defaultNightlyRate: string | number;
+  active: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApartmentPicture = {
+  pictureId: number;
+  url: string;
+  displayOrder: number;
+  createdAt: string;
+};
+
+export type ApartmentDetails = {
+  apartmentId: number;
+  name: string;
+  address: string;
+  floor: number;
+  type: ApartmentType;
+  operationalStatus: ApartmentOperationalStatus;
+  effectiveStatus: ApartmentEffectiveStatus;
+  active: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  pictures: ApartmentPicture[];
+};
+
+export type ApartmentStatusHistory = {
+  apartmentStatusHistoryId: number;
+  status: ApartmentOperationalStatus;
+  reason: string;
+  changedByUserId: number;
+  changedAt: string;
+};
+
+export type ApartmentUnavailability = {
+  apartmentUnavailabilityId: number;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  createdByUserId: number;
+  createdAt: string;
+};
+
 export interface OtpSendRequest {
 	email: string;
 }

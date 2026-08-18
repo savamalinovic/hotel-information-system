@@ -69,6 +69,76 @@
       "notifications": "Notifications"
     }
   },
+  "apartmentCatalog": {
+    "title": "Apartments",
+    "readOnly": "Read-only operational catalogue",
+    "searchLabel": "Search loaded apartments by name or address",
+    "searchPlaceholder": "Search loaded apartments",
+    "reset": "Reset",
+    "resetFilters": "Reset all apartment filters",
+    "typeFilter": "Apartment type",
+    "statusFilter": "Operational status",
+    "allTypes": "All types",
+    "allStatuses": "All statuses",
+    "outOfOrderFilter": "Out of service",
+    "loading": "Loading apartments",
+    "loadingMore": "Loading more apartments...",
+    "loadingTypes": "Loading apartment types...",
+    "loadingDetail": "Loading apartment details...",
+    "retry": "Try again",
+    "retryTypes": "Retry apartment types",
+    "typesError": "Apartment types are unavailable.",
+    "currency": "BAM",
+    "floor": "Floor",
+    "type": "Type",
+    "capacity": "Capacity",
+    "defaultPrice": "Default nightly rate",
+    "typeDescription": "Type description",
+    "active": "Active",
+    "activeYes": "Yes",
+    "activeNo": "No",
+    "details": "Apartment details",
+    "statuses": "Operational status",
+    "operationalStatus": "Recorded operational status",
+    "effectiveStatus": "Effective current status",
+    "statusLabel": "Status: {{status}}",
+    "openDetails": "Open details for {{name}}, status {{status}}",
+    "image": "Photo of {{name}}",
+    "imageOf": "Photo {{index}} of {{total}} for {{name}}",
+    "galleryPosition": "Photo {{current}} of {{total}}",
+    "noImages": "No photo available",
+    "unavailability": "Current and upcoming out-of-service periods",
+    "noUnavailability": "There are no current or upcoming out-of-service periods.",
+    "current": "Current",
+    "upcoming": "Upcoming",
+    "statusHistory": "Status history",
+    "noStatusHistory": "There are no recorded status changes.",
+    "partialError": "This section could not be loaded. The apartment details are still available.",
+    "invalidApartment": "This apartment link is invalid.",
+    "empty": {
+      "title": "No active apartments",
+      "description": "There are no active apartments to display."
+    },
+    "emptyFiltered": {
+      "title": "No matching apartments",
+      "description": "Try changing or resetting your filters."
+    },
+    "error": {
+      "title": "Apartments are unavailable",
+      "description": "We could not load the apartment catalogue. Please try again."
+    },
+    "detailError": {
+      "title": "Apartment details are unavailable",
+      "description": "We could not load this apartment. Please try again."
+    },
+    "status": {
+      "READY": "Ready",
+      "DIRTY": "Needs cleaning",
+      "CLEANING": "Cleaning in progress",
+      "MAINTENANCE": "Maintenance",
+      "OUT_OF_ORDER": "Out of service"
+    }
+  },
   "auth": {
     "orSeparator": "or",
     "login": {
