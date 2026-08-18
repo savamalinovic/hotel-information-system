@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.unibl.etf.efikas.configs.OpenApiConfig;
 import org.unibl.etf.efikas.controllers.AuthController;
 import org.unibl.etf.efikas.controllers.HotelProfileController;
+import org.unibl.etf.efikas.controllers.NotificationsController;
 import org.unibl.etf.efikas.controllers.SpecializationController;
 import org.unibl.etf.efikas.controllers.UserManagementController;
 import org.unibl.etf.efikas.security.JwtUtil;
@@ -23,6 +24,7 @@ import org.unibl.etf.efikas.services.AppUserService;
 import org.unibl.etf.efikas.services.HotelProfileService;
 import org.unibl.etf.efikas.services.SpecializationService;
 import org.unibl.etf.efikas.services.UserManagementService;
+import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import org.unibl.etf.efikas.services.interfaces.OAuthService;
 import org.unibl.etf.efikas.services.interfaces.OtpService;
 
@@ -61,6 +63,9 @@ class OpenApiContractTest {
     @MockitoBean
     private UserManagementService userManagementService;
 
+    @MockitoBean
+    private NotificationService notificationService;
+
     @Test
     void generatedV1ContractContainsVersionedTypedLoginAndStableErrors() throws Exception {
         mockMvc.perform(get("/v3/api-docs/v1"))
@@ -91,6 +96,9 @@ class OpenApiContractTest {
                 .andExpect(jsonPath("$.components.schemas.CreateManagedUserRequest.properties.password.writeOnly")
                         .value(true))
                 .andExpect(jsonPath("$.components.schemas.ManagedUserResponse.properties.password").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/notifications'].get").exists())
+                .andExpect(jsonPath("$.components.schemas.NotificationResponse.properties.taskId.type")
+                        .value("integer"))
                 .andExpect(jsonPath("$.paths['/api/v1/auth/register']").doesNotExist());
     }
 
@@ -101,7 +109,7 @@ class OpenApiContractTest {
             FlywayAutoConfiguration.class
     })
     @Import({OpenApiConfig.class, AuthController.class, HotelProfileController.class,
-            SpecializationController.class, UserManagementController.class})
+            SpecializationController.class, UserManagementController.class, NotificationsController.class})
     static class ContractTestApplication {
     }
 }

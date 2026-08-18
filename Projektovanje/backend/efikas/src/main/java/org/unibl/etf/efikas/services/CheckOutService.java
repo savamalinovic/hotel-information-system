@@ -24,6 +24,7 @@ public class CheckOutService {
     private final SpecializationRepository specializationRepository;
     private final AppUserRepository appUserRepository;
     private final AuditLogService auditLogService;
+    private final TaskNotificationService taskNotifications;
 
     @Transactional
     public CheckOutResponse checkOut(Integer reservationId, String actorEmail) {
@@ -71,6 +72,7 @@ public class CheckOutService {
         task.setSource(TaskSource.CHECKOUT);
         taskRepository.saveAndFlush(task);
         appendTaskHistory(task, actor);
+        taskNotifications.notifyEligibleWorkers(task);
 
         appendReservationHistory(reservation, actor);
         reservation.setCheckedOutBy(actor);

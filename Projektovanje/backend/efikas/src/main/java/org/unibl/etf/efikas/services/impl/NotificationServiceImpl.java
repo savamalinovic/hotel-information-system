@@ -61,16 +61,26 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override @Transactional
     public void notify(Collection<AppUser> recipients, String type, String title, String body) {
+        notify(recipients, type, title, body, null);
+    }
+
+    @Override @Transactional
+    public void notify(Collection<AppUser> recipients, String type, String title, String body, OperationalTask task) {
         recipients.stream().filter(AppUser::isActive).distinct().forEach(recipient -> {
             Notification n = new Notification(); n.setRecipient(recipient); n.setType(type);
-            n.setTitle(title); n.setBody(body); notifications.save(n);
-            events.publishEvent(new NotificationCreatedEvent(recipient.getUserId(), title, body));
+            n.setTitle(title); n.setBody(body); n.setTask(task);
+            Notification saved = notifications.saveAndFlush(n);
+            events.publishEvent(new NotificationCreatedEvent(
+                    saved.getNotificationId(), recipient.getUserId(), type, title, body,
+                    task == null ? null : task.getTaskId()));
         });
     }
 
     private AppUser user(String email) { return users.findByEmailIgnoreCase(email)
             .filter(AppUser::isActive).orElseThrow(() -> new EntityNotFoundException("Active user not found.")); }
     private static NotificationResponse response(Notification n) { return new NotificationResponse(
-            n.getNotificationId(), n.getType(), n.getTitle(), n.getBody(), n.getCreatedAt(), n.getReadAt()); }
-    public record NotificationCreatedEvent(Integer userId, String title, String body) {}
+            n.getNotificationId(), n.getType(), n.getTitle(), n.getBody(), n.getCreatedAt(), n.getReadAt(),
+            n.getTask() == null ? null : n.getTask().getTaskId()); }
+    public record NotificationCreatedEvent(Long notificationId, Integer userId, String type, String title,
+                                           String body, Long taskId) {}
 }

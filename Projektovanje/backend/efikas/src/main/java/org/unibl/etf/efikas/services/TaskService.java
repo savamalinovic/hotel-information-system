@@ -27,6 +27,7 @@ public class TaskService {
  private final ReservationRepository reservations; private final ApartmentStatusHistoryRepository apartmentHistory;
  private final WorkforceAvailabilityService workforce; private final S3Service storage;
  private final AuditLogService auditLogService;
+ private final TaskNotificationService taskNotifications;
 
  @Transactional public TaskResponse create(String email, CreateTaskRequest r){
   AppUser actor=user(email); Specialization spec=specializations.findById(r.specializationId()).orElseThrow(()->new EntityNotFoundException("Specialization not found."));
@@ -35,7 +36,7 @@ public class TaskService {
   if(reservation!=null&&!reservation.getApartment().getApartmentId().equals(apartment.getApartmentId())) throw new IllegalArgumentException("Task apartment must match its reservation.");
   if("CLEANING".equals(spec.getCode())&&apartment==null) throw new IllegalArgumentException("A cleaning task requires an apartment.");
   OperationalTask t=new OperationalTask(); t.setSpecialization(spec); t.setApartment(apartment); t.setReservation(reservation); t.setCreatedBy(actor); t.setTitle(r.title().trim()); t.setDescription(r.description().trim()); t.setPriority(r.priority());
-  tasks.saveAndFlush(t); record(t,null,TaskStatus.NEW,actor,"Task created."); auditLogService.record(AuditEvent.TASK_CREATED,actor,reservation,apartment,t,"Task created."); return map(t);
+  tasks.saveAndFlush(t); record(t,null,TaskStatus.NEW,actor,"Task created."); auditLogService.record(AuditEvent.TASK_CREATED,actor,reservation,apartment,t,"Task created."); taskNotifications.notifyEligibleWorkers(t); return map(t);
  }
 
  @Transactional(readOnly=true) public PageResponse<TaskResponse> list(TaskStatus status,Short specializationId,Integer apartmentId,Integer reservationId,Integer workerId,Pageable pageable){
