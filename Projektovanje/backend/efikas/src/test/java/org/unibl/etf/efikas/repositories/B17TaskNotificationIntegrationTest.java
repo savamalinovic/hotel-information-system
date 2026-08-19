@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.enums.*;
@@ -109,7 +108,6 @@ class B17TaskNotificationIntegrationTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void databaseRejectsDuplicateTaskNotificationForTheSameRecipientAndType() {
         String suffix = suffix();
         Specialization electrical = specialization("ELECTRICAL");
