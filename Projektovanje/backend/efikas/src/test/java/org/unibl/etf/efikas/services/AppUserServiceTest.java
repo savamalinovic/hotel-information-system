@@ -7,10 +7,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.unibl.etf.efikas.models.entities.AppUser;
+import org.unibl.etf.efikas.models.dto.UserDTO;
 import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.models.requests.RegistrationRequest;
+import org.unibl.etf.efikas.models.responses.AppUserResponse;
 import org.unibl.etf.efikas.repositories.AppUserRepository;
 import org.unibl.etf.efikas.services.interfaces.OtpService;
 
@@ -61,5 +64,44 @@ class AppUserServiceTest {
         when(appUserRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(java.util.Optional.of(user));
 
         assertThat(appUserService.authenticate(user.getEmail(), "plain-password")).isFalse();
+    }
+
+    @Test
+    void currentUserInfoUsesTheAuthenticatedIdentityAndMapsItsStableId() {
+        AppUser user = user(123, "agent@example.invalid", UserRole.AGENT);
+        AppUserResponse mapped = new AppUserResponse();
+        when(appUserRepository.findByEmailIgnoreCase("agent@example.invalid")).thenReturn(java.util.Optional.of(user));
+        when(modelMapper.map(user, AppUserResponse.class)).thenReturn(mapped);
+
+        AppUserResponse response = appUserService.getCurrentUserInfo(
+                new UsernamePasswordAuthenticationToken("agent@example.invalid", "ignored"));
+
+        assertThat(response.getUserId()).isEqualTo(123);
+        verify(appUserRepository).findByEmailIgnoreCase("agent@example.invalid");
+    }
+
+    @Test
+    void profileUpdateKeepsTheExistingUserIdInItsMappedResponse() {
+        AppUser user = user(456, "manager@example.invalid", UserRole.MANAGER);
+        UserDTO update = new UserDTO();
+        update.setName("Updated"); update.setSurname("Manager"); update.setJmbg("1234567890123");
+        update.setEmail("updated-manager@example.invalid"); update.setAddress("Updated address");
+        AppUserResponse mapped = new AppUserResponse();
+        mapped.setEmail(update.getEmail());
+        when(appUserRepository.findByEmailIgnoreCase("manager@example.invalid")).thenReturn(java.util.Optional.of(user));
+        when(appUserRepository.save(user)).thenReturn(user);
+        when(modelMapper.map(user, AppUserResponse.class)).thenReturn(mapped);
+
+        AppUserResponse response = appUserService.updateUserAccount(update,
+                new UsernamePasswordAuthenticationToken("manager@example.invalid", "ignored"));
+
+        assertThat(response.getUserId()).isEqualTo(456);
+        assertThat(response.getEmail()).isEqualTo("updated-manager@example.invalid");
+    }
+
+    private static AppUser user(int userId, String email, UserRole role) {
+        AppUser user = new AppUser();
+        user.setUserId(userId); user.setEmail(email); user.setRole(role); user.setActive(true);
+        return user;
     }
 }

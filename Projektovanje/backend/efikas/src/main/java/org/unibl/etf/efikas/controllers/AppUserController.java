@@ -89,7 +89,7 @@ public class AppUserController {
     @GetMapping("/me")
     @Operation(summary = "Read the current user profile")
     @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
-    public ResponseEntity<?> getAccountInfo() {
+    public ResponseEntity<AppUserResponse> getAccountInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         AppUserResponse response = appUserService.getCurrentUserInfo(authentication);

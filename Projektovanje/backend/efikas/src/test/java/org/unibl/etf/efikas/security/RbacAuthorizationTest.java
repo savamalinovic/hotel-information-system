@@ -207,6 +207,16 @@ class RbacAuthorizationTest {
     }
 
     @Test
+    void anonymousUserCannotReadCurrentProfile() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"))
+                .andExpect(jsonPath("$.path").value("/api/v1/users/me"));
+    }
+
+    @Test
     void onlyManagerCanManageUsers() throws Exception {
         mockMvc.perform(get("/api/v1/users").with(role(UserRole.MANAGER)))
                 .andExpect(status().isOk());

@@ -37,7 +37,7 @@ public class AppUserService {
     public AppUserResponse getUserById(int userId) {
         AppUser appUser = appUserRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return modelMapper.map(appUser, AppUserResponse.class);
+        return response(appUser);
     }
 
     public AppUser getUserByEmail(String email) {
@@ -82,7 +82,7 @@ public class AppUserService {
         AppUser user = appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
-        return modelMapper.map(user, AppUserResponse.class);
+        return response(user);
     }
 
 
@@ -98,7 +98,7 @@ public class AppUserService {
         user.setEmail(userDto.getEmail());
         user.setAddress(userDto.getAddress());
 
-        return modelMapper.map(appUserRepository.save(user), AppUserResponse.class);
+        return response(appUserRepository.save(user));
     }
 
     public void changeUserPassword(ChangePasswordDTO changePasswordDTO, Authentication authentication) {
@@ -126,7 +126,13 @@ public class AppUserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
         appUserRepository.delete(user);
-        return modelMapper.map(user, AppUserResponse.class);
+        return response(user);
+    }
+
+    private AppUserResponse response(AppUser user) {
+        AppUserResponse response = modelMapper.map(user, AppUserResponse.class);
+        response.setUserId(user.getUserId());
+        return response;
     }
 
 }

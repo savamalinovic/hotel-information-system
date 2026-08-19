@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.unibl.etf.efikas.configs.OpenApiConfig;
+import org.unibl.etf.efikas.controllers.AppUserController;
 import org.unibl.etf.efikas.controllers.AuthController;
 import org.unibl.etf.efikas.controllers.HotelProfileController;
 import org.unibl.etf.efikas.controllers.NotificationsController;
@@ -23,6 +24,7 @@ import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.AppUserService;
 import org.unibl.etf.efikas.services.HotelProfileService;
 import org.unibl.etf.efikas.services.SpecializationService;
+import org.unibl.etf.efikas.services.StoreService;
 import org.unibl.etf.efikas.services.UserManagementService;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import org.unibl.etf.efikas.services.interfaces.OAuthService;
@@ -44,6 +46,9 @@ class OpenApiContractTest {
 
     @MockitoBean
     private AppUserService appUserService;
+
+    @MockitoBean
+    private StoreService storeService;
 
     @MockitoBean
     private OtpService otpService;
@@ -92,6 +97,10 @@ class OpenApiContractTest {
                 .andExpect(jsonPath("$.paths['/api/v1/users'].post").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/status'].patch").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/users/{userId}/specializations'].put").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/users/me'].get.responses['200'].content['*/*'].schema.$ref")
+                        .value("#/components/schemas/AppUserResponse"))
+                .andExpect(jsonPath("$.components.schemas.AppUserResponse.required", hasItems("userId")))
+                .andExpect(jsonPath("$.components.schemas.AppUserResponse.properties.userId.type").value("integer"))
                 .andExpect(jsonPath("$.paths['/api/v1/specializations'].get").exists())
                 .andExpect(jsonPath("$.components.schemas.CreateManagedUserRequest.properties.password.writeOnly")
                         .value(true))
@@ -99,6 +108,7 @@ class OpenApiContractTest {
                 .andExpect(jsonPath("$.paths['/api/v1/notifications'].get").exists())
                 .andExpect(jsonPath("$.components.schemas.NotificationResponse.properties.taskId.type")
                         .value("integer"))
+                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.userId").doesNotExist())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/register']").doesNotExist());
     }
 
@@ -108,7 +118,7 @@ class OpenApiContractTest {
             HibernateJpaAutoConfiguration.class,
             FlywayAutoConfiguration.class
     })
-    @Import({OpenApiConfig.class, AuthController.class, HotelProfileController.class,
+    @Import({OpenApiConfig.class, AuthController.class, AppUserController.class, HotelProfileController.class,
             SpecializationController.class, UserManagementController.class, NotificationsController.class})
     static class ContractTestApplication {
     }
