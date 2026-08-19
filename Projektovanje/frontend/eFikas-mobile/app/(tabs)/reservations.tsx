@@ -1,5 +1,5 @@
-import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
+import ReservationListCalendarScreen from "@/src/components/screens/ReservationWorkflowScreen/ReservationListCalendarScreen";
 
 export default function Reservations() {
-    return <AgentFeaturePlaceholder feature="reservations" />;
+    return <ReservationListCalendarScreen />;
 }

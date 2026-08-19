@@ -54,6 +54,15 @@ export const API_URLS = {
 		`${API_BASE_URL}/reservations/${reservationId}`,
 	},
 
+  reservationWorkflows: {
+    list: `${API_BASE_URL}/reservations`,
+    availability: `${API_BASE_URL}/reservations/availability`,
+    byId: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}`,
+    stay: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/stay`,
+    status: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/status`,
+    statusHistory: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/status-history`,
+  },
+
 	notifications: {
 		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,

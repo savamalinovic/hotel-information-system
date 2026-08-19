@@ -76,6 +76,43 @@ export interface ReservationDetails {
   updatedAt: string;
 }
 
+export interface AvailableApartment {
+  apartmentId: number;
+  name: string;
+  address: string;
+  floor: number;
+  apartmentTypeId: number;
+  apartmentTypeName: string;
+  capacity: number;
+  defaultNightlyRate: string;
+}
+
+export interface ReservationCreateRequest {
+  apartmentId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  guestCount: number;
+  nightlyRate?: string | null;
+  note?: string | null;
+}
+
+export interface ReservationStayUpdateRequest {
+  checkOutDate: string;
+}
+
+export interface ReservationStatusUpdateRequest {
+  status: "CANCELLED" | "NO_SHOW";
+  reason: string;
+}
+
+export interface ReservationStatusHistory {
+  reservationStatusHistoryId: number;
+  status: ReservationStatus;
+  reason: string | null;
+  changedByUserId: number | null;
+  changedAt: string;
+}
+
 export type TaskStatus =
   | "NEW"
   | "ASSIGNED"
