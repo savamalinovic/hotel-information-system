@@ -15,6 +15,8 @@ public class Notification {
     @Column(name = "\"Type\"", nullable = false, length = 64) private String type;
     @Column(name = "\"Title\"", nullable = false, length = 160) private String title;
     @Column(name = "\"Body\"", nullable = false, length = 1000) private String body;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"TaskId\"") private OperationalTask task;
     @Column(name = "\"CreatedAt\"", nullable = false, updatable = false) private Instant createdAt;
     @Column(name = "\"ReadAt\"") private Instant readAt;
     @PrePersist void create() { if (createdAt == null) createdAt = Instant.now(); }

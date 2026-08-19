@@ -9,10 +9,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.client.RestClient;
 import org.unibl.etf.efikas.models.entities.*;
 import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.repositories.*;
 import org.unibl.etf.efikas.services.impl.NotificationServiceImpl;
+import org.unibl.etf.efikas.services.impl.NotificationServiceImpl.NotificationCreatedEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +62,53 @@ class B14NotificationServiceTest {
         service.addPushToken(user.getEmail(), request);
         verify(tokens).save(argThat(token -> token.getUser() == user && token.getEnabled()
                 && token.getPlatform().equals("android")));
+    }
+
+    @Test void taskNotificationPublishesTheSavedNotificationAndDeepLinkIds() {
+        OperationalTask task = new OperationalTask(); task.setTaskId(456L);
+        when(notifications.saveAndFlush(any())).thenAnswer(invocation -> {
+            Notification notification = invocation.getArgument(0);
+            notification.setNotificationId(123L);
+            return notification;
+        });
+
+        service.notify(List.of(user), TaskNotificationService.TASK_AVAILABLE,
+                "Novi zadatak je dostupan", "Provjera — Inspekcija", task);
+
+        var event = org.mockito.ArgumentCaptor.forClass(NotificationCreatedEvent.class);
+        verify(events).publishEvent(event.capture());
+        assertThat(event.getValue()).isEqualTo(new NotificationCreatedEvent(
+                123L, 7, TaskNotificationService.TASK_AVAILABLE,
+                "Novi zadatak je dostupan", "Provjera — Inspekcija", 456L));
+        verify(notifications).saveAndFlush(argThat(notification -> notification.getTask() == task));
+    }
+
+    @Test @SuppressWarnings("unchecked") void taskPushPayloadIncludesTheDeepLinkData() {
+        NotificationCreatedEvent event = new NotificationCreatedEvent(
+                123L, 7, TaskNotificationService.TASK_AVAILABLE,
+                "Novi zadatak je dostupan", "Provjera — Inspekcija", 456L);
+
+        var payload = NotificationPushDispatcher.payload("ExponentPushToken[test]", event);
+
+        assertThat(payload).containsEntry("to", "ExponentPushToken[test]")
+                .containsEntry("title", "Novi zadatak je dostupan")
+                .containsEntry("body", "Provjera — Inspekcija");
+        java.util.Map<String, Object> data = (java.util.Map<String, Object>) payload.get("data");
+        assertThat(data).containsEntry("notificationId", 123L)
+                .containsEntry("type", TaskNotificationService.TASK_AVAILABLE)
+                .containsEntry("taskId", 456L);
+        assertThat(payload.get("android")).isEqualTo(java.util.Map.of("channelId", "default"));
+    }
+
+    @Test void pushDeliveryFailureDoesNotEscapeTheAfterCommitDispatcher() {
+        NotificationPushToken token = new NotificationPushToken(); token.setId(9);
+        NotificationCreatedEvent event = new NotificationCreatedEvent(123L, 7,
+                TaskNotificationService.TASK_AVAILABLE, "Title", "Body", 456L);
+        when(tokens.findByUserUserIdAndEnabledTrue(7)).thenReturn(List.of(token));
+        RestClient expo = mock(RestClient.class);
+        when(expo.post()).thenThrow(new RuntimeException("Expo unavailable"));
+
+        assertThatCode(() -> new NotificationPushDispatcher(tokens, expo).dispatch(event)).doesNotThrowAnyException();
     }
 
     private Notification notification(Long id, Instant readAt) {
