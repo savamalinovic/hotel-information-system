@@ -146,6 +146,7 @@ export interface NotificationItem {
 }
 
 export interface UserProfile {
+  userId: number;
   name: string;
   surname: string;
   jmbg: string;
@@ -373,7 +374,7 @@ export interface ForeignGuest extends GuestBase {
   entryPlace?: string | null;
 }
 
-export type Guest = DomesticGuest | ForeignGuest;
+export type LegacyReservationGuest = DomesticGuest | ForeignGuest;
 
 export interface CreateDomesticGuestPayload {
   name: string;
@@ -440,7 +441,7 @@ export interface CreateIncomeBookRequest {
 export interface Reservation {
   reservationId: number;
   apartment: Apartment;
-  guest: Guest;
+  guest: LegacyReservationGuest;
   guestQuantity: number;
   price: number | null;
   note: string | null;
@@ -452,16 +453,98 @@ export interface CreateReservationPayload {
   price?: number | null;
   note?: string | null;
   reservationType: string;
-  guest: Omit<Guest, "id">;
+  guest: Omit<LegacyReservationGuest, "id">;
 }
 
 export interface UpdateReservationPayload {
   apartmentId?: number;
-  guest: Guest;
+  guest: LegacyReservationGuest;
   guestQuantity?: number;
   price?: number | null;
   note?: string | null;
   reservationType?: string;
+}
+
+export type GuestGender = "Male" | "Female";
+
+export interface GuestRequest {
+  citizenId: string;
+  local: boolean;
+  personalDocumentUrl: string | null;
+  name: string;
+  surname: string;
+  gender: GuestGender;
+  phoneNumber: string | null;
+  birthDate: string;
+  birthPlace: string;
+  birthMunicipality: string | null;
+  birthCountry: string;
+  address: string;
+  citizenship: string | null;
+  passportNumber: string | null;
+  passportIssuedDate: string | null;
+  visaType: string | null;
+  visaNumber: string | null;
+  permittedResidenceDate: string | null;
+  entryDate: string | null;
+  entryPlace: string | null;
+}
+
+export interface Guest extends GuestRequest {
+  guestId: number;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReservationGuest {
+  reservationGuestId: number;
+  primaryGuest: boolean;
+  addedByUserId: number;
+  addedAt: string;
+  guest: Guest;
+}
+
+export type AddReservationGuestRequest =
+  | {
+      existingGuestId: number;
+      guest: null;
+      primaryGuest: boolean;
+    }
+  | {
+      existingGuestId: null;
+      guest: GuestRequest;
+      primaryGuest: boolean;
+    };
+
+export interface UpdateReservationGuestRequest {
+  guest: GuestRequest;
+  primaryGuest: boolean;
+}
+
+export type CheckInClaimAction = "CLAIMED" | "RELEASED" | "TAKEN_OVER";
+
+export interface CheckInClaimResponse {
+  reservationId: number;
+  claimedByUserId: number | null;
+  claimedByName: string | null;
+  claimedAt: string | null;
+}
+
+export interface CheckInClaimHistoryResponse {
+  historyId: number;
+  action: CheckInClaimAction;
+  previousClaimedByUserId: number | null;
+  claimedByUserId: number | null;
+  performedByUserId: number;
+  performedAt: string;
+}
+
+export interface CheckInResponse {
+  reservation: ReservationDetails;
+  guestBookEntriesCreated: number;
+  checkedInByUserId: number;
+  checkedInAt: string;
 }
 
 export interface MenuItemProps {

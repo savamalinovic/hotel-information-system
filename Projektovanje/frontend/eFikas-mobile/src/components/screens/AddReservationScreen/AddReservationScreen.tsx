@@ -14,7 +14,7 @@ import {
 	CreateReservationPayload,
 	DomesticGuest,
 	ForeignGuest,
-	Guest,
+	LegacyReservationGuest,
 	LucideIconName,
 	Reservation,
 	UpdateReservationPayload,
@@ -167,7 +167,7 @@ function AddReservationScreen() {
     const initializeForm = async () => {
       if (!isEditMode || !existingReservation) return;
 
-      const guest: Guest = existingReservation.guest;
+      const guest: LegacyReservationGuest = existingReservation.guest;
 
 	  console.log("GUEST: ", guest);
 
@@ -409,7 +409,7 @@ function AddReservationScreen() {
     return data.isLocal === false;
   }
 
-  const buildGuestPayload = (data: GuestValidation.FormValues): Guest => {
+  const buildGuestPayload = (data: GuestValidation.FormValues): LegacyReservationGuest => {
     const common = {
       id: guestId,
       name: data.name.trim(),

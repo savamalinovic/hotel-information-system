@@ -63,6 +63,18 @@ export const API_URLS = {
     statusHistory: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/status-history`,
   },
 
+  guestCheckIn: {
+    guests: `${API_BASE_URL}/guests`,
+    guest: (guestId: number) => `${API_BASE_URL}/guests/${guestId}`,
+    reservationGuests: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/guests`,
+    reservationGuest: (reservationId: number, guestId: number) =>
+      `${API_BASE_URL}/reservations/${reservationId}/guests/${guestId}`,
+    claim: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/check-in/claim`,
+    claimHistory: (reservationId: number) =>
+      `${API_BASE_URL}/reservations/${reservationId}/check-in/claim-history`,
+    checkIn: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/check-in`,
+  },
+
 	notifications: {
 		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,

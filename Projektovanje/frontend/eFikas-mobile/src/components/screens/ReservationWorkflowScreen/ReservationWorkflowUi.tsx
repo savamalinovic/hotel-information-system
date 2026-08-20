@@ -47,7 +47,7 @@ export function PrimaryButton({
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  icon?: "Plus" | "RefreshCw" | "ChevronRight" | "Save";
+  icon?: "Plus" | "RefreshCw" | "ChevronRight" | "Save" | "Users" | "ClipboardCheck";
 }) {
   const { Colors } = useTheme();
   return (
