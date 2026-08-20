@@ -22,6 +22,7 @@ export default function HomeRootLayout() {
             <Stack.Screen name="reservations/[id]/guest-form" options={{ title: t('guestCheckIn.navigation.guestForm') }} />
             <Stack.Screen name="reservations/[id]/guest-search" options={{ title: t('guestCheckIn.navigation.guestSearch') }} />
             <Stack.Screen name="reservations/[id]/check-in" options={{ title: t('guestCheckIn.navigation.checkIn') }} />
+            <Stack.Screen name="reservations/[id]/payments" options={{ title: t('paymentWorkflow.navigation.title') }} />
             <Stack.Screen name="reservations/addReservation" options={{ title: t('reservationWorkflow.navigation.createTitle') }} />
             <Stack.Screen name="expenses" options={{ title: t('dashboard.navigation.expensesTitle') }} />
             <Stack.Screen name="tasks" options={{ title: t('dashboard.navigation.tasksTitle') }} />

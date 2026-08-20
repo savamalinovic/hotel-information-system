@@ -75,6 +75,15 @@ export const API_URLS = {
     checkIn: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/check-in`,
   },
 
+  paymentWorkflows: {
+    ledger: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/payments`,
+    summary: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/payments/summary`,
+    correction: (reservationId: number, paymentId: number) =>
+      `${API_BASE_URL}/reservations/${reservationId}/payments/${paymentId}/corrections`,
+    reversal: (reservationId: number, paymentId: number) =>
+      `${API_BASE_URL}/reservations/${reservationId}/payments/${paymentId}/reversal`,
+  },
+
 	notifications: {
 		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,

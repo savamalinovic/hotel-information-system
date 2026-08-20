@@ -150,6 +150,10 @@ export default function ReservationWorkflowDetailScreen() {
           <PrimaryButton label={t("guestCheckIn.navigation.guests")} onPress={() => router.push({ pathname: "/reservations/[id]/guests", params: { id: String(reservationId) } })} icon="Users" />
           <PrimaryButton label={t("guestCheckIn.navigation.checkIn")} onPress={() => router.push({ pathname: "/reservations/[id]/check-in", params: { id: String(reservationId) } })} icon="ClipboardCheck" />
         </Section>
+        <Section title={t("paymentWorkflow.detail.title")}>
+          <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("paymentWorkflow.detail.hint")}</Text>
+          <PrimaryButton label={t("paymentWorkflow.navigation.title")} onPress={() => router.push({ pathname: "/reservations/[id]/payments", params: { id: String(reservationId) } })} />
+        </Section>
         {canUpdate ? <Section title={t("reservationWorkflow.detail.allowedActions")}>
           <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("reservationWorkflow.detail.stayHint")}</Text>
           <TextInput value={newCheckOutDate} onChangeText={setNewCheckOutDate} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.tertiary} keyboardType="numbers-and-punctuation" accessibilityLabel={t("reservationWorkflow.detail.newCheckOut")} style={[styles.input, { color: Colors.textPrimary, borderColor: Colors.divider, backgroundColor: Colors.screenBackground }]} />

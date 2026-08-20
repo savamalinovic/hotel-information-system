@@ -547,6 +547,45 @@ export interface CheckInResponse {
   checkedInAt: string;
 }
 
+export type PaymentType = "PAYMENT" | "CORRECTION" | "REVERSAL";
+
+export type PaymentStatus = "UNPAID" | "PARTIALLY_PAID" | "PAID";
+
+export interface Payment {
+  paymentId: number;
+  reservationId: number;
+  type: PaymentType;
+  amount: string;
+  referencedPaymentId: number | null;
+  reference: string | null;
+  reason: string | null;
+  recordedByUserId: number;
+  recordedAt: string;
+}
+
+export interface PaymentSummary {
+  reservationId: number;
+  totalDue: string;
+  netPaid: string;
+  outstandingBalance: string;
+  status: PaymentStatus;
+}
+
+export interface RecordPaymentRequest {
+  amount: string;
+  reference?: string | null;
+  note?: string | null;
+}
+
+export interface CorrectPaymentRequest {
+  amount: string;
+  reason: string;
+}
+
+export interface ReversePaymentRequest {
+  reason: string;
+}
+
 export interface MenuItemProps {
   id: string;
   icon: LucideIconName;
