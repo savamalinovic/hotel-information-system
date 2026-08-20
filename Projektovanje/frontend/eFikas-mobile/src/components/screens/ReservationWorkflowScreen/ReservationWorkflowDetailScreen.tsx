@@ -145,6 +145,11 @@ export default function ReservationWorkflowDetailScreen() {
         <Section title={t("reservationWorkflow.detail.history")}>
           {history.isPending ? <ActivityIndicator color={Colors.primary} /> : history.isError ? <EmptyOrErrorState icon="CircleAlert" title={t("reservationWorkflow.errors.historyTitle")} description={t("reservationWorkflow.errors.historyDescription")} retryLabel={t("reservationWorkflow.common.retry")} onRetry={() => void history.refetch()} /> : <StatusHistory items={history.data ?? []} />}
         </Section>
+        <Section title={t("guestCheckIn.detail.title")}>
+          <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("guestCheckIn.detail.hint")}</Text>
+          <PrimaryButton label={t("guestCheckIn.navigation.guests")} onPress={() => router.push({ pathname: "/reservations/[id]/guests", params: { id: String(reservationId) } })} icon="Users" />
+          <PrimaryButton label={t("guestCheckIn.navigation.checkIn")} onPress={() => router.push({ pathname: "/reservations/[id]/check-in", params: { id: String(reservationId) } })} icon="ClipboardCheck" />
+        </Section>
         {canUpdate ? <Section title={t("reservationWorkflow.detail.allowedActions")}>
           <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("reservationWorkflow.detail.stayHint")}</Text>
           <TextInput value={newCheckOutDate} onChangeText={setNewCheckOutDate} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.tertiary} keyboardType="numbers-and-punctuation" accessibilityLabel={t("reservationWorkflow.detail.newCheckOut")} style={[styles.input, { color: Colors.textPrimary, borderColor: Colors.divider, backgroundColor: Colors.screenBackground }]} />
