@@ -121,6 +121,25 @@ export type TaskStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+export interface CheckOutResponse {
+  reservationId: number;
+  reservationStatus: "CHECKED_OUT";
+  apartmentId: number;
+  apartmentStatus: "DIRTY";
+  checkedOutByUserId: number;
+  checkedOutAt: string;
+  cleaningTaskId: number;
+}
+
+export interface TaskStatusHistory {
+  id: number;
+  fromStatus: TaskStatus | null;
+  toStatus: TaskStatus;
+  actorId: number;
+  reason: string;
+  changedAt: string;
+}
+
 export interface OperationalTask {
   taskId: number;
   specializationId: number;
