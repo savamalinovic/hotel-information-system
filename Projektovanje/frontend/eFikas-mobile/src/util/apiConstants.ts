@@ -84,6 +84,13 @@ export const API_URLS = {
       `${API_BASE_URL}/reservations/${reservationId}/payments/${paymentId}/reversal`,
   },
 
+  checkOutWorkflows: {
+    checkOut: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/check-out`,
+    task: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}`,
+    taskHistory: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/history`,
+    tasks: `${API_BASE_URL}/tasks`,
+  },
+
 	notifications: {
 		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,
