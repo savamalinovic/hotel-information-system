@@ -1,14 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { notificationsApiService } from "../api/services/notificationsApiService";
+import { PushNotificationTokenRequest } from "@/src/types/types";
 
 export const useRegisterNotifications = () => {
     return useMutation({
-        mutationFn: () => notificationsApiService.registerPushTokenAsync(),
-        onSuccess: () => {
-            console.info("Push notifications registered successfully!");
-        },
-        onError: (error) => {
-            console.log("Notification setup failed: ", error.message);
-        }
+        mutationFn: (request: PushNotificationTokenRequest) => notificationsApiService.registerPushToken(request),
     });
 };

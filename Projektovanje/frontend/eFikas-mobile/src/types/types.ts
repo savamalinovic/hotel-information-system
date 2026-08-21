@@ -320,6 +320,7 @@ export interface NotificationItem {
   body: string;
   createdAt: string;
   readAt: string | null;
+  taskId: number | null;
 }
 
 export interface UserProfile {
@@ -848,7 +849,6 @@ export interface StoreDTO {
 export interface PushNotificationTokenRequest {
     token: string;
 	platform: 'android' | 'ios';
-    email: string;
 }
 
 export interface ToggleNotificationRequest {

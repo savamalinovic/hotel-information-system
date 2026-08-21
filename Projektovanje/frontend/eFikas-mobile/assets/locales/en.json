@@ -917,11 +917,43 @@
   },
   "notifications": {
     "title": "Notifications",
-    "description": "Receive reminders about important events—guest arrivals, payments, tasks, and property maintenance",
-    "notificationToggleSuccessTitle": "Success!",
-    "notificationToggleSuccessMessage": "You've updated your notifications.",
-    "notificationToggleErrorTitle": "Error in updating your notifications.",
-    "notificationToggleErrorMessage": "Please try again."
+    "inbox": "Notification inbox",
+    "openInbox": "Open notification inbox",
+    "inboxDescription": "Your permanent inbox stays available even when push notifications are off.",
+    "filters": { "all": "All", "unread": "Unread" },
+    "unread": "Unread notification",
+    "open": "Open notification: {{title}}",
+    "loadingTitle": "Loading notifications",
+    "loading": "Loading notifications…",
+    "errorTitle": "Notifications are unavailable",
+    "error": "We could not load your notification inbox.",
+    "retry": "Try again",
+    "loadMore": "Load more",
+    "emptyTitle": "No notifications",
+    "empty": "There are no notifications in your inbox.",
+    "emptyUnread": "You have no unread notifications.",
+    "markReadRetry": "Could not mark as read. Try again",
+    "types": {
+      "taskAvailable": "Task available",
+      "damageReported": "Damage reported",
+      "leaveRequestSubmitted": "Leave request submitted",
+      "leaveRequestDecided": "Leave request decided",
+      "unknown": "Notification"
+    },
+    "push": {
+      "title": "Push notifications on this device",
+      "localState": "This is a local device preference. The server does not provide its current token setting.",
+      "stateUnknown": "No local preference has been saved for this account on this device.",
+      "updateError": "Push notification settings could not be updated.",
+      "status": {
+        "ready": "Permission is granted.",
+        "permission-undetermined": "Allow push notifications to enable them.",
+        "permission-denied": "Push permission is denied in system settings.",
+        "web": "Push registration is unavailable on web. Your inbox still works.",
+        "physical-device-required": "A physical device is required for push registration.",
+        "project-id-missing": "The EAS project identifier is unavailable."
+      }
+    }
   },
   "profile": {
     "menuItems": {

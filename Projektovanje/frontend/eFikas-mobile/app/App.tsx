@@ -8,20 +8,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import Toast from "react-native-toast-message";
 import * as Notifications from "expo-notifications";
-import { useEffect } from "react";
 import { notificationsService } from "@/src/services/notificationsService";
+import NotificationLifecycle from "@/src/components/notifications/NotificationLifecycle";
 
 const queryClient = new QueryClient();
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: false,
-    shouldShowList: true,
-  }),
-});
+if (notificationsService.isNativePushPlatform()) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: false,
+      shouldShowList: true,
+    }),
+  });
+}
 
 const AppNavigator = () => {
   const { status, session } = useSession();
@@ -57,16 +59,13 @@ const AppNavigator = () => {
 export default function App() {
   const { theme } = useTheme();
 
-  useEffect(() => {
-    void notificationsService.configureNotifications();
-  }, []);
-
   return (
     <GluestackUIProvider mode={theme}>
       <OverlayProvider>
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
             <AppNavigator />
+            <NotificationLifecycle />
             <Toast config={ToastConfig} />
           </SessionProvider>
         </QueryClientProvider>

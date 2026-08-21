@@ -920,11 +920,43 @@
   },
   "notifications": {
     "title": "Obavještenja",
-    "description": "Dobijate podsjetnike o važnim događajima - dolascima gostiju, plaćanjima, zadacima i održavanju smještaja",
-    "notificationToggleSuccessTitle": "Uspješno!",
-    "notificationToggleSuccessMessage": "Ažurirali ste svoja obavještenja.",
-    "notificationToggleErrorTitle": "Greska u ažuriranju notifikacija",
-    "notificationToggleErrorMessage": "Molimo Vas da pokušate ponovo."
+    "inbox": "Inbox obavještenja",
+    "openInbox": "Otvori inbox obavještenja",
+    "inboxDescription": "Trajni inbox ostaje dostupan i kada su push obavještenja isključena.",
+    "filters": { "all": "Sve", "unread": "Nepročitane" },
+    "unread": "Nepročitana obavještenja",
+    "open": "Otvori obavještenje: {{title}}",
+    "loadingTitle": "Učitavanje obavještenja",
+    "loading": "Učitavanje obavještenja…",
+    "errorTitle": "Obavještenja nisu dostupna",
+    "error": "Inbox obavještenja nije moguće učitati.",
+    "retry": "Pokušaj ponovo",
+    "loadMore": "Učitaj još",
+    "emptyTitle": "Nema obavještenja",
+    "empty": "U inboxu nema obavještenja.",
+    "emptyUnread": "Nemate nepročitanih obavještenja.",
+    "markReadRetry": "Nije moguće označiti kao pročitano. Pokušajte ponovo",
+    "types": {
+      "taskAvailable": "Dostupan zadatak",
+      "damageReported": "Prijavljena šteta",
+      "leaveRequestSubmitted": "Poslat zahtjev za odsustvo",
+      "leaveRequestDecided": "Odlučeno o odsustvu",
+      "unknown": "Obavještenje"
+    },
+    "push": {
+      "title": "Push obavještenja na ovom uređaju",
+      "localState": "Ovo je lokalna postavka uređaja. Server ne vraća trenutno stanje tokena.",
+      "stateUnknown": "Za ovaj račun na uređaju još nije sačuvana lokalna postavka.",
+      "updateError": "Postavke push obavještenja nije moguće ažurirati.",
+      "status": {
+        "ready": "Dozvola je odobrena.",
+        "permission-undetermined": "Dozvolite push obavještenja da biste ih uključili.",
+        "permission-denied": "Push dozvola je odbijena u sistemskim postavkama.",
+        "web": "Registracija pusha nije dostupna na webu. Inbox i dalje radi.",
+        "physical-device-required": "Za push registraciju potreban je fizički uređaj.",
+        "project-id-missing": "EAS projectId nije dostupan."
+      }
+    }
   },
   "profile": {
     "menuItems": {

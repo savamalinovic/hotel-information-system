@@ -59,6 +59,7 @@
         }
       ],
       "expo-localization",
+      "expo-notifications",
       "expo-secure-store",
       "expo-web-browser",
       "@config-plugins/react-native-blob-util",
