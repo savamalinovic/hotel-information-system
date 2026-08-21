@@ -146,10 +146,12 @@ export const API_URLS = {
         getById: (id: number) => `${API_BASE_URL}/apartment-types/${id}`,
     },
 
-    damages: {
-        base: (apartmentId: number) => `${API_BASE_URL}/apartments/${apartmentId}/damages`,
-        byName: (apartmentId: number, name: string) => 
-            `${API_BASE_URL}/apartments/${apartmentId}/damages/${encodeURIComponent(name)}`,
+    damageWorkflows: {
+        list: (apartmentId: number) => `${API_BASE_URL}/apartments/${apartmentId}/damages`,
+        detail: (apartmentId: number, damageId: number) =>
+            `${API_BASE_URL}/apartments/${apartmentId}/damages/${damageId}`,
+        attachments: (apartmentId: number, damageId: number) =>
+            `${API_BASE_URL}/apartments/${apartmentId}/damages/${damageId}/attachments`,
     },
 
 	tasks: {
@@ -160,11 +162,10 @@ export const API_URLS = {
             `${API_BASE_URL}/apartments/${apartmentId}/tasks/${encodeURIComponent(name)}`,
     },
 
-    expenses: {
-        base: (apartmentId: number) => 
-            `${API_BASE_URL}/apartments/${apartmentId}/expenses`,
-        byName: (apartmentId: number, name: string) => 
-            `${API_BASE_URL}/apartments/${apartmentId}/expenses/${encodeURIComponent(name)}`,
+    operationalExpenses: {
+        categories: `${API_BASE_URL}/expense-categories`,
+        list: `${API_BASE_URL}/expenses`,
+        detail: (expenseId: number) => `${API_BASE_URL}/expenses/${expenseId}`,
     },
 
 	settings: {

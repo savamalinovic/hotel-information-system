@@ -1,150 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from 'react-i18next';
-import TaskDamageCostTemplate from '@/src/components/templates/TaskDamageCostTemplate/TaskDamageCostTemplate';
-import { Dropdown } from '@/src/components/atoms/Dropdown/Dropdown';
-import FloatButton from '@/src/components/atoms/FloatButton/FloatButton';
-import TaskDamageCostCard from "@/src/components/organisms/TaskDamageCostCard/TaskDamageCostCard";
-import { DamageDialog } from '@/src/components/organisms/Dialogs/DamageDialog/DamageDialog';
-import { useApartmentsList } from "@/src/hooks/useApartmentsList";
-import { damageService } from "@/src/api/services/damageService";
-import { ApartmentDamageDTO } from '@/src/types/types';
-import { toastService } from '@/src/services/toastService';
-import { useDamages } from '@/src/hooks/useDamages';
+import { useApartmentCatalog } from "@/src/hooks/useApartmentCatalog";
+import { useDamages } from "@/src/hooks/useDamages";
+import { useTheme } from "@/src/providers/ThemeProvider";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WorkflowButton, WorkflowCard, WorkflowState } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
+import { formatMoney, formatTimestamp } from "@/src/components/screens/ExpenseWorkflowScreen/expenseWorkflowHelpers";
 
-const DamageScreen = () => {
-    const queryClient = useQueryClient();
-    const { t } = useTranslation();
-    const [selectedApartment, setSelectedApartment] = useState<any>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
+const apartmentFilters = { active: true as const, size: 20, sort: "name,asc" as const };
+const damageFilters = { size: 20 };
 
-    const { data: apartmentsData, isLoading: loadingApartments } = useApartmentsList();
+export default function DamageScreen() {
+  const { t, i18n } = useTranslation(); const { Colors } = useTheme(); const [apartmentId, setApartmentId] = useState<number>();
+  const catalog = useApartmentCatalog(apartmentFilters); const damages = useDamages(apartmentId, damageFilters);
+  const selectedApartment = useMemo(() => catalog.apartments.find((item) => item.apartmentId === apartmentId), [catalog.apartments, apartmentId]);
+  const refresh = () => void Promise.all([catalog.refetch(), apartmentId ? damages.refetch() : Promise.resolve()]);
+  return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><FlatList data={apartmentId ? damages.damages : []} keyExtractor={(item) => String(item.damageId)} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={catalog.isRefetching || damages.isRefetching} onRefresh={refresh} tintColor={Colors.primary} />} ListHeaderComponent={<View style={styles.header}><View style={styles.titleRow}><View><Text style={[styles.title, { color: Colors.textPrimary }]}>{t("damageWorkflow.list.title")}</Text><Text style={{ color: Colors.textSecondary }}>{t("damageWorkflow.list.subtitle")}</Text></View>{apartmentId ? <WorkflowButton label={t("damageWorkflow.list.create")} onPress={() => router.push({ pathname: "/(home)/damages/create", params: { apartmentId: String(apartmentId) } })} icon="Plus" /> : null}</View><ApartmentPicker selectedId={apartmentId} catalog={catalog} onSelect={setApartmentId} /><Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{selectedApartment ? t("damageWorkflow.list.forApartment", { name: selectedApartment.name }) : t("damageWorkflow.list.chooseApartment")}</Text></View>} renderItem={({ item }) => <DamageCard damage={item} apartmentId={apartmentId!} locale={i18n.language} />} ListEmptyComponent={<DamageState apartmentSelected={Boolean(apartmentId)} loading={damages.isPending} error={damages.isError || catalog.isError} onRetry={refresh} />} ListFooterComponent={apartmentId && damages.hasNextPage ? <WorkflowButton label={t("damageWorkflow.list.loadMore")} onPress={() => void damages.fetchNextPage()} variant="secondary" loading={damages.isFetchingNextPage} /> : null} /></SafeAreaView>;
+}
 
-    const {
-        data: damages = [],
-        isLoading: loadingDamages,
-    } = useDamages(selectedApartment?.id);
-
-
-    const apartments = apartmentsData?.map((apt: any) => ({
-        label: apt.name || "Bez imena",
-        value: (apt.apartmentId || apt.id)?.toString() || "",
-        id: apt.apartmentId || apt.id
-    })) ?? [];
-
-    useEffect(() => {
-        if (apartments.length > 0 && !selectedApartment) {
-            setSelectedApartment(apartments[0]);
-        }
-    }, [apartmentsData]);
-
-    const handleConfirmDamage = async (formData: any) => {
-        const payload: ApartmentDamageDTO = {
-            name: formData.steta,
-            damagePrice: parseFloat(formData.trosak) || 0,
-            note: formData.napomena || "",
-            status: false
-        };
-
-        try {
-            const apartmentId = selectedApartment?.id || selectedApartment?.value;
-            if (!apartmentId) return;
-
-            await damageService.create(Number(apartmentId), payload);
-
-            toastService.success(
-                t('damages.messages.successTitle'),
-                t('damages.messages.successMessage')
-            );
-
-            await queryClient.invalidateQueries({ queryKey: ['damages', Number(apartmentId)] });
-            await queryClient.invalidateQueries({ queryKey: ["analytics", String(apartmentId)] });
-            setIsModalVisible(false);
-        } catch (error: any) {
-            toastService.error(
-                t('damages.messages.errorTitle'),
-                t('damages.messages.errorMessage')
-            );
-        }
-    };
-
-    const handleFinishDamage = async (item: ApartmentDamageDTO) => {
-        try {
-            const apartmentId = selectedApartment?.id || selectedApartment?.value;
-            await damageService.updateStatus(Number(apartmentId), item.name, item);
-
-            toastService.success(
-                t('damages.messages.statusSuccessTitle'),
-                t('damages.messages.statusSuccessMessage')
-            );
-
-            await queryClient.invalidateQueries({ queryKey: ['damages', Number(apartmentId)] });
-        } catch (error) {
-            toastService.error(
-                t('damages.messages.errorTitle'),
-                t('damages.messages.errorMessage')
-            );
-        }
-    };
-
-    if (loadingApartments) return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
-
-    return (
-        <>
-            <TaskDamageCostTemplate
-                dropdown={
-                    <Dropdown
-                        placeholder="Izaberite stan"
-                        options={apartments}
-                        optionLabel="label"
-                        optionValue="value"
-                        selectedValue={selectedApartment}
-                        setSelectedValue={setSelectedApartment}
-                    />
-                }
-                list={
-                    <View>
-                        {loadingDamages ? (
-                            <ActivityIndicator color="#0000ff" style={{ marginTop: 20 }} />
-                        ) : (
-                            damages.map((item, index) => (
-                                <TaskDamageCostCard
-                                    key={`damage-${item.name}-${index}`}
-                                    id={item.name}
-                                    apartmant={selectedApartment?.label || ""}
-                                    description={item.name}
-                                    isFinished={item.status}
-                                    onFinish={() => handleFinishDamage(item)}
-                                />
-                            ))
-                        )}
-                    </View>
-                }
-                floatingButton={
-                    <FloatButton
-                        size="lg"
-                        onClick={() => setIsModalVisible(true)}
-                    />
-                }
-            />
-
-            <DamageDialog
-                visible={isModalVisible}
-                onClose={() => setIsModalVisible(false)}
-                onConfirm={handleConfirmDamage}
-            />
-        </>
-    );
-};
-
-export default DamageScreen;
-
-//primjer poziva
-/*
- <GestureHandlerRootView style={{ flex: 1 }}> 
-
-  <DamageScreen />
-
-  </GestureHandlerRootView>
-*/
+function ApartmentPicker({ selectedId, catalog, onSelect }: { selectedId?: number; catalog: ReturnType<typeof useApartmentCatalog>; onSelect: (id: number) => void }) { const { t } = useTranslation(); const { Colors } = useTheme(); return <WorkflowCard><Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("damageWorkflow.list.apartment")}</Text>{catalog.isPending ? <Text style={{ color: Colors.textSecondary }}>{t("damageWorkflow.common.loading")}</Text> : catalog.isError ? <WorkflowButton label={t("damageWorkflow.common.retry")} onPress={() => void catalog.refetch()} variant="secondary" icon="RefreshCw" /> : <><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.apartmentChips}>{catalog.apartments.map((apartment) => <Pressable key={apartment.apartmentId} accessibilityRole="radio" accessibilityLabel={apartment.name} accessibilityState={{ selected: selectedId === apartment.apartmentId }} onPress={() => onSelect(apartment.apartmentId)} style={[styles.apartmentChip, { borderColor: selectedId === apartment.apartmentId ? Colors.primary : Colors.divider, backgroundColor: selectedId === apartment.apartmentId ? `${Colors.primary}16` : Colors.background }]}><Text style={{ color: Colors.textPrimary, fontWeight: "800" }}>{apartment.name}</Text><Text style={{ color: Colors.textSecondary }}>#{apartment.apartmentId}</Text></Pressable>)}</ScrollView>{catalog.hasNextPage ? <WorkflowButton label={t("damageWorkflow.list.loadMoreApartments")} onPress={() => void catalog.fetchNextPage()} variant="secondary" loading={catalog.isFetchingNextPage} /> : null}</>}</WorkflowCard>; }
+function DamageCard({ damage, apartmentId, locale }: { damage: { damageId: number; title: string; description: string; estimatedAmount: string | null; createdAt: string }; apartmentId: number; locale: string }) { const { t } = useTranslation(); const { Colors } = useTheme(); return <Pressable accessibilityRole="button" accessibilityLabel={t("damageWorkflow.list.open", { title: damage.title })} onPress={() => router.push({ pathname: "/(home)/damages/[id]", params: { id: String(damage.damageId), apartmentId: String(apartmentId) } })} style={[styles.damage, { backgroundColor: Colors.background, borderColor: Colors.divider }]}><View style={styles.damageCopy}><Text style={[styles.damageTitle, { color: Colors.textPrimary }]}>{damage.title}</Text><Text style={{ color: Colors.textSecondary }} numberOfLines={2}>{damage.description}</Text><Text style={{ color: Colors.textSecondary }}>{formatTimestamp(damage.createdAt, locale)}</Text></View>{damage.estimatedAmount ? <Text style={{ color: Colors.textPrimary, fontWeight: "800" }}>{formatMoney(damage.estimatedAmount, t("damageWorkflow.common.currency"))}</Text> : null}</Pressable>; }
+function DamageState({ apartmentSelected, loading, error, onRetry }: { apartmentSelected: boolean; loading: boolean; error: boolean; onRetry: () => void }) { const { t } = useTranslation(); if (!apartmentSelected) return <WorkflowState icon="SearchX" title={t("damageWorkflow.list.chooseApartment")} description={t("damageWorkflow.list.chooseApartmentHint")} />; if (loading) return <WorkflowState icon="LoaderCircle" title={t("damageWorkflow.common.loading")} description={t("damageWorkflow.list.loading")} />; if (error) return <WorkflowState icon="CircleAlert" title={t("damageWorkflow.common.errorTitle")} description={t("damageWorkflow.list.loadError")} actionLabel={t("damageWorkflow.common.retry")} onAction={onRetry} />; return <WorkflowState icon="SearchX" title={t("damageWorkflow.list.emptyTitle")} description={t("damageWorkflow.list.empty")} />; }
+const styles = StyleSheet.create({ screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12, flexGrow: 1 }, header: { gap: 12 }, titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }, title: { fontSize: 24, fontWeight: "800" }, sectionTitle: { fontSize: 15, fontWeight: "800" }, apartmentChips: { gap: 8, paddingRight: 12 }, apartmentChip: { borderWidth: 1, borderRadius: 12, padding: 10, minWidth: 112, gap: 2 }, damage: { borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: "row", gap: 12, justifyContent: "space-between" }, damageCopy: { flex: 1, gap: 4 }, damageTitle: { fontSize: 16, fontWeight: "800" } });

@@ -1,152 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { useQueryClient } from "@tanstack/react-query"; 
-import { useTranslation } from 'react-i18next';
-import TaskDamageCostTemplate from '@/src/components/templates/TaskDamageCostTemplate/TaskDamageCostTemplate'; 
-import { Dropdown } from '@/src/components/atoms/Dropdown/Dropdown';
-import FloatButton from '@/src/components/atoms/FloatButton/FloatButton';
-import TaskDamageCostCard from "@/src/components/organisms/TaskDamageCostCard/TaskDamageCostCard"; 
-import { ExpensesDialog } from '@/src/components/organisms/Dialogs/ExpensesDialog/ExpensesDialog'; 
-import { useApartmentsList } from "@/src/hooks/useApartmentsList";
-import { useExpenses } from "@/src/hooks/useExpenses"; 
-import { expenseService } from "@/src/api/services/expenseService"; 
-import { ApartmentExpenseDTO } from '@/src/types/types'; 
-import { toastService } from '@/src/services/toastService';
+import { useExpenseCategories, useExpenses } from "@/src/hooks/useExpenses";
+import { useTheme } from "@/src/providers/ThemeProvider";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WorkflowButton, WorkflowCard, WorkflowChip, WorkflowState } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
+import { formatDate, formatMoney } from "@/src/components/screens/ExpenseWorkflowScreen/expenseWorkflowHelpers";
+import { isValidDateKey } from "@/src/components/screens/ReservationWorkflowScreen/reservationWorkflowHelpers";
 
-const ExpensesScreen = () => { 
-    const queryClient = useQueryClient();
-    const { t } = useTranslation();
-    const [selectedApartment, setSelectedApartment] = useState<any>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false); 
+type VoidedFilter = "active" | "voided" | "all";
 
-    const { data: apartmentsData, isLoading: loadingApartments } = useApartmentsList();
+export default function ExpensesScreen() {
+  const { t, i18n } = useTranslation(); const { Colors } = useTheme();
+  const categories = useExpenseCategories();
+  const [dateFrom, setDateFrom] = useState(""); const [dateTo, setDateTo] = useState(""); const [categoryId, setCategoryId] = useState<number>(); const [voided, setVoided] = useState<VoidedFilter>("active");
+  const invalidPeriod = Boolean((dateFrom && !isValidDateKey(dateFrom)) || (dateTo && !isValidDateKey(dateTo)) || (dateFrom && dateTo && dateFrom > dateTo));
+  const filters = useMemo(() => ({ dateFrom: dateFrom || undefined, dateTo: dateTo || undefined, categoryId, voided: voided === "all" ? undefined : voided === "voided", size: 20 }), [dateFrom, dateTo, categoryId, voided]);
+  const expenses = useExpenses(filters, !invalidPeriod);
+  const reset = () => { setDateFrom(""); setDateTo(""); setCategoryId(undefined); setVoided("active"); };
+  const hasFilters = Boolean(dateFrom || dateTo || categoryId || voided !== "active");
+  const refresh = () => void Promise.all([expenses.refetch(), categories.refetch()]);
 
-    const { 
-        data: expenses = [], 
-        isLoading: loadingExpenses 
-    } = useExpenses(selectedApartment?.id);
+  return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><FlatList data={invalidPeriod ? [] : expenses.expenses} keyExtractor={(item) => String(item.operationalExpenseId)} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={expenses.isRefetching || categories.isRefetching} onRefresh={refresh} tintColor={Colors.primary} />} ListHeaderComponent={<View style={styles.header}><View style={styles.titleRow}><View><Text style={[styles.title, { color: Colors.textPrimary }]}>{t("expenseWorkflow.list.title")}</Text><Text style={{ color: Colors.textSecondary }}>{t("expenseWorkflow.list.subtitle")}</Text></View><WorkflowButton label={t("expenseWorkflow.list.create")} onPress={() => router.push("/(home)/expenses/create")} icon="Plus" /></View><WorkflowCard><Text style={[styles.label, { color: Colors.textPrimary }]}>{t("expenseWorkflow.list.period")}</Text><View style={styles.dateRow}><TextInput accessibilityLabel={t("expenseWorkflow.list.dateFrom")} value={dateFrom} onChangeText={setDateFrom} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textSecondary} style={[styles.dateInput, { color: Colors.textPrimary, borderColor: Colors.divider, backgroundColor: Colors.screenBackground }]} /><TextInput accessibilityLabel={t("expenseWorkflow.list.dateTo")} value={dateTo} onChangeText={setDateTo} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textSecondary} style={[styles.dateInput, { color: Colors.textPrimary, borderColor: Colors.divider, backgroundColor: Colors.screenBackground }]} /></View>{invalidPeriod ? <Text style={{ color: Colors.error }}>{t("expenseWorkflow.list.invalidPeriod")}</Text> : null}<Text style={[styles.label, { color: Colors.textPrimary }]}>{t("expenseWorkflow.list.category")}</Text>{categories.isPending ? <Text style={{ color: Colors.textSecondary }}>{t("expenseWorkflow.common.loading")}</Text> : categories.isError ? <WorkflowButton label={t("expenseWorkflow.common.retry")} onPress={() => void categories.refetch()} variant="secondary" icon="RefreshCw" /> : <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}><WorkflowChip label={t("expenseWorkflow.list.allCategories")} selected={!categoryId} onPress={() => setCategoryId(undefined)} />{categories.data?.content.map((category) => <WorkflowChip key={category.expenseCategoryId} label={category.name} selected={categoryId === category.expenseCategoryId} onPress={() => setCategoryId(category.expenseCategoryId)} />)}</ScrollView>}<Text style={[styles.label, { color: Colors.textPrimary }]}>{t("expenseWorkflow.list.voided")}</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>{(["active", "voided", "all"] as VoidedFilter[]).map((value) => <WorkflowChip key={value} label={t(`expenseWorkflow.list.voidedFilter.${value}`)} selected={voided === value} onPress={() => setVoided(value)} />)}</ScrollView>{hasFilters ? <Pressable accessibilityRole="button" accessibilityLabel={t("expenseWorkflow.list.reset")} onPress={reset}><Text style={{ color: Colors.primary, fontWeight: "800" }}>{t("expenseWorkflow.list.reset")}</Text></Pressable> : null}</WorkflowCard></View>} renderItem={({ item }) => <ExpenseCard item={item} locale={i18n.language} />} ListEmptyComponent={<ListState invalidPeriod={invalidPeriod} loading={expenses.isPending} error={expenses.isError} filtered={hasFilters} onRetry={() => void expenses.refetch()} />} ListFooterComponent={<View style={styles.footer}><WorkflowButton label={t("expenseWorkflow.list.loadMore")} onPress={() => void expenses.fetchNextPage()} variant="secondary" loading={expenses.isFetchingNextPage} disabled={!expenses.hasNextPage} /></View>} /> </SafeAreaView>;
+}
 
-    const apartments = apartmentsData?.map((apt: any) => ({
-        label: apt.name || "Bez imena", 
-        value: (apt.apartmentId || apt.id)?.toString() || "", 
-        id: apt.apartmentId || apt.id
-    })) ?? [];
-
-    useEffect(() => {
-        if (apartments.length > 0 && !selectedApartment) {
-            setSelectedApartment(apartments[0]);
-        }
-    }, [apartmentsData]);
-
-    const handleConfirmExpense = async (formData: any) => {
-        const payload: ApartmentExpenseDTO = {
-            name: formData.trosak,
-            amount: parseFloat(formData.iznos) || 0,
-            expenseType: formData.kategorija, 
-            status: false,
-            note: formData.napomena || "" 
-        };
-
-        try {
-            const apartmentId = selectedApartment?.apartmentId || selectedApartment?.id;
-            await expenseService.create(Number(apartmentId), payload);
-            
-            toastService.success(
-                t('expenses.messages.successTitle'), 
-                t('expenses.messages.successMessage')
-            );
-
-            await queryClient.invalidateQueries({ queryKey: ['expenses', Number(apartmentId)] });
-            await queryClient.invalidateQueries({ queryKey: ["analytics", String(apartmentId)] });
-            setIsModalVisible(false);
-        } catch (error: any) {
-            console.log("GREŠKA:", error.response?.data);
-            toastService.error(
-                t('expenses.messages.errorTitle'), 
-                t('expenses.messages.errorMessage')
-            );
-        }
-    };
-
-    const handleExpenseComplete = async (item: ApartmentExpenseDTO) => {
-        try {
-            const apartmentId = selectedApartment?.id || selectedApartment?.value;
-            await expenseService.updateStatus(Number(apartmentId), item.name, item);
-            
-            toastService.success(
-                t('expenses.messages.statusSuccessTitle'), 
-                t('expenses.messages.statusSuccessMessage')
-            );
-            
-            await queryClient.invalidateQueries({ queryKey: ['expenses', Number(apartmentId)] });
-        } catch (error) {
-            toastService.error(
-                t('expenses.messages.errorTitle'), 
-                "Nije moguće promijeniti status troška."
-            );
-        }
-    };
-
-    if (loadingApartments) return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
-
-    return (
-        <>
-            <TaskDamageCostTemplate 
-                dropdown={
-                    <Dropdown 
-                        placeholder={t('expenses.selectApartment')} 
-                        options={apartments} 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        selectedValue={selectedApartment} 
-                        setSelectedValue={setSelectedApartment} 
-                    />
-                }
-                list={
-                    <View>
-                        {loadingExpenses ? (
-                            <ActivityIndicator color="#0000ff" style={{ marginTop: 20 }} />
-                        ) : (
-                            expenses.map((item, index) => {
-                                // Dinamički prevod kategorije iz tvog JSON-a
-                                // Ako je item.expenseType "Režije", traži ključ "expenses.categories.Režije"
-                                const translatedCategory = t(`expenses.categories.${item.expenseType}`);
-                                
-                                return (
-                                    <TaskDamageCostCard 
-                                        key={`expense-${item.name}-${index}`}
-                                        id={item.name} 
-                                        apartmant={selectedApartment?.label || ""} 
-                                        description={`${translatedCategory}: ${item.name}`} 
-                                        isFinished={item.status} 
-                                        onFinish={() => handleExpenseComplete(item)} 
-                                    />
-                                );
-                            })
-                        )}
-                    </View>
-                }
-                floatingButton={
-                    <FloatButton size="lg" onClick={() => setIsModalVisible(true)} />
-                }
-            />
-
-            <ExpensesDialog 
-                visible={isModalVisible} 
-                onClose={() => setIsModalVisible(false)} 
-                onConfirm={handleConfirmExpense} 
-            />  
-        </>
-    );
-};
-
-export default ExpensesScreen;
-
-//primjer poziva
-/*
- <GestureHandlerRootView style={{ flex: 1 }}> 
-
-  <ExpensesScreen />
-
-  </GestureHandlerRootView>
-*/
+function ExpenseCard({ item, locale }: { item: { operationalExpenseId: number; name: string; categoryName: string; amount: string; expenseDate: string; voided: boolean }; locale: string }) { const { Colors } = useTheme(); const { t } = useTranslation(); return <Pressable accessibilityRole="button" accessibilityLabel={t("expenseWorkflow.list.open", { name: item.name })} onPress={() => router.push({ pathname: "/(home)/expenses/[id]", params: { id: String(item.operationalExpenseId) } })} style={[styles.item, { backgroundColor: Colors.background, borderColor: Colors.divider }]}><View style={styles.itemCopy}><Text style={[styles.itemName, { color: Colors.textPrimary }]}>{item.name}</Text><Text style={{ color: Colors.textSecondary }}>{item.categoryName}</Text><Text style={{ color: Colors.textSecondary }}>{formatDate(item.expenseDate, locale)}</Text></View><View style={styles.itemValue}><Text style={[styles.amount, { color: Colors.textPrimary }]}>{formatMoney(item.amount, t("expenseWorkflow.common.currency"))}</Text>{item.voided ? <Text style={{ color: Colors.error, fontWeight: "800" }}>{t("expenseWorkflow.detail.voided")}</Text> : null}</View></Pressable>; }
+function ListState({ invalidPeriod, loading, error, filtered, onRetry }: { invalidPeriod: boolean; loading: boolean; error: boolean; filtered: boolean; onRetry: () => void }) { const { t } = useTranslation(); if (invalidPeriod) return <WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.list.invalidPeriod")} />; if (loading) return <WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.list.loading")} />; if (error) return <WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.list.loadError")} actionLabel={t("expenseWorkflow.common.retry")} onAction={onRetry} />; return <WorkflowState icon="SearchX" title={t("expenseWorkflow.list.emptyTitle")} description={t(filtered ? "expenseWorkflow.list.emptyFiltered" : "expenseWorkflow.list.empty")} />; }
+const styles = StyleSheet.create({ screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12, flexGrow: 1 }, header: { gap: 12 }, titleRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }, title: { fontSize: 24, fontWeight: "800" }, label: { fontSize: 14, fontWeight: "800" }, dateRow: { flexDirection: "row", gap: 8 }, dateInput: { flex: 1, minHeight: 44, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10 }, chips: { gap: 8, paddingRight: 12 }, item: { borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: "row", justifyContent: "space-between", gap: 12 }, itemCopy: { flex: 1, gap: 3 }, itemName: { fontSize: 16, fontWeight: "800" }, itemValue: { alignItems: "flex-end", gap: 5 }, amount: { fontWeight: "800" }, footer: { paddingTop: 2 } });

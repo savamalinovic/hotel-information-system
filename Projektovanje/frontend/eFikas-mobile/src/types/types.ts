@@ -45,6 +45,75 @@ export interface PageResponse<T> {
   totalPages: number;
 }
 
+export interface OperationalExpenseResponse {
+  operationalExpenseId: number;
+  categoryId: number;
+  categoryName: string;
+  name: string;
+  description: string | null;
+  amount: string;
+  expenseDate: string;
+  createdBy: number;
+  authorName: string;
+  authorSurname: string;
+  createdAt: string;
+  voided: boolean;
+  voidedBy: number | null;
+  voidedAt: string | null;
+  voidReason: string | null;
+}
+
+export interface ExpenseCategoryResponse {
+  expenseCategoryId: number;
+  name: string;
+  description: string | null;
+  active: boolean;
+  createdBy: number;
+  createdAt: string;
+  updatedBy: number;
+  updatedAt: string;
+}
+
+export interface CreateOperationalExpenseRequest {
+  categoryId: number;
+  name: string;
+  description: string | null;
+  amount: string;
+  expenseDate: string;
+}
+
+export interface DamageResponse {
+  damageId: number;
+  apartmentId: number;
+  title: string;
+  description: string;
+  estimatedAmount: string | null;
+  confirmedAmount: string | null;
+  createdBy: number;
+  authorName: string;
+  authorSurname: string;
+  createdAt: string;
+  updatedBy: number;
+  updatedAt: string;
+}
+
+export interface DamageAttachmentResponse {
+  damageAttachmentId: number;
+  originalName: string;
+  contentType: string | null;
+  sizeBytes: number;
+  uploadedBy: number;
+  uploadedAt: string;
+  downloadUrl: string;
+}
+
+export interface CreateDamageRequest {
+  title: string;
+  description: string;
+  estimatedAmount: string | null;
+  confirmedAmount: string | null;
+}
+
 export type ReservationStatus =
   | "CONFIRMED"
   | "CHECKED_IN"
