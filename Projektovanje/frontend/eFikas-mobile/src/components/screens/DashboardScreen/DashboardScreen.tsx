@@ -1,5 +1,6 @@
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import { useAgentDashboard } from "@/src/hooks/useAgentDashboard";
+import { useUnreadNotificationCount } from "@/src/hooks/useNotifications";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { TodayAgendaItem } from "@/src/types/types";
 import { router } from "expo-router";
@@ -30,6 +31,7 @@ export default function DashboardScreen() {
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
   const dashboardQuery = useAgentDashboard();
+  const unreadNotifications = useUnreadNotificationCount();
 
   const goToFeature = (feature: "apartments" | "expenses" | "tasks" | "damages") => {
     router.push(`/(home)/${feature}`);
@@ -81,7 +83,7 @@ export default function DashboardScreen() {
     && data.checkedIn === 0
     && data.newTasks === 0
     && data.blockedTasks === 0
-    && data.unreadNotifications === 0;
+    && unreadNotifications.data === 0;
 
   const metrics = [
     { key: "arrivals", icon: "LogIn", label: t("agentDashboard.metrics.arrivals"), value: data.arrivals },
@@ -89,7 +91,7 @@ export default function DashboardScreen() {
     { key: "checkedIn", icon: "Users", label: t("agentDashboard.metrics.checkedIn"), value: data.checkedIn },
     { key: "newTasks", icon: "ClipboardList", label: t("agentDashboard.metrics.newTasks"), value: data.newTasks },
     { key: "blockedTasks", icon: "CircleAlert", label: t("agentDashboard.metrics.blockedTasks"), value: data.blockedTasks },
-    { key: "notifications", icon: "Bell", label: t("agentDashboard.metrics.notifications"), value: data.unreadNotifications },
+    { key: "notifications", icon: "Bell", label: t("agentDashboard.metrics.notifications"), value: unreadNotifications.isError ? null : unreadNotifications.data },
   ] as const;
 
   const quickActions = [
@@ -107,7 +109,7 @@ export default function DashboardScreen() {
       refreshControl={
         <RefreshControl
           refreshing={dashboardQuery.isRefetching}
-          onRefresh={() => void dashboardQuery.refetch()}
+          onRefresh={() => void Promise.all([dashboardQuery.refetch(), unreadNotifications.refetch()])}
           tintColor={Colors.primary}
         />
       }

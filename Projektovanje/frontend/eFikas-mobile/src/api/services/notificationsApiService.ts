@@ -1,54 +1,51 @@
-import * as Device from 'expo-device';
-import * as Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
-import { PushNotificationTokenRequest, ToggleNotificationRequest } from '@/src/types/types';
-import { notificationsService } from '@/src/services/notificationsService';
-import axiosInstance from '../axiosInstance';
-import { API_URLS } from '@/src/util/apiConstants';
-import { AxiosResponse } from 'axios';
-import { sessionStore } from '@/src/session/sessionStore';
+import axiosInstance from "@/src/api/axiosInstance";
+import {
+  NotificationItem,
+  PageResponse,
+  PushNotificationTokenRequest,
+  ToggleNotificationRequest,
+} from "@/src/types/types";
+import { API_URLS } from "@/src/util/apiConstants";
+
+export type NotificationInboxFilters = {
+  unreadOnly: boolean;
+  page: number;
+  size: number;
+};
+
+const stableSort = ["createdAt,desc", "notificationId,desc"];
+const notificationParamsSerializer = { indexes: null };
 
 export const notificationsApiService = {
-	
-	registerPushTokenAsync: async () => {
-		try {
-			if (!Device.isDevice) throw new Error('Must use physical device');
+  getInbox: async (filters: NotificationInboxFilters): Promise<PageResponse<NotificationItem>> => {
+    const response = await axiosInstance.get<PageResponse<NotificationItem>>(API_URLS.notifications.list, {
+      params: { ...filters, sort: stableSort },
+      paramsSerializer: notificationParamsSerializer,
+    });
+    return response.data;
+  },
 
-			const { status: existingStatus } = await Notifications.getPermissionsAsync();
-			let finalStatus = existingStatus;
-			
-			if (existingStatus !== 'granted') {
-				const { status } = await Notifications.requestPermissionsAsync();
-				finalStatus = status;
-			}
-			
-			if (finalStatus !== 'granted') throw new Error('Permission not granted');
+  getUnreadCount: async (): Promise<number> => {
+    const page = await notificationsApiService.getInbox({ unreadOnly: true, page: 0, size: 1 });
+    return page.totalElements;
+  },
 
-			const token: string = await notificationsService.getPushToken();
-			const session = sessionStore.getSession();
-			if (!session) throw new Error('Authentication is required');
+  markAsRead: async (notificationId: number): Promise<NotificationItem> => {
+    const response = await axiosInstance.post<NotificationItem>(API_URLS.notifications.markRead(notificationId));
+    return response.data;
+  },
 
-			const email = session.email;
-			const payload: PushNotificationTokenRequest = {
-				token: token,
-				platform: notificationsService.getPlatform(),
-				email: email
-			}
+  registerPushToken: async (request: PushNotificationTokenRequest): Promise<void> => {
+    const response = await axiosInstance.post(API_URLS.notifications.pushToken, request);
+    if (response.status !== 204) {
+      throw new Error(`Unexpected push-token registration status: ${response.status}`);
+    }
+  },
 
-			// TODO: create hook + register at beginning
-			const response = await axiosInstance.post(API_URLS.notifications.pushToken, payload);
-
-			if (response.status !== 200) throw new Error('Failed to save token on server');
-
-			return response.data;
-		} catch(err) {
-			console.log("Push Token already exists");
-		}
-        
-    },
-
-	toggleNotifications: async (request: ToggleNotificationRequest): Promise<AxiosResponse> => {
-		const response = axiosInstance.put(API_URLS.notifications.toggle, request);
-		return response;
-	}
-}
+  toggleNotifications: async (request: ToggleNotificationRequest): Promise<void> => {
+    const response = await axiosInstance.put(API_URLS.notifications.toggle, request);
+    if (response.status !== 204) {
+      throw new Error(`Unexpected push-token toggle status: ${response.status}`);
+    }
+  },
+};

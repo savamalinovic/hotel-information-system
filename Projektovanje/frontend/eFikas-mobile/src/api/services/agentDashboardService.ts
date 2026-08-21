@@ -3,7 +3,6 @@ import { profileService } from "@/src/api/services/profileService";
 import { API_URLS } from "@/src/util/apiConstants";
 import {
   AgentDashboardData,
-  NotificationItem,
   OperationalTask,
   PageResponse,
   ReservationDetails,
@@ -82,7 +81,6 @@ export const agentDashboardService = {
       Promise.allSettled([
         getTotalElements<OperationalTask>(API_URLS.tasks.list, { status: "NEW" }),
         getTotalElements<OperationalTask>(API_URLS.tasks.list, { status: "BLOCKED" }),
-        getTotalElements<NotificationItem>(API_URLS.notifications.list, { unreadOnly: "true" }),
       ]),
     ]);
 
@@ -99,7 +97,7 @@ export const agentDashboardService = {
       checkedIn: reservations.filter((reservation) => reservation.status === "CHECKED_IN").length,
       newTasks: getMetric(0),
       blockedTasks: getMetric(1),
-      unreadNotifications: getMetric(2),
+      unreadNotifications: null,
       agenda: getAgenda(reservations, today),
     };
   },

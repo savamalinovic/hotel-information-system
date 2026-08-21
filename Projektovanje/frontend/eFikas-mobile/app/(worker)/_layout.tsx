@@ -12,6 +12,7 @@ export default function WorkerLayout() {
   }
   return <Stack screenOptions={{ headerTintColor: Colors.textPrimary, headerStyle: { backgroundColor: Colors.tabBackground } }}>
     <Stack.Screen name="index" options={{ title: t("taskWorkforce.worker.homeTitle") }} />
+    <Stack.Screen name="notifications" options={{ title: t("notifications.inbox") }} />
     <Stack.Screen name="tasks/[id]" options={{ title: t("taskWorkforce.detail.title") }} />
     <Stack.Screen name="tasks/[id]/damages/index" options={{ title: t("damageWorkflow.worker.title") }} />
     <Stack.Screen name="tasks/[id]/damages/[damageId]" options={{ title: t("damageWorkflow.detail.title") }} />
