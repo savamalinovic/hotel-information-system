@@ -49,6 +49,7 @@ public class TaskService {
   return PageResponse.from(tasks.findAll(s,pageable).map(TaskService::map));
  }
  @Transactional(readOnly=true) public PageResponse<TaskResponse> available(String email,Pageable pageable){AppUser w=worker(email); return PageResponse.from(tasks.findAvailable(w.getUserId(),pageable).map(TaskService::map));}
+ @Transactional(readOnly=true) public PageResponse<TaskResponse> mine(String email,TaskStatus status,Pageable pageable){AppUser w=worker(email);return PageResponse.from((status==null?tasks.findByAssignedWorkerUserId(w.getUserId(),pageable):tasks.findByAssignedWorkerUserIdAndStatus(w.getUserId(),status,pageable)).map(TaskService::map));}
  @Transactional(readOnly=true) public TaskResponse get(String email,Long id){OperationalTask t=require(id); assertVisible(user(email),t); return map(t);}
  @Transactional(readOnly=true) public List<TaskHistoryResponse> history(String email,Long id){OperationalTask t=require(id);assertVisible(user(email),t);return history.findByTaskTaskIdOrderByChangedAtAscIdAsc(id).stream().map(h->new TaskHistoryResponse(h.getId(),h.getFromStatus(),h.getToStatus(),h.getActor().getUserId(),h.getReason(),h.getChangedAt())).toList();}
 

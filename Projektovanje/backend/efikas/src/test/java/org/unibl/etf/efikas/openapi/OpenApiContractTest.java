@@ -19,6 +19,7 @@ import org.unibl.etf.efikas.controllers.AuthController;
 import org.unibl.etf.efikas.controllers.HotelProfileController;
 import org.unibl.etf.efikas.controllers.NotificationsController;
 import org.unibl.etf.efikas.controllers.SpecializationController;
+import org.unibl.etf.efikas.controllers.TaskController;
 import org.unibl.etf.efikas.controllers.UserManagementController;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.AppUserService;
@@ -26,6 +27,7 @@ import org.unibl.etf.efikas.services.HotelProfileService;
 import org.unibl.etf.efikas.services.SpecializationService;
 import org.unibl.etf.efikas.services.StoreService;
 import org.unibl.etf.efikas.services.UserManagementService;
+import org.unibl.etf.efikas.services.TaskService;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import org.unibl.etf.efikas.services.interfaces.OAuthService;
 import org.unibl.etf.efikas.services.interfaces.OtpService;
@@ -71,6 +73,9 @@ class OpenApiContractTest {
     @MockitoBean
     private NotificationService notificationService;
 
+    @MockitoBean
+    private TaskService taskService;
+
     @Test
     void generatedV1ContractContainsVersionedTypedLoginAndStableErrors() throws Exception {
         mockMvc.perform(get("/v3/api-docs/v1"))
@@ -108,6 +113,12 @@ class OpenApiContractTest {
                 .andExpect(jsonPath("$.paths['/api/v1/notifications'].get").exists())
                 .andExpect(jsonPath("$.components.schemas.NotificationResponse.properties.taskId.type")
                         .value("integer"))
+                .andExpect(jsonPath("$.paths['/api/v1/tasks/mine'].get").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/tasks/mine'].get.parameters[?(@.name == 'status')]").isNotEmpty())
+                .andExpect(jsonPath("$.paths['/api/v1/tasks/mine'].get.responses['200'].content['*/*'].schema.$ref")
+                        .value("#/components/schemas/PageResponseTaskResponse"))
+                .andExpect(jsonPath("$.components.schemas.PageResponseTaskResponse.properties.content.items.$ref")
+                        .value("#/components/schemas/TaskResponse"))
                 .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.userId").doesNotExist())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/register']").doesNotExist());
     }
@@ -119,7 +130,8 @@ class OpenApiContractTest {
             FlywayAutoConfiguration.class
     })
     @Import({OpenApiConfig.class, AuthController.class, AppUserController.class, HotelProfileController.class,
-            SpecializationController.class, UserManagementController.class, NotificationsController.class})
+            SpecializationController.class, UserManagementController.class, NotificationsController.class,
+            TaskController.class})
     static class ContractTestApplication {
     }
 }
