@@ -590,6 +590,28 @@ export interface PaymentSummary {
   status: PaymentStatus;
 }
 
+export interface DemoReceipt {
+  demoReceiptId: number;
+  reservationId: number;
+  receiptNumber: string;
+  issuedAt: string;
+  issuedByUserId: number;
+  hotelName: string;
+  hotelAddress: string;
+  hotelTaxId: string;
+  apartmentName: string;
+  primaryGuestName: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  nightlyRate: string;
+  totalAmount: string;
+  vatAmount: string;
+  currency: string;
+  pdfSha256: string;
+  pdfDownloadPath: string;
+}
+
 export interface RecordPaymentRequest {
   amount: string;
   reference?: string | null;

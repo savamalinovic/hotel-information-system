@@ -91,6 +91,11 @@ export const API_URLS = {
     tasks: `${API_BASE_URL}/tasks`,
   },
 
+  demoReceipts: {
+    metadata: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/demo-receipt`,
+    pdf: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/demo-receipt/pdf`,
+  },
+
 	notifications: {
 		list: `${API_BASE_URL}/notifications`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,

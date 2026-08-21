@@ -154,6 +154,10 @@ export default function ReservationWorkflowDetailScreen() {
           <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("paymentWorkflow.detail.hint")}</Text>
           <PrimaryButton label={t("paymentWorkflow.navigation.title")} onPress={() => router.push({ pathname: "/reservations/[id]/payments", params: { id: String(reservationId) } })} />
         </Section>
+        <Section title={t("demoReceipt.detail.title")}>
+          <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("demoReceipt.detail.hint")}</Text>
+          <PrimaryButton label={t("demoReceipt.navigation.title")} onPress={() => router.push({ pathname: "/reservations/[id]/demo-receipt", params: { id: String(reservationId) } })} />
+        </Section>
         {reservation.status === "CHECKED_IN" ? <Section title={t("checkOutWorkflow.detail.title")}>
           <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("checkOutWorkflow.detail.readyHint")}</Text>
           <PrimaryButton label={t("checkOutWorkflow.navigation.checkOut")} onPress={() => router.push({ pathname: "/reservations/[id]/check-out", params: { id: String(reservationId) } })} icon="ClipboardCheck" />
