@@ -120,6 +120,7 @@ function WorkerTaskActions({ task, onRefresh }: { task: OperationalTask; onRefre
     <Text style={{ color: Colors.textPrimary, fontWeight: "800" }}>{t("taskWorkforce.detail.workerActions")}</Text>
     {availability.data ? <AvailabilityBadge status={availability.data.status} /> : null}
     {error ? <Text style={{ color: Colors.error }}>{error}</Text> : null}
+    {task.apartmentId && task.assignedWorkerId !== null && ["ASSIGNED", "IN_PROGRESS", "BLOCKED"].includes(task.status) ? <WorkflowButton label={t("damageWorkflow.worker.openFromTask")} onPress={() => router.push({ pathname: "/(worker)/tasks/[id]/damages", params: { id: String(task.taskId) } })} variant="secondary" /> : null}
     {task.specializationCode === "CLEANING" ? <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.worker.cleaningHint")}</Text> : null}
     {task.status === "NEW" ? <WorkflowButton label={t("taskWorkforce.worker.claim")} onPress={requestClaim} loading={claim.isPending} /> : null}
     {task.status === "ASSIGNED" ? <WorkflowButton label={t("taskWorkforce.worker.start")} onPress={() => mutate(start, t("taskWorkforce.worker.actionError"))} loading={start.isPending} /> : null}
