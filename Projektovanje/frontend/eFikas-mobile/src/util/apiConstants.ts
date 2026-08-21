@@ -91,6 +91,35 @@ export const API_URLS = {
     tasks: `${API_BASE_URL}/tasks`,
   },
 
+  taskWorkflows: {
+    specializations: `${API_BASE_URL}/specializations`,
+    tasks: `${API_BASE_URL}/tasks`,
+    available: `${API_BASE_URL}/tasks/available`,
+    mine: `${API_BASE_URL}/tasks/mine`,
+    task: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}`,
+    history: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/history`,
+    attachments: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/attachments`,
+    claim: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/claim`,
+    start: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/start`,
+    block: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/block`,
+    resume: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/resume`,
+    complete: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/complete`,
+    cancel: (taskId: number) => `${API_BASE_URL}/tasks/${taskId}/cancel`,
+  },
+
+  workforce: {
+    availability: `${API_BASE_URL}/workforce/me/availability`,
+    clockIn: `${API_BASE_URL}/workforce/me/attendance/clock-in`,
+    startBreak: `${API_BASE_URL}/workforce/me/attendance/breaks/start`,
+    endBreak: `${API_BASE_URL}/workforce/me/attendance/breaks/end`,
+    clockOut: `${API_BASE_URL}/workforce/me/attendance/clock-out`,
+    attendanceSessions: `${API_BASE_URL}/workforce/me/attendance-sessions`,
+    overrides: `${API_BASE_URL}/workforce/me/availability-overrides`,
+    clearOverride: (overrideId: number) => `${API_BASE_URL}/workforce/me/availability-overrides/${overrideId}/clear`,
+    leaveRequests: `${API_BASE_URL}/workforce/me/leave-requests`,
+    cancelLeaveRequest: (requestId: number) => `${API_BASE_URL}/workforce/me/leave-requests/${requestId}/cancel`,
+  },
+
   demoReceipts: {
     metadata: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/demo-receipt`,
     pdf: (reservationId: number) => `${API_BASE_URL}/reservations/${reservationId}/demo-receipt/pdf`,

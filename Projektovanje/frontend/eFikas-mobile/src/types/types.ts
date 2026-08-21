@@ -121,6 +121,24 @@ export type TaskStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+export type TaskPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT";
+
+export type WorkerAvailabilityStatus =
+  | "OFF_DUTY"
+  | "UNAVAILABLE"
+  | "ON_BREAK"
+  | "AVAILABLE"
+  | "BUSY"
+  | "ON_LEAVE";
+
+export type LeaveRequestStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+
+export interface Specialization {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface CheckOutResponse {
   reservationId: number;
   reservationStatus: "CHECKED_OUT";
@@ -131,7 +149,7 @@ export interface CheckOutResponse {
   cleaningTaskId: number;
 }
 
-export interface TaskStatusHistory {
+export interface TaskHistory {
   id: number;
   fromStatus: TaskStatus | null;
   toStatus: TaskStatus;
@@ -139,6 +157,8 @@ export interface TaskStatusHistory {
   reason: string;
   changedAt: string;
 }
+
+export type TaskStatusHistory = TaskHistory;
 
 export interface OperationalTask {
   taskId: number;
@@ -149,10 +169,79 @@ export interface OperationalTask {
   assignedWorkerId: number | null;
   title: string;
   description: string | null;
-  priority: string;
+  priority: TaskPriority;
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TaskAttachment {
+  id: number;
+  originalName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedBy: number;
+  uploadedAt: string;
+  downloadUrl: string;
+}
+
+export interface BreakPeriod {
+  breakPeriodId: number;
+  startedAt: string;
+  endedAt: string | null;
+}
+
+export interface AttendanceSession {
+  attendanceSessionId: number;
+  workerId: number;
+  clockedInAt: string;
+  clockedOutAt: string | null;
+  breaks: BreakPeriod[];
+}
+
+export interface WorkerAvailability {
+  workerId: number;
+  name: string;
+  surname: string;
+  status: WorkerAvailabilityStatus;
+  attendanceSessionId: number | null;
+  clockedInAt: string | null;
+  breakStartedAt: string | null;
+  availabilityOverrideId: number | null;
+  unavailableUntil: string | null;
+  unavailabilityReason: string | null;
+  leaveRequestId: number | null;
+  leaveUntil: string | null;
+  leaveReason: string | null;
+}
+
+export interface AvailabilityOverride {
+  availabilityOverrideId: number;
+  workerId: number;
+  startsAt: string;
+  endsAt: string | null;
+  reason: string;
+  createdByUserId: number;
+  createdAt: string;
+  clearedAt: string | null;
+  clearedByUserId: number | null;
+}
+
+export interface LeaveRequest {
+  leaveRequestId: number;
+  workerId: number;
+  workerName: string;
+  workerSurname: string;
+  startsAt: string;
+  endsAt: string;
+  reason: string;
+  status: LeaveRequestStatus;
+  createdAt: string;
+  decidedBy: number | null;
+  decidedAt: string | null;
+  decisionReason: string | null;
+  cancelledBy: number | null;
+  cancelledAt: string | null;
 }
 
 export interface NotificationItem {

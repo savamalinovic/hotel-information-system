@@ -1,5 +1,5 @@
-import { RoleLandingScreen } from "@/src/components/screens/RoleLandingScreen/RoleLandingScreen";
+import WorkerDashboardScreen from "@/src/components/screens/TaskWorkflowScreen/WorkerDashboardScreen";
 
 export default function OperationalWorkerHome() {
-  return <RoleLandingScreen role="OPERATIONAL_WORKER" />;
+  return <WorkerDashboardScreen />;
 }
