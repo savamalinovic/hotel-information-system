@@ -1,10 +1,16 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { useSession } from "@/src/providers/SessionProvider";
 
 export default function HomeRootLayout() {
     const { t } = useTranslation();
     const { Colors } = useTheme();
+    const { session, status } = useSession();
+
+    if (status !== "authenticated" || session?.role !== "AGENT") {
+        return <Redirect href="/" />;
+    }
 
     return (
         <Stack screenOptions={{ 
@@ -26,6 +32,8 @@ export default function HomeRootLayout() {
             <Stack.Screen name="reservations/addReservation" options={{ title: t('reservationWorkflow.navigation.createTitle') }} />
             <Stack.Screen name="expenses" options={{ title: t('dashboard.navigation.expensesTitle') }} />
             <Stack.Screen name="tasks" options={{ title: t('dashboard.navigation.tasksTitle') }} />
+            <Stack.Screen name="tasks/create" options={{ title: t('taskWorkforce.agent.createTitle') }} />
+            <Stack.Screen name="tasks/[id]" options={{ title: t('taskWorkforce.detail.title') }} />
             <Stack.Screen name="damages" options={{ title: t('dashboard.navigation.damagesTitle') }} />
         </Stack>
     );

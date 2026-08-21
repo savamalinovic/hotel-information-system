@@ -1,5 +1,5 @@
-import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
+import AgentTaskListScreen from "@/src/components/screens/TaskWorkflowScreen/AgentTaskListScreen";
 
 export default function Tasks() {
-  return <AgentFeaturePlaceholder feature="tasks" />;
+  return <AgentTaskListScreen />;
 }
