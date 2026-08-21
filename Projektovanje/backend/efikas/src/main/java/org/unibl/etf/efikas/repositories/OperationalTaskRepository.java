@@ -8,5 +8,7 @@ import org.unibl.etf.efikas.models.enums.TaskSource;
          Integer workerId, Integer apartmentId, Collection<TaskStatus> statuses);
  @Query("select t from OperationalTask t join t.assignedWorker w where w.userId=:workerId and t.status in :statuses") List<OperationalTask> findActive(Integer workerId, Collection<TaskStatus> statuses);
  @Query("select t from OperationalTask t join t.specialization s join AppUser u on u.userId=:workerId join u.specializations us where t.status=org.unibl.etf.efikas.models.enums.TaskStatus.NEW and us.specializationId=s.specializationId") Page<OperationalTask> findAvailable(Integer workerId, Pageable pageable);
+ Page<OperationalTask> findByAssignedWorkerUserId(Integer workerId, Pageable pageable);
+ Page<OperationalTask> findByAssignedWorkerUserIdAndStatus(Integer workerId, TaskStatus status, Pageable pageable);
  Optional<OperationalTask> findByReservationReservationIdAndSource(Integer reservationId, TaskSource source);
 }

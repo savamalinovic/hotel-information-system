@@ -152,6 +152,9 @@ class RbacProbeController {
     @GetMapping("/api/v1/tasks/available")
     ResponseEntity<Void> availableOperationalTasks() { return ResponseEntity.ok().build(); }
 
+    @GetMapping("/api/v1/tasks/mine")
+    ResponseEntity<Void> myOperationalTasks() { return ResponseEntity.ok().build(); }
+
     @PostMapping("/api/v1/tasks/1/claim")
     ResponseEntity<Void> claimOperationalTask() { return ResponseEntity.ok().build(); }
 

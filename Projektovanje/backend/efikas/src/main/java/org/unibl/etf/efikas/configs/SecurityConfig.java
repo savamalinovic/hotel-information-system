@@ -152,6 +152,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.GET, "/api/v1/tasks/available")
                         .hasRole(UserRole.OPERATIONAL_WORKER.name())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tasks/mine")
+                        .hasRole(UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers(HttpMethod.GET, "/api/v1/tasks")
                         .hasAnyRole(UserRole.MANAGER.name(), UserRole.AGENT.name())
                         .requestMatchers(HttpMethod.GET, "/api/v1/tasks/**")
