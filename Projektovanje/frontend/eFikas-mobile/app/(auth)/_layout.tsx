@@ -1,9 +1,10 @@
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { Stack } from "expo-router";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 export default function AuthRootLayout() {
 	const { Colors } = useTheme();
+	const { t } = useTranslation();
 
     return(
         <Stack screenOptions={{ 
@@ -13,7 +14,7 @@ export default function AuthRootLayout() {
                 backgroundColor: Colors.tabBackground,
             }, 
 		}}>
-            <Stack.Screen name="index" options={{ headerShown: false, title: 'Prijava'}} />
+			<Stack.Screen name="index" options={{ headerShown: false, title: t('auth.login.title')}} />
 			<Stack.Screen name="forgotPassword" options={{ headerShown: true, title: t('auth.forgotPassword.headerTitle')}} />
         </Stack>
     );

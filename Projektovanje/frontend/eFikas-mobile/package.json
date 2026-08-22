@@ -10,6 +10,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "locale:check": "node ./scripts/check-locale-parity.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
