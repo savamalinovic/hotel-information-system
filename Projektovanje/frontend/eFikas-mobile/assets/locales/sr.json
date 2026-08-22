@@ -864,19 +864,19 @@
   "aboutApp": {
     "title": "O aplikaciji",
     "systemName": "eFikas",
-    "systemDesc": "Elektronski fiskalni i kontrolni administrativni sistem",
+    "systemDesc": "Elektronski hotelski administrativni sistem",
     "accordion": {
       "functionalities": "Funkcionalnosti",
       "compatibility": "Kompatibilnosti",
       "appVersion": "Verzija aplikacije",
       "team": "Razvojni tim",
       "contact": "Kontakt i podrška",
-      "content_fiscalization": "Fiskalizacija u realnom vremenu",
+      "content_fiscalization": "Demo račun (nije fiskalni račun)",
       "content_reservations": "Upravljanje rezervacijama",
       "content_statistics": "Statistika poslovanja",
       "content_multiLang": "Podrška za više jezika",
       "content_platforms": "Dostupnost za Android i iOS",
-      "content_cashRegister": "Povezivanje sa fiskalnom kasom",
+      "content_cashRegister": "Demo račun dostupan kao PDF",
       "content_versionNumber": "Verzija 1.0",
       "content_releaseDate": "Datum izdavanja: 01.01.2026."
     }

@@ -8,7 +8,7 @@ export type ReservationDetailsTemplateProps = {
     infoItems: React.ReactNode[];
     noteHeader: React.ReactNode;
     noteBody: React.ReactNode;
-    primaryAction: React.ReactNode;
+    primaryAction?: React.ReactNode;
     scrollProps?: ScrollViewProps;
 };
 
@@ -48,9 +48,11 @@ const ReservationDetailsTemplate: React.FC<ReservationDetailsTemplateProps> = ({
                     <View style={styles.noteBodyWrapper}>{noteBody}</View>
                 </View>
 
-                <View style={styles.section}>
-                    <View style={styles.primaryActionWrapper}>{primaryAction}</View>
-                </View>
+                {primaryAction ? (
+                    <View style={styles.section}>
+                        <View style={styles.primaryActionWrapper}>{primaryAction}</View>
+                    </View>
+                ) : null}
             </ScrollView>
         </View>
     );

@@ -171,7 +171,7 @@ export const AboutAppScreen = () => {
             <View style={styles.appTextContainer}>
               <Text style={styles.appName}>eFikas</Text>
               <Text style={styles.appDesc}>
-                Elektronski fiskalni i kontrolni administrativni sistem
+                Elektronski hotelski administrativni sistem
               </Text>
             </View>
           </View>

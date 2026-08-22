@@ -1,5 +1,3 @@
-import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
+import DamageScreen from "@/src/components/screens/DamageScreen/DamageScreen";
 
-export default function Damages() {
-  return <AgentFeaturePlaceholder feature="damages" />;
-}
+export default DamageScreen;

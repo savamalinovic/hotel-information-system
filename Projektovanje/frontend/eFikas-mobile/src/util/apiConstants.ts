@@ -172,11 +172,4 @@ export const API_URLS = {
 	settings: {
 		registerError: `${API_BASE_URL}/settings/register-error`
 	},
-
-	// Hardcoded fiscal register config for testing purposes
-	cash_register: {
-		ip_address: "192.168.100.150",
-		port: "3566",
-		api_token: "f9d1027ef717154120a89b4610e5b2bb",
-	},
 }

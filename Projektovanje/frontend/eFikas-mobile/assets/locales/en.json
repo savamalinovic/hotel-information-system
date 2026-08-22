@@ -867,19 +867,19 @@
   "aboutApp": {
     "title": "About App",
     "systemName": "eFikas",
-    "systemDesc": "Electronic fiscal and control administrative system",
+    "systemDesc": "Electronic hotel administration system",
     "accordion": {
       "functionalities": "Functionalities",
       "compatibility": "Compatibility",
       "appVersion": "App Version",
       "team": "Development Team",
       "contact": "Contact & Support",
-      "content_fiscalization": "Real-time fiscalization",
+      "content_fiscalization": "Demo receipt (not a fiscal receipt)",
       "content_reservations": "Reservation management",
       "content_statistics": "Business statistics",
       "content_multiLang": "Multi-language support",
       "content_platforms": "Available for Android and iOS",
-      "content_cashRegister": "Connection with fiscal cash register",
+      "content_cashRegister": "Demo receipt available as PDF",
       "content_versionNumber": "Version 1.0",
       "content_releaseDate": "Release date: 01/01/2026"
     }
