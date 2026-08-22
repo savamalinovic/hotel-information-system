@@ -1,5 +1,3 @@
-import AgentFeaturePlaceholder from "@/src/components/screens/AgentFeaturePlaceholder/AgentFeaturePlaceholder";
+import ExpensesScreen from "@/src/components/screens/ExpensesScreen/ExpensesScreen";
 
-export default function Expenses() {
-  return <AgentFeaturePlaceholder feature="expenses" />;
-}
+export default ExpensesScreen;

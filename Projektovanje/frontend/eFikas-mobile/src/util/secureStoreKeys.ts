@@ -4,5 +4,4 @@ export const SECURE_STORE_KEYS = {
 
 export const ASYNC_STORAGE_KEYS = {
     themeKey: "theme",
-	cashRegisterIp: "cashRegisterIp",
 }
