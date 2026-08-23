@@ -6,6 +6,7 @@ import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { TaskPriority } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { parsePositiveId } from "@/src/util/idParams";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,10 +27,10 @@ export default function TaskCreateScreen() {
   const [formError, setFormError] = useState("");
   const specializations = useSpecializations();
   const createTask = useCreateTask();
-  const apartmentId = positiveId(apartmentIdText);
-  const reservationId = positiveId(reservationIdText);
-  const reservation = useReservationDetail(reservationId ?? 0);
-  const apartment = useApartmentCatalogDetail(apartmentId ?? 0);
+  const apartmentId = parsePositiveId(apartmentIdText) ?? undefined;
+  const reservationId = parsePositiveId(reservationIdText) ?? undefined;
+  const reservation = useReservationDetail(reservationId);
+  const apartment = useApartmentCatalogDetail(apartmentId);
   const effectiveApartmentId = reservation.data?.apartmentId ?? apartmentId;
   const reservationApartmentMismatch = Boolean(reservation.data && apartmentId && reservation.data.apartmentId !== apartmentId);
   const selectedSpecialization = useMemo(() => specializations.data?.find((item) => item.id === specializationId), [specializationId, specializations.data]);
@@ -98,5 +99,4 @@ export default function TaskCreateScreen() {
   </ScrollView></KeyboardAvoidingView></SafeAreaView>;
 }
 
-const positiveId = (value: string) => { const parsed = Number(value); return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined; };
 const styles = StyleSheet.create({ screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12 }, title: { fontSize: 24, fontWeight: "800" }, sectionTitle: { fontSize: 16, fontWeight: "800" }, fieldLabel: { fontSize: 13, fontWeight: "800" }, input: { minHeight: 46, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, fontSize: 15 }, description: { minHeight: 108, paddingTop: 12 }, chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 } });

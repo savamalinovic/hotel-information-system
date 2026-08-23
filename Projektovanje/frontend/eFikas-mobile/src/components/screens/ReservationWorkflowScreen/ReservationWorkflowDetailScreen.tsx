@@ -4,6 +4,8 @@ import { useReservationDetail, useReservationStatusHistory, useUpdateReservation
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ReservationStatusHistory } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { isAxiosError } from "axios";
 import { useLocalSearchParams, router } from "expo-router";
 import { useState } from "react";
@@ -14,8 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type StatusAction = "CANCELLED" | "NO_SHOW";
 
 export default function ReservationWorkflowDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
   const detail = useReservationDetail(reservationId);
@@ -31,12 +33,8 @@ export default function ReservationWorkflowDetailScreen() {
     void Promise.all([detail.refetch(), history.refetch()]);
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return (
-      <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
-        <View style={styles.invalidState}><EmptyOrErrorState icon="CircleAlert" title={t("reservationWorkflow.errors.invalidTitle")} description={t("reservationWorkflow.errors.invalidDescription")} retryLabel={t("reservationWorkflow.common.back")} onRetry={() => router.back()} /></View>
-      </SafeAreaView>
-    );
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (detail.isPending) {

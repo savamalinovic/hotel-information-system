@@ -1,5 +1,7 @@
 import { useExpenseDetail } from "@/src/hooks/useExpenses";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -10,12 +12,12 @@ import { formatDate, formatMoney, formatTimestamp } from "./expenseWorkflowHelpe
 export default function ExpenseDetailScreen() {
   const { t, i18n } = useTranslation();
   const { Colors } = useTheme();
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const expenseId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const expenseId = parsePositiveId(id);
   const expense = useExpenseDetail(expenseId);
 
-  if (!Number.isInteger(expenseId) || expenseId <= 0) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.detail.invalid")} /></SafeAreaView>;
+  if (expenseId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/expenses" />;
   }
   if (expense.isPending) {
     return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.detail.loading")} /></SafeAreaView>;

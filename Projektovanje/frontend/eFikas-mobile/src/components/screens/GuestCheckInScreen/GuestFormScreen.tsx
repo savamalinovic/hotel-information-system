@@ -6,6 +6,8 @@ import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ApiErrorResponse } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { isAxiosError } from "axios";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -15,13 +17,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function GuestFormScreen() {
   const { id, guestId: guestIdParam, primaryGuest: primaryGuestParam } = useLocalSearchParams<{
-    id: string;
-    guestId?: string;
-    primaryGuest?: string;
+    id?: string | string[];
+    guestId?: string | string[];
+    primaryGuest?: string | string[];
   }>();
-  const reservationId = Number(id);
-  const guestId = Number(guestIdParam);
-  const editing = Number.isInteger(guestId) && guestId > 0;
+  const reservationId = parsePositiveId(id);
+  const guestId = parsePositiveId(guestIdParam);
+  const hasGuestId = guestIdParam !== undefined;
+  const invalidGuestId = hasGuestId && guestId === null;
+  const editing = guestId !== null;
   const { Colors } = useTheme();
   const { t } = useTranslation();
   const { profile } = useProfile();
@@ -43,8 +47,8 @@ export default function GuestFormScreen() {
     setValues((current) => ({ ...current, [key]: value }));
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScreenState title={t("guestCheckIn.errors.invalidReservation")} onRetry={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null || invalidGuestId) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (reservation.isPending || (editing && guest.isPending)) {
@@ -73,7 +77,7 @@ export default function GuestFormScreen() {
     }
 
     const request = toGuestRequest(values);
-    if (editing) {
+    if (guestId !== null) {
       updateGuest.mutate(
         { reservationId, guestId, request: { guest: request, primaryGuest } },
         {

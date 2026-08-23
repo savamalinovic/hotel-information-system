@@ -13,6 +13,7 @@ import {
 import { useReservationList } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ReservationDetails, ReservationStatus } from "@/src/types/types";
+import { parsePositiveId } from "@/src/util/idParams";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,8 +33,8 @@ export default function ReservationListCalendarScreen() {
   const [calendarMonth, setCalendarMonth] = useState(getLocalDateKey());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>();
 
-  const apartmentId = Number(apartmentText);
-  const hasValidApartmentId = apartmentText.trim() === "" || (Number.isInteger(apartmentId) && apartmentId > 0);
+  const apartmentId = parsePositiveId(apartmentText);
+  const hasValidApartmentId = apartmentText.trim() === "" || apartmentId !== null;
   const hasPeriodInput = Boolean(from || to);
   const hasValidPeriod = !hasPeriodInput || isStayPeriodValid(from, to);
   const filters = useMemo<Omit<ReservationListFilters, "page">>(
@@ -41,10 +42,10 @@ export default function ReservationListCalendarScreen() {
       size: 20,
       sort: "checkInDate,asc",
       ...(status ? { status } : {}),
-      ...(apartmentText.trim() && hasValidApartmentId ? { apartmentId } : {}),
+      ...(apartmentText.trim() && apartmentId !== null ? { apartmentId } : {}),
       ...(hasPeriodInput && hasValidPeriod ? { from, to } : {}),
     }),
-    [apartmentId, apartmentText, from, hasPeriodInput, hasValidApartmentId, hasValidPeriod, status, to]
+    [apartmentId, apartmentText, from, hasPeriodInput, hasValidPeriod, status, to]
   );
   const monthRange = useMemo(() => getMonthRange(calendarMonth), [calendarMonth]);
   const calendarFilters = useMemo<Omit<ReservationListFilters, "page">>(
@@ -54,9 +55,9 @@ export default function ReservationListCalendarScreen() {
       from: monthRange.from,
       to: monthRange.to,
       ...(status ? { status } : {}),
-      ...(apartmentText.trim() && hasValidApartmentId ? { apartmentId } : {}),
+      ...(apartmentText.trim() && apartmentId !== null ? { apartmentId } : {}),
     }),
-    [apartmentId, apartmentText, hasValidApartmentId, monthRange.from, monthRange.to, status]
+    [apartmentId, apartmentText, monthRange.from, monthRange.to, status]
   );
   const list = useReservationList(filters);
   const calendar = useReservationList(calendarFilters);

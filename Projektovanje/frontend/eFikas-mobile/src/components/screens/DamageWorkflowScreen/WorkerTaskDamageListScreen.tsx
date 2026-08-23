@@ -3,6 +3,8 @@ import { WorkflowButton, WorkflowCard, WorkflowState } from "@/src/components/sc
 import { useDamages } from "@/src/hooks/useDamages";
 import { useTaskDetail } from "@/src/hooks/useTaskWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,11 +16,11 @@ const relevantStatuses = ["ASSIGNED", "IN_PROGRESS", "BLOCKED"] as const;
 const filters = { size: 20 };
 
 export default function WorkerTaskDamageListScreen() {
-  const { t, i18n } = useTranslation(); const { Colors } = useTheme(); const { id } = useLocalSearchParams<{ id?: string }>(); const taskId = Number(id); const task = useTaskDetail(taskId);
+  const { t, i18n } = useTranslation(); const { Colors } = useTheme(); const { id } = useLocalSearchParams<{ id?: string | string[] }>(); const taskId = parsePositiveId(id); const task = useTaskDetail(taskId);
   const canAccess = Boolean(task.data?.apartmentId && task.data.assignedWorkerId !== null && relevantStatuses.includes(task.data?.status as typeof relevantStatuses[number])); const damages = useDamages(canAccess ? task.data?.apartmentId : undefined, filters);
   const accessRequestFailed = isAxiosError(damages.error) && (damages.error.response?.status === 403 || damages.error.response?.status === 404);
-  useEffect(() => { if (!Number.isInteger(taskId) || taskId <= 0) return; const timer = setInterval(() => void task.refetch(), 20_000); return () => clearInterval(timer); }, [task, taskId]);
-  if (!Number.isInteger(taskId) || taskId <= 0) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.common.errorTitle")} description={t("damageWorkflow.worker.invalidTask")} /></SafeAreaView>;
+  useEffect(() => { if (taskId === null) return; const timer = setInterval(() => void task.refetch(), 20_000); return () => clearInterval(timer); }, [task, taskId]);
+  if (taskId === null) return <InvalidRouteState fallbackHref="/(worker)" fallbackKind="home" />;
   if (task.isPending) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("damageWorkflow.common.loading")} description={t("damageWorkflow.worker.checkingAccess")} /></SafeAreaView>;
   if (task.isError || !canAccess) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.worker.accessLostTitle")} description={t("damageWorkflow.worker.accessLost")} actionLabel={t("damageWorkflow.common.retry")} onAction={() => void task.refetch()} /></SafeAreaView>;
   if (accessRequestFailed) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.worker.accessLostTitle")} description={t("damageWorkflow.worker.accessLost")} actionLabel={t("damageWorkflow.common.retry")} onAction={() => void task.refetch()} /></SafeAreaView>;

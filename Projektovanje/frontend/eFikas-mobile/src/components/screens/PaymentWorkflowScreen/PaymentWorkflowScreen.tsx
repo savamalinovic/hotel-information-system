@@ -4,6 +4,8 @@ import { useProfile } from "@/src/hooks/useProfile";
 import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import {
   exceedsPaymentAmount,
   formatPaymentAmount,
@@ -13,7 +15,7 @@ import {
   paymentAmountSign,
 } from "@/src/components/screens/PaymentWorkflowScreen/paymentWorkflowHelpers";
 import { isAxiosError } from "axios";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -22,8 +24,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type PaymentForm = "record" | "correction" | "reversal";
 
 export default function PaymentWorkflowScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
   const { profile } = useProfile();
@@ -191,12 +193,8 @@ export default function PaymentWorkflowScreen() {
     );
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return (
-      <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
-        <View style={styles.centered}><Text style={{ color: Colors.textPrimary }}>{t("paymentWorkflow.errors.invalidReservation")}</Text><Text onPress={() => router.back()} style={[styles.retryText, { color: Colors.primary }]}>{t("paymentWorkflow.common.back")}</Text></View>
-      </SafeAreaView>
-    );
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   return (

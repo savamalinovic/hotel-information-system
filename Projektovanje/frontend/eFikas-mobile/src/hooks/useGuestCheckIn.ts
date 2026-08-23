@@ -10,6 +10,7 @@ import {
 } from "@/src/types/types";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const useDebouncedValue = (value: string, delay = 350) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -47,21 +48,27 @@ const refreshReservationDependencies = async (
   }
 };
 
-export const useReservationGuests = (reservationId: number) =>
-  useQuery({
-    queryKey: guestCheckInQueryKeys.reservationGuests(reservationId),
-    queryFn: () => guestCheckInService.getReservationGuests(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
-    retry: 1,
-  });
+export const useReservationGuests = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
 
-export const useGuestDetail = (guestId: number) =>
-  useQuery({
-    queryKey: guestCheckInQueryKeys.guest(guestId),
-    queryFn: () => guestCheckInService.getGuest(guestId),
-    enabled: Number.isInteger(guestId) && guestId > 0,
+  return useQuery({
+    queryKey: guestCheckInQueryKeys.reservationGuests(validReservationId ?? 0),
+    queryFn: () => guestCheckInService.getReservationGuests(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
     retry: 1,
   });
+};
+
+export const useGuestDetail = (guestId: number | null | undefined) => {
+  const validGuestId = parsePositiveId(guestId);
+
+  return useQuery({
+    queryKey: guestCheckInQueryKeys.guest(validGuestId ?? 0),
+    queryFn: () => guestCheckInService.getGuest(requirePositiveId(guestId)),
+    enabled: validGuestId !== null,
+    retry: 1,
+  });
+};
 
 export const useGuestSearch = (query: string) => {
   const debouncedQuery = useDebouncedValue(query.trim());
@@ -87,7 +94,7 @@ export const useAddReservationGuest = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reservationId, request }: { reservationId: number; request: AddReservationGuestRequest }) =>
-      guestCheckInService.addReservationGuest(reservationId, request),
+      guestCheckInService.addReservationGuest(requirePositiveId(reservationId), request),
     onSuccess: (_response, variables) => refreshReservationDependencies(queryClient, variables.reservationId),
   });
 };
@@ -99,7 +106,11 @@ export const useUpdateReservationGuest = () => {
       reservationId: number;
       guestId: number;
       request: UpdateReservationGuestRequest;
-    }) => guestCheckInService.updateReservationGuest(reservationId, guestId, request),
+    }) => guestCheckInService.updateReservationGuest(
+      requirePositiveId(reservationId),
+      requirePositiveId(guestId),
+      request
+    ),
     onSuccess: (_response, variables) => refreshReservationDependencies(queryClient, variables.reservationId),
   });
 };
@@ -108,7 +119,7 @@ export const useRemoveReservationGuest = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reservationId, guestId }: { reservationId: number; guestId: number }) =>
-      guestCheckInService.removeReservationGuest(reservationId, guestId),
+      guestCheckInService.removeReservationGuest(requirePositiveId(reservationId), requirePositiveId(guestId)),
     onSuccess: (_response, variables) => refreshReservationDependencies(queryClient, variables.reservationId, true),
   });
 };
@@ -116,7 +127,7 @@ export const useRemoveReservationGuest = () => {
 const useClaimMutation = (action: "claim" | "release" | "takeover") => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (reservationId: number) => guestCheckInService[action](reservationId),
+    mutationFn: (reservationId: number) => guestCheckInService[action](requirePositiveId(reservationId)),
     onSuccess: (_response, reservationId) => refreshReservationDependencies(queryClient, reservationId, true),
   });
 };
@@ -125,18 +136,21 @@ export const useClaimCheckIn = () => useClaimMutation("claim");
 export const useReleaseCheckIn = () => useClaimMutation("release");
 export const useTakeoverCheckIn = () => useClaimMutation("takeover");
 
-export const useCheckInClaimHistory = (reservationId: number) =>
-  useQuery({
-    queryKey: guestCheckInQueryKeys.claimHistory(reservationId),
-    queryFn: () => guestCheckInService.getClaimHistory(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
+export const useCheckInClaimHistory = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
+
+  return useQuery({
+    queryKey: guestCheckInQueryKeys.claimHistory(validReservationId ?? 0),
+    queryFn: () => guestCheckInService.getClaimHistory(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
     retry: 1,
   });
+};
 
 export const usePerformCheckIn = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (reservationId: number) => guestCheckInService.checkIn(reservationId),
+    mutationFn: (reservationId: number) => guestCheckInService.checkIn(requirePositiveId(reservationId)),
     onSuccess: (_response, reservationId) => refreshReservationDependencies(queryClient, reservationId, true),
   });
 };

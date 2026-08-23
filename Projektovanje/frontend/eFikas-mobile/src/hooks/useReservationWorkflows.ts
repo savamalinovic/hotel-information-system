@@ -11,6 +11,7 @@ import {
 } from "@/src/types/types";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const invalidateReservationData = async (queryClient: ReturnType<typeof useQueryClient>) => {
   await Promise.all([
@@ -59,21 +60,27 @@ export const useReservationAvailability = (
   return { ...query, apartments };
 };
 
-export const useReservationDetail = (reservationId: number) =>
-  useQuery({
-    queryKey: reservationWorkflowQueryKeys.reservation(reservationId),
-    queryFn: () => reservationWorkflowService.getReservation(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
-    retry: 1,
-  });
+export const useReservationDetail = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
 
-export const useReservationStatusHistory = (reservationId: number) =>
-  useQuery({
-    queryKey: reservationWorkflowQueryKeys.statusHistory(reservationId),
-    queryFn: () => reservationWorkflowService.getStatusHistory(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
+  return useQuery({
+    queryKey: reservationWorkflowQueryKeys.reservation(validReservationId ?? 0),
+    queryFn: () => reservationWorkflowService.getReservation(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
     retry: 1,
   });
+};
+
+export const useReservationStatusHistory = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
+
+  return useQuery({
+    queryKey: reservationWorkflowQueryKeys.statusHistory(validReservationId ?? 0),
+    queryFn: () => reservationWorkflowService.getStatusHistory(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
+    retry: 1,
+  });
+};
 
 export const useCreateReservation = () => {
   const queryClient = useQueryClient();
@@ -87,7 +94,7 @@ export const useUpdateReservationStay = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reservationId, request }: { reservationId: number; request: ReservationStayUpdateRequest }) =>
-      reservationWorkflowService.updateStay(reservationId, request),
+      reservationWorkflowService.updateStay(requirePositiveId(reservationId), request),
     onSuccess: () => invalidateReservationData(queryClient),
   });
 };
@@ -96,7 +103,7 @@ export const useUpdateReservationStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reservationId, request }: { reservationId: number; request: ReservationStatusUpdateRequest }) =>
-      reservationWorkflowService.updateStatus(reservationId, request),
+      reservationWorkflowService.updateStatus(requirePositiveId(reservationId), request),
     onSuccess: () => invalidateReservationData(queryClient),
   });
 };

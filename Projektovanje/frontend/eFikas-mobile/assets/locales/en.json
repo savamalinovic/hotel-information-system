@@ -15,6 +15,14 @@
     "message": "The page you requested is unavailable.",
     "goHome": "Go to home"
   },
+  "routeValidation": {
+    "invalidLink": {
+      "title": "Invalid or incomplete link",
+      "description": "This link does not contain a valid identifier, so no data was loaded.",
+      "backToList": "Back to list",
+      "backToHome": "Back to home"
+    }
+  },
   "tabs": {
     "reservations": "Reservations",
     "home": "Home",

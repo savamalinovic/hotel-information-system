@@ -24,11 +24,8 @@ import { useProfile } from "@/src/hooks/useProfile";
 import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
-
-const parseReservationId = (id: string | undefined) => {
-  const parsed = Number(id);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
-};
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 
 const formatTimestamp = (value: string, locale: string) => new Date(value).toLocaleString(locale);
 
@@ -36,15 +33,15 @@ const compactFingerprint = (fingerprint: string) =>
   fingerprint.length > 18 ? `${fingerprint.slice(0, 12)}…${fingerprint.slice(-6)}` : fingerprint;
 
 export default function DemoReceiptScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = parseReservationId(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
-  const reservation = useReservationDetail(reservationId ?? 0);
-  const payments = usePaymentSummary(reservationId ?? 0);
-  const guests = useReservationGuests(reservationId ?? 0);
+  const reservation = useReservationDetail(reservationId);
+  const payments = usePaymentSummary(reservationId);
+  const guests = useReservationGuests(reservationId);
   const profile = useProfile();
-  const demoReceipt = useDemoReceipt(reservationId ?? 0);
+  const demoReceipt = useDemoReceipt(reservationId);
   const generateReceipt = useGenerateDemoReceipt();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -114,8 +111,8 @@ export default function DemoReceiptScreen() {
     });
   };
 
-  if (!reservationId) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><EmptyOrErrorState icon="CircleAlert" title={t("demoReceipt.errors.invalidTitle")} description={t("demoReceipt.errors.invalidDescription")} retryLabel={t("demoReceipt.common.back")} onRetry={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (reservation.isPending) {

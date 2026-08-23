@@ -6,6 +6,8 @@ import {
 } from "@/src/hooks/useApartmentCatalog";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ApartmentPicture, ApartmentStatusHistory, ApartmentUnavailability } from "@/src/types/types";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,8 +34,8 @@ import {
 } from "./apartmentCatalogHelpers";
 
 export default function ApartmentCatalogDetailScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const apartmentId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const apartmentId = parsePositiveId(id);
   const detail = useApartmentCatalogDetail(apartmentId);
   const history = useApartmentStatusHistory(apartmentId);
   const unavailability = useApartmentUnavailability(apartmentId);
@@ -44,8 +46,8 @@ export default function ApartmentCatalogDetailScreen() {
     void Promise.all([detail.refetch(), history.refetch(), unavailability.refetch()]);
   };
 
-  if (!Number.isInteger(apartmentId) || apartmentId <= 0) {
-    return <DetailError title={t("apartmentCatalog.invalidApartment")} onRetry={refresh} />;
+  if (apartmentId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/apartments" />;
   }
 
   if (detail.isPending) {
