@@ -211,6 +211,16 @@ class RbacAuthorizationTest {
     }
 
     @Test
+    void everyBusinessRoleCanUseTheAuthenticatedPushTokenLifecycle() throws Exception {
+        for (UserRole role : UserRole.values()) {
+            mockMvc.perform(post("/api/v1/notifications/push-token/unregister").with(role(role)))
+                    .andExpect(status().isOk());
+        }
+        mockMvc.perform(post("/api/v1/notifications/push-token/unregister"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void anonymousUserCannotReadCurrentProfile() throws Exception {
         mockMvc.perform(get("/api/v1/users/me"))
                 .andExpect(status().isUnauthorized())

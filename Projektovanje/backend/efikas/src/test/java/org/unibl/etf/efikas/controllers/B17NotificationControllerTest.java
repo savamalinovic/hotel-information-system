@@ -3,6 +3,7 @@ package org.unibl.etf.efikas.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -18,9 +19,12 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,5 +51,26 @@ class B17NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].taskId").value(456))
                 .andExpect(jsonPath("$.content[1].taskId").isEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "worker@example.test", roles = "OPERATIONAL_WORKER")
+    void unregisterUsesOnlyTheAuthenticatedIdentityAndReturnsNoContent() throws Exception {
+        mockMvc.perform(post("/api/v1/notifications/push-token/unregister")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"ExponentPushToken[controller-test]\",\"userId\":999}"))
+                .andExpect(status().isNoContent());
+
+        verify(service).unregisterPushToken(eq("worker@example.test"),
+                argThat(request -> "ExponentPushToken[controller-test]".equals(request.getToken())));
+    }
+
+    @Test
+    @WithMockUser(username = "agent@example.test", roles = "AGENT")
+    void unregisterRejectsAnEmptyToken() throws Exception {
+        mockMvc.perform(post("/api/v1/notifications/push-token/unregister")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"\"}"))
+                .andExpect(status().isBadRequest());
     }
 }

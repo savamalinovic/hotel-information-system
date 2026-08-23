@@ -7,11 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.unibl.etf.efikas.exceptions.DomainConflictException;
 import org.unibl.etf.efikas.models.entities.*;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.models.responses.*;
 import org.unibl.etf.efikas.repositories.*;
+import org.unibl.etf.efikas.services.AuditLogService;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import java.time.Instant;
 import java.util.Collection;
@@ -22,20 +23,59 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationPushTokenRepository tokens;
     private final AppUserRepository users;
     private final ApplicationEventPublisher events;
+    private final AuditLogService auditLogService;
 
     @Override @Transactional
     public void addPushToken(String email, PushNotificationTokenRequest request) {
         AppUser user = user(email);
+        tokens.lockByPushToken(request.getToken());
         NotificationPushToken token = tokens.findByPushToken(request.getToken()).orElse(null);
-        if (token != null && !token.getUser().getUserId().equals(user.getUserId()))
-            throw new DomainConflictException("Push token is already registered to another user.");
-        if (token == null) { token = new NotificationPushToken(); token.setPushToken(request.getToken()); token.setUser(user); }
-        token.setPlatform(request.getPlatform()); token.setEnabled(true); token.setLastUsedAt(Instant.now()); tokens.save(token);
+        if (token == null) {
+            token = new NotificationPushToken();
+            token.setPushToken(request.getToken());
+            token.setUser(user);
+            token.setPlatform(request.getPlatform());
+            token.setEnabled(true);
+            token.setLastUsedAt(Instant.now());
+            tokens.saveAndFlush(token);
+            auditLogService.record(AuditEvent.PUSH_TOKEN_REGISTERED, user, null, null, null,
+                    "Push token registered.");
+            return;
+        }
+
+        Integer previousOwnerId = token.getUser().getUserId();
+        boolean ownershipChanged = !previousOwnerId.equals(user.getUserId());
+        boolean enabledChanged = !Boolean.TRUE.equals(token.getEnabled());
+        token.setUser(user);
+        token.setPlatform(request.getPlatform());
+        token.setEnabled(true);
+        token.setLastUsedAt(Instant.now());
+
+        if (ownershipChanged) {
+            auditLogService.record(AuditEvent.PUSH_TOKEN_TRANSFERRED, user, null, null, null,
+                    "Push token ownership transferred from user " + previousOwnerId + " to user "
+                            + user.getUserId() + ".");
+        } else if (enabledChanged) {
+            auditLogService.record(AuditEvent.PUSH_TOKEN_REGISTERED, user, null, null, null,
+                    "Push token registered.");
+        }
+    }
+
+    @Override @Transactional
+    public void unregisterPushToken(String email, UnregisterPushNotificationTokenRequest request) {
+        AppUser user = user(email);
+        tokens.lockByPushToken(request.getToken());
+        tokens.findByPushTokenAndUserUserId(request.getToken(), user.getUserId()).ifPresent(token -> {
+            tokens.delete(token);
+            auditLogService.record(AuditEvent.PUSH_TOKEN_UNREGISTERED, user, null, null, null,
+                    "Push token unregistered.");
+        });
     }
 
     @Override @Transactional
     public void toggleNotification(String email, ToggleNotificationRequest request) {
         AppUser user = user(email);
+        tokens.lockByPushToken(request.getPushToken());
         NotificationPushToken token = tokens.findByPushTokenAndUserUserId(request.getPushToken(), user.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Push token not found."));
         token.setEnabled(request.isEnabled()); token.setLastUsedAt(Instant.now());

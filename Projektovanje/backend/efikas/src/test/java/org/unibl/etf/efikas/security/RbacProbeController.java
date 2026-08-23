@@ -23,6 +23,11 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/notifications/push-token/unregister")
+    ResponseEntity<Void> unregisterPushToken() {
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/api/v1/apartments")
     ResponseEntity<Void> apartments() {
         return ResponseEntity.ok().build();

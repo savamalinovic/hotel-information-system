@@ -2,6 +2,7 @@ package org.unibl.etf.efikas.controllers;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,12 @@ public class NotificationsController {
     @PostMapping("/push-token") public ResponseEntity<Void> register(Authentication auth,
             @Valid @RequestBody PushNotificationTokenRequest request) {
         service.addPushToken(auth.getName(), request); return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/push-token/unregister")
+    @ApiResponse(responseCode = "204", description = "The authenticated owner's token is unregistered, if present.")
+    public ResponseEntity<Void> unregister(Authentication auth,
+            @Valid @RequestBody UnregisterPushNotificationTokenRequest request) {
+        service.unregisterPushToken(auth.getName(), request); return ResponseEntity.noContent().build();
     }
     @PutMapping("/toggle") public ResponseEntity<Void> toggle(Authentication auth,
             @Valid @RequestBody ToggleNotificationRequest request) {

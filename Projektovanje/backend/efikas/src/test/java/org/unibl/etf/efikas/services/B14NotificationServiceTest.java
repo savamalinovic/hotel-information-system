@@ -11,8 +11,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.client.RestClient;
 import org.unibl.etf.efikas.models.entities.*;
+import org.unibl.etf.efikas.models.enums.AuditEvent;
 import org.unibl.etf.efikas.models.requests.*;
 import org.unibl.etf.efikas.repositories.*;
+import org.unibl.etf.efikas.services.AuditLogService;
 import org.unibl.etf.efikas.services.impl.NotificationServiceImpl;
 import org.unibl.etf.efikas.services.impl.NotificationServiceImpl.NotificationCreatedEvent;
 import java.time.Instant;
@@ -27,11 +29,12 @@ class B14NotificationServiceTest {
     @Mock NotificationPushTokenRepository tokens;
     @Mock AppUserRepository users;
     @Mock ApplicationEventPublisher events;
+    @Mock AuditLogService auditLogService;
     NotificationServiceImpl service;
     AppUser user;
 
     @BeforeEach void setup() {
-        service = new NotificationServiceImpl(notifications, tokens, users, events);
+        service = new NotificationServiceImpl(notifications, tokens, users, events, auditLogService);
         user = new AppUser(); user.setUserId(7); user.setEmail("user@example.test"); user.setActive(true);
         lenient().when(users.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
     }
@@ -60,8 +63,61 @@ class B14NotificationServiceTest {
         var request = new PushNotificationTokenRequest("ExponentPushToken[test]", "android");
         when(tokens.findByPushToken(request.getToken())).thenReturn(Optional.empty());
         service.addPushToken(user.getEmail(), request);
-        verify(tokens).save(argThat(token -> token.getUser() == user && token.getEnabled()
+        verify(tokens).saveAndFlush(argThat(token -> token.getUser() == user && token.getEnabled()
                 && token.getPlatform().equals("android")));
+        verify(auditLogService).record(eq(AuditEvent.PUSH_TOKEN_REGISTERED), same(user), isNull(), isNull(), isNull(),
+                eq("Push token registered."));
+    }
+
+    @Test void tokenRegistrationTransfersOwnershipWithoutRecordingTheToken() {
+        AppUser previousOwner = new AppUser(); previousOwner.setUserId(8); previousOwner.setActive(true);
+        NotificationPushToken existing = new NotificationPushToken();
+        existing.setUser(previousOwner); existing.setPushToken("ExponentPushToken[test]");
+        existing.setPlatform("ios"); existing.setEnabled(true);
+        var request = new PushNotificationTokenRequest("ExponentPushToken[test]", "android");
+        when(tokens.findByPushToken(request.getToken())).thenReturn(Optional.of(existing));
+
+        service.addPushToken(user.getEmail(), request);
+
+        assertThat(existing.getUser()).isSameAs(user);
+        assertThat(existing.getPlatform()).isEqualTo("android");
+        assertThat(existing.getEnabled()).isTrue();
+        verify(auditLogService).record(eq(AuditEvent.PUSH_TOKEN_TRANSFERRED), same(user), isNull(), isNull(), isNull(),
+                argThat(details -> details.contains("user 8") && details.contains("user 7")
+                        && !details.contains("ExponentPushToken")));
+    }
+
+    @Test void sameOwnerRefreshDoesNotCreateAnotherAuditRecord() {
+        NotificationPushToken existing = new NotificationPushToken();
+        existing.setUser(user); existing.setPushToken("ExponentPushToken[test]");
+        existing.setPlatform("android"); existing.setEnabled(true);
+        var request = new PushNotificationTokenRequest("ExponentPushToken[test]", "android");
+        when(tokens.findByPushToken(request.getToken())).thenReturn(Optional.of(existing));
+
+        service.addPushToken(user.getEmail(), request);
+
+        verifyNoInteractions(auditLogService);
+    }
+
+    @Test void unregisterIsOwnerScopedAndIdempotent() {
+        NotificationPushToken owned = new NotificationPushToken();
+        owned.setUser(user); owned.setPushToken("ExponentPushToken[test]");
+        when(tokens.findByPushTokenAndUserUserId("ExponentPushToken[test]", 7)).thenReturn(Optional.of(owned));
+
+        service.unregisterPushToken(user.getEmail(), new UnregisterPushNotificationTokenRequest("ExponentPushToken[test]"));
+        service.unregisterPushToken(user.getEmail(), new UnregisterPushNotificationTokenRequest("ExponentPushToken[missing]"));
+
+        verify(tokens).delete(owned);
+        verify(auditLogService).record(eq(AuditEvent.PUSH_TOKEN_UNREGISTERED), same(user), isNull(), isNull(), isNull(),
+                argThat(details -> !details.contains("ExponentPushToken")));
+    }
+
+    @Test void toggleCannotChangeAnotherUsersToken() {
+        when(tokens.findByPushTokenAndUserUserId("ExponentPushToken[other]", 7)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.toggleNotification(user.getEmail(),
+                new ToggleNotificationRequest("ExponentPushToken[other]", true)))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test void taskNotificationPublishesTheSavedNotificationAndDeepLinkIds() {
