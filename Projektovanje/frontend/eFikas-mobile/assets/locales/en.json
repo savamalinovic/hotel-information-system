@@ -3,10 +3,17 @@
     "finish": "Finish",
     "selectApartment": "Select apartment",
     "errors": {
+      "networkErrorTitle": "Network error.",
+      "networkErrorMessage": "Please try again later.",
       "invalidNumberError": "Enter a valid number",
       "lengthMinError": "This field must be at least {{length}} characters long.",
       "lengthExactError": "This field must be exactly {{length}} characters long."
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you requested is unavailable.",
+    "goHome": "Go to home"
   },
   "tabs": {
     "reservations": "Reservations",
@@ -390,6 +397,7 @@
   "auth": {
     "orSeparator": "or",
     "login": {
+      "title": "Sign in",
       "firstName": "First name",
       "lastName": "Last name",
       "password": "Password",
@@ -1029,9 +1037,7 @@
     "sectionTitle": "Cash register information",
     "fields": {
       "number": "Register number",
-      "version": "Software version",
-      "numberPlaceholder": "Enter register number",
-      "versionPlaceholder": "Enter software version"
+      "version": "Software version"
     },
     "validation": {
       "invalidNumber": "Enter a valid register number",

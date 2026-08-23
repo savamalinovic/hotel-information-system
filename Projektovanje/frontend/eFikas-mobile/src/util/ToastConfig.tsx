@@ -1,74 +1,77 @@
-import { BaseToast, ErrorToast } from "react-native-toast-message";
+import {
+  BaseToast,
+  ErrorToast,
+  type ToastConfig as ToastConfiguration,
+  type ToastConfigParams,
+} from "react-native-toast-message";
 import { useTheme } from "@/src/providers/ThemeProvider";
 
-export const ToastConfig = {
-  success: (props: any) => {
-    const { Colors } = useTheme();
+type ToastRendererProps = ToastConfigParams<Record<string, never>>;
 
-    return (
-      <BaseToast
-        {...props}
-        style={{
-          backgroundColor: Colors.toastBackground,
-          borderLeftColor: Colors.success,
-        }}
-        text1Style={{
-          color: Colors.textPrimary,
-          fontSize: 12,
-          fontWeight: "600",
-        }}
-        text2Style={{
-          color: Colors.textSecondary,
-          fontSize: 10,
-        }}
-      />
-    );
-  },
+function SuccessToast(props: ToastRendererProps) {
+  const { Colors } = useTheme();
 
-  error: (props: any) => {
-    const { Colors } = useTheme();
+  return (
+    <BaseToast
+      {...props}
+      style={{
+        backgroundColor: Colors.toastBackground,
+        borderLeftColor: Colors.success,
+      }}
+      text1Style={{
+        color: Colors.textPrimary,
+        fontSize: 12,
+        fontWeight: "600",
+      }}
+      text2Style={{
+        color: Colors.textSecondary,
+        fontSize: 10,
+      }}
+    />
+  );
+}
 
-    return (
-      <ErrorToast
-        {...props}
-		
-        style={{
-          backgroundColor: Colors.toastBackground,
-          borderLeftColor: Colors.error,
-		  width: "90%",      // or any value you need
-        }}
-        text1Style={{
-          color: Colors.textPrimary,
-        }}
-        text2Style={{
-          color: Colors.textSecondary,
-			flexShrink: 1,
-			flexWrap: "wrap",
-			numberOfLines: 2,
-			includeFontPadding: true // optional, improves Android spacing
-        }}
-		text2NumberOfLines={2}
-      />
-    );
-  },
+function FailureToast(props: ToastRendererProps) {
+  const { Colors } = useTheme();
 
-  info: (props: any) => {
-    const { Colors } = useTheme();
+  return (
+    <ErrorToast
+      {...props}
+      style={{
+        backgroundColor: Colors.toastBackground,
+        borderLeftColor: Colors.error,
+        width: "90%",
+      }}
+      text1Style={{ color: Colors.textPrimary }}
+      text2Style={{
+        color: Colors.textSecondary,
+        flexShrink: 1,
+        flexWrap: "wrap",
+        includeFontPadding: true,
+      }}
+      text2NumberOfLines={2}
+    />
+  );
+}
 
-    return (
-      <BaseToast
-        {...props}
-        style={{
-          backgroundColor: Colors.toastBackground,
-          borderLeftColor: Colors.info,
-        }}
-        text1Style={{
-          color: Colors.textPrimary,
-        }}
-        text2Style={{
-          color: Colors.textSecondary,
-        }}
-      />
-    );
-  },
+function InfoToast(props: ToastRendererProps) {
+  const { Colors } = useTheme();
+
+  return (
+    <BaseToast
+      {...props}
+      style={{
+        backgroundColor: Colors.toastBackground,
+        borderLeftColor: Colors.info,
+      }}
+      text1Style={{ color: Colors.textPrimary }}
+      text2Style={{ color: Colors.textSecondary }}
+    />
+  );
+}
+
+export const ToastConfig: ToastConfiguration = {
+  success: (props) => <SuccessToast {...props} />,
+  error: (props) => <FailureToast {...props} />,
+  info: (props) => <InfoToast {...props} />,
 };

@@ -1,28 +1,34 @@
-import i18n from 'i18next';
+import { createInstance, type i18n as I18nInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { getLocales } from 'expo-localization';
 import en from '@assets/locales/en.json';
 import sr from '@assets/locales/sr.json';
+
+declare global {
+    var __efikasI18n: I18nInstance | undefined;
+}
 
 const resources = {
     en: { translation: en, },
     sr: { translation: sr, },
 };
 
-const initI18n = async() => {
-    i18n
+const i18n = globalThis.__efikasI18n ?? createInstance();
+
+globalThis.__efikasI18n ??= i18n;
+
+if (!i18n.isInitialized) {
+    void i18n
         .use(initReactI18next)
         .init({
             compatibilityJSON: "v4",
             resources,
-            //lng: getLocales()[0].languageCode, // Set initial language based on device locale
-            lng: 'sr', // default language
+            lng: 'sr',
             fallbackLng: 'en',
+            initImmediate: false,
             interpolation: {
                 escapeValue: false
             }
         });
 }
-initI18n();
 
 export default i18n;

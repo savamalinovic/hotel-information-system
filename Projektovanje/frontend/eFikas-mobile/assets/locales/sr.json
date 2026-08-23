@@ -10,6 +10,11 @@
       "lengthExactError": "Ovo polje mora biti {{length}} karaktera"
     }
   },
+  "notFound": {
+    "title": "Stranica nije pronađena",
+    "message": "Tražena stranica nije dostupna.",
+    "goHome": "Povratak na početnu stranicu"
+  },
   "tabs": {
     "reservations": "Rezervacije",
     "home": "Početna",
@@ -392,9 +397,14 @@
   "auth": {
     "orSeparator": "ili",
     "login": {
+      "title": "Prijava",
+      "firstName": "Ime",
+      "lastName": "Prezime",
       "password": "Lozinka",
       "loginButton": "Prijavite se",
       "forgotPassword": "Zaboravljena lozinka?",
+      "address": "Adresa",
+      "addressPlaceholder": "Ulica 123",
       "toastMessages": {
         "successTitle": "Uspješno ste se prijavili!",
         "successMsg": "Možete sada koristiti aplikaciju.",
@@ -434,7 +444,11 @@
         "label": "Slanje OTP",
         "title": "Unesite Vaš email kako biste resetovali lozinku.",
         "subtitle": "Nakon unosa, dobićete jednokratni OTP kôd putem mejla.",
-        "sendOtpButton": "Pošalji OTP"
+        "sendOtpButton": "Pošalji OTP",
+        "toastMessages": {
+          "otpSentTitle": "OTP je poslan",
+          "otpSentMsg": "OTP kôd je poslan na Vaš email."
+        }
       },
       "step2": {
         "label": "Verifikacija OTP",
@@ -763,9 +777,6 @@
       "guestBook": "Knjiga gostiju",
       "pdfView": "Pregled preuzetog PDF-a",
       "settingsMain": "Podešavanja",
-      "language": "Jezik",
-      "theme": "Tema",
-      "bugReport": "Prijava greške",
       "aboutApp": "O aplikaciji"
     },
     "title": {
@@ -899,17 +910,11 @@
       "download404Message": "Da li ste registrovali radnju?",
       "downloadSuccessMessage": "Uspješno preuzimanje",
       "downloadSuccessDescription": "PDF knjige možete sada pregledati",
-      "viewSuccessMessage": "Pregled uspješan!",
-      "viewSuccessDescription": "PDF knjige možete sada pregledati",
       "customDateErrorMessage": "Greška u datumima",
       "customDateErrorDescription": "Morate izabrati datum u slučaju prilagođenog rada",
       "invalidPeriodMessage": "Pogrešan period",
       "fromAfterToDescription": "Pomiješali ste vrijednosti datuma.",
       "sharingSavePdfTitle": "Podijelite {{title}}"
-    },
-    "messages": {
-      "successfulDeleteTitle": "Uspjeh!",
-      "successfulDeleteMessage": "Knjiga je uspješno obrisana."
     },
     "bookTitles": {
       "ExpenseBook": "Knjiga rashoda",
@@ -1027,9 +1032,6 @@
         "jibFormatError": "JIB mora sadržavati samo cifre"
       }
     }
-  },
-  "actions": {
-    "finish": "Završi"
   },
   "cashRegisters": {
     "sectionTitle": "Informacije o kasi",
