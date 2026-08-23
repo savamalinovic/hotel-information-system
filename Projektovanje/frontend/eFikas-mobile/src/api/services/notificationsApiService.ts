@@ -4,6 +4,7 @@ import {
   PageResponse,
   PushNotificationTokenRequest,
   ToggleNotificationRequest,
+  UnregisterPushNotificationTokenRequest,
 } from "@/src/types/types";
 import { API_URLS } from "@/src/util/apiConstants";
 
@@ -39,6 +40,13 @@ export const notificationsApiService = {
     const response = await axiosInstance.post(API_URLS.notifications.pushToken, request);
     if (response.status !== 204) {
       throw new Error(`Unexpected push-token registration status: ${response.status}`);
+    }
+  },
+
+  unregisterPushToken: async (request: UnregisterPushNotificationTokenRequest): Promise<void> => {
+    const response = await axiosInstance.post(API_URLS.notifications.unregisterPushToken, request);
+    if (response.status !== 204) {
+      throw new Error(`Unexpected push-token unregister status: ${response.status}`);
     }
   },
 

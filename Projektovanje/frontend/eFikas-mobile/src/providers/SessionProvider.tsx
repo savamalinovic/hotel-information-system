@@ -22,14 +22,20 @@ import {
 import { secureStoreService } from "@/src/services/secureStoreService";
 import { sessionStore } from "@/src/session/sessionStore";
 import { SECURE_STORE_KEYS } from "@/src/util/secureStoreKeys";
+import { notificationsApiService } from "@/src/api/services/notificationsApiService";
+import { pushNotificationPreference } from "@/src/notifications/pushNotificationPreference";
 
 export type SessionStatus = "bootstrapping" | "unauthenticated" | "authenticated";
+
+export type SignOutResult = {
+  pushCleanupFailed: boolean;
+};
 
 type SessionContextValue = {
   status: SessionStatus;
   session: AuthenticationResponse | null;
   signIn: (credentials: LoginRequest) => Promise<AuthenticationResponse>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<SignOutResult>;
 };
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
@@ -57,7 +63,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [status, setStatus] = useState<SessionStatus>("bootstrapping");
   const [session, setSession] = useState<AuthenticationResponse | null>(null);
 
-  const clearSession = useCallback(async () => {
+  const clearLocalSession = useCallback(async () => {
     sessionStore.clearSession();
     queryClient.clear();
     setSession(null);
@@ -69,6 +75,37 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       // The in-memory session and user data are still cleared when secure storage is unavailable.
     }
   }, [queryClient]);
+
+  const signOut = useCallback(async (): Promise<SignOutResult> => {
+    const activeSession = sessionStore.getSession();
+    let pushCleanupFailed = false;
+
+    if (activeSession) {
+      let localToken: string | null = null;
+      try {
+        localToken = (await pushNotificationPreference.get(activeSession.email))?.token ?? null;
+      } catch {
+        // A token that cannot be read is not known locally and must not be regenerated during logout.
+      }
+
+      if (localToken && sessionStore.getSession()?.token === activeSession.token) {
+        try {
+          await notificationsApiService.unregisterPushToken({ token: localToken });
+        } catch {
+          pushCleanupFailed = true;
+        }
+      }
+
+      try {
+        await pushNotificationPreference.clear(activeSession.email);
+      } catch {
+        // Secure storage cleanup cannot keep a user signed in.
+      }
+    }
+
+    await clearLocalSession();
+    return { pushCleanupFailed };
+  }, [clearLocalSession]);
 
   useEffect(() => {
     let isMounted = true;
@@ -119,9 +156,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    setUnauthorizedHandler(clearSession);
+    setUnauthorizedHandler(clearLocalSession);
     return () => setUnauthorizedHandler(undefined);
-  }, [clearSession]);
+  }, [clearLocalSession]);
 
   const signIn = useCallback(async (credentials: LoginRequest) => {
     const response = await authService.login(credentials);
@@ -144,8 +181,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ status, session, signIn, signOut: clearSession }),
-    [clearSession, session, signIn, status]
+    () => ({ status, session, signIn, signOut }),
+    [session, signIn, signOut, status]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
