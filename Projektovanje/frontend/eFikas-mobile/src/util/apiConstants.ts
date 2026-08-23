@@ -129,6 +129,7 @@ export const API_URLS = {
 		list: `${API_BASE_URL}/notifications`,
 		markRead: (notificationId: number) => `${API_BASE_URL}/notifications/${notificationId}/read`,
 		pushToken: `${API_BASE_URL}/notifications/push-token`,
+		unregisterPushToken: `${API_BASE_URL}/notifications/push-token/unregister`,
 		toggle: `${API_BASE_URL}/notifications/toggle`,
 	},
 

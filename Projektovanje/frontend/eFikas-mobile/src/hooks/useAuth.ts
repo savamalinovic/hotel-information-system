@@ -54,11 +54,18 @@ export const useAuth = () => {
   const logout = async () => {
     setIsLoggingOut(true);
     try {
-      await signOut();
-      toastService.success(
-        t("auth.logout.toastMessages.successTitle"),
-        t("auth.logout.toastMessages.successMsg")
-      );
+      const result = await signOut();
+      if (result.pushCleanupFailed) {
+        toastService.warning(
+          t("auth.logout.toastMessages.successTitle"),
+          t("auth.logout.toastMessages.pushCleanupWarning")
+        );
+      } else {
+        toastService.success(
+          t("auth.logout.toastMessages.successTitle"),
+          t("auth.logout.toastMessages.successMsg")
+        );
+      }
       router.replace("/");
     } finally {
       setIsLoggingOut(false);

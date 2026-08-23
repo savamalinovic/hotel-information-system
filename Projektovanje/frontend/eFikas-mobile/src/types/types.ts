@@ -856,6 +856,10 @@ export interface ToggleNotificationRequest {
 	enabled: boolean;
 }
 
+export interface UnregisterPushNotificationTokenRequest {
+    token: string;
+}
+
 export interface ApartmentDamageDTO {
     name: string;        
     damagePrice: number; 

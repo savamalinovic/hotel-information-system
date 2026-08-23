@@ -442,6 +442,7 @@
       "toastMessages": {
         "successTitle": "Odjava uspjela!",
         "successMsg": "Uspešno ste se odjavili.",
+        "pushCleanupWarning": "Odjavljeni ste, ali čišćenje push postavke na ovom uređaju nije potvrđeno.",
         "errorTitle": "Greška prilikom odjave",
         "errorMsg": "Neuspela odjava. Proverite vezu ili pokušajte ponovo."
       }

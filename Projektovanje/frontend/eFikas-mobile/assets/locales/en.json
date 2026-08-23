@@ -442,6 +442,7 @@
       "toastMessages": {
         "successTitle": "Logged Out",
         "successMsg": "You have successfully logged out.",
+        "pushCleanupWarning": "You are logged out, but push cleanup could not be confirmed on this device.",
         "errorTitle": "Logout Failed",
         "errorMsg": "Logout failed. Check your connection or try again."
       }

@@ -1,34 +1,9 @@
 import { notificationsApiService } from "@/src/api/services/notificationsApiService";
+import { pushNotificationPreference, StoredPushPreference } from "@/src/notifications/pushNotificationPreference";
 import { useSession } from "@/src/providers/SessionProvider";
 import { PushAvailability, PushSetupError, notificationsService } from "@/src/services/notificationsService";
-import { secureStoreService } from "@/src/services/secureStoreService";
 import { sessionStore } from "@/src/session/sessionStore";
 import { useCallback, useEffect, useState } from "react";
-
-type StoredPushPreference = {
-  token: string;
-  enabled: boolean;
-};
-
-const preferenceKey = (email: string) => `push-notification-preference:${encodeURIComponent(email.toLowerCase())}`;
-
-const readPreference = async (email: string): Promise<StoredPushPreference | null> => {
-  const raw = await secureStoreService.getItemAsync(preferenceKey(email));
-  if (!raw) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (
-      parsed && typeof parsed === "object"
-      && typeof (parsed as StoredPushPreference).token === "string"
-      && typeof (parsed as StoredPushPreference).enabled === "boolean"
-    ) {
-      return parsed as StoredPushPreference;
-    }
-  } catch {
-    // An invalid local value is treated as unknown rather than as a server-side setting.
-  }
-  return null;
-};
 
 export const usePushNotificationSettings = () => {
   const { session, status } = useSession();
@@ -50,7 +25,7 @@ export const usePushNotificationSettings = () => {
     try {
       const [nextAvailability, nextPreference] = await Promise.all([
         notificationsService.getAvailability(),
-        readPreference(email),
+        pushNotificationPreference.get(email),
       ]);
       setAvailability(nextAvailability);
       setPreference(nextPreference);
@@ -72,7 +47,7 @@ export const usePushNotificationSettings = () => {
         if (preference) {
           await notificationsApiService.toggleNotifications({ pushToken: preference.token, enabled: false });
           const nextPreference = { ...preference, enabled: false };
-          await secureStoreService.setItemAsync(preferenceKey(email), JSON.stringify(nextPreference));
+          await pushNotificationPreference.save(email, nextPreference);
           setPreference(nextPreference);
         }
         return;
@@ -90,7 +65,7 @@ export const usePushNotificationSettings = () => {
       }
 
       const nextPreference = { token, enabled: true };
-      await secureStoreService.setItemAsync(preferenceKey(email), JSON.stringify(nextPreference));
+      await pushNotificationPreference.save(email, nextPreference);
       setPreference(nextPreference);
       setAvailability("ready");
     } finally {
