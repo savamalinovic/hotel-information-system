@@ -3,6 +3,8 @@ import { useAddReservationGuest, useGuestSearch, useReservationGuests } from "@/
 import { useProfile } from "@/src/hooks/useProfile";
 import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
@@ -11,8 +13,8 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ExistingGuestSearchScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t } = useTranslation();
   const { profile } = useProfile();
@@ -31,8 +33,8 @@ export default function ExistingGuestSearchScreen() {
     void Promise.all([reservation.refetch(), reservationGuests.refetch(), search.refetch()]);
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScreenState title={t("guestCheckIn.errors.invalidReservation")} onRetry={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (reservation.isPending || reservationGuests.isPending) {

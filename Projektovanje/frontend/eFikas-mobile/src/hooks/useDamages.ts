@@ -8,20 +8,19 @@ import { CreateDamageRequest, DamageResponse } from "@/src/types/types";
 import { isAxiosError } from "axios";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-const isId = (value: number) => Number.isInteger(value) && value > 0;
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 export const useDamages = (
-  apartmentId: number | undefined,
+  apartmentId: number | null | undefined,
   filters: Omit<DamageListFilters, "page"> = { size: 20 }
 ) => {
-  const enabled = apartmentId !== undefined && isId(apartmentId);
+  const validApartmentId = parsePositiveId(apartmentId);
   const query = useInfiniteQuery({
-    queryKey: damageWorkflowQueryKeys.list(apartmentId ?? 0, filters),
-    queryFn: ({ pageParam }) => damageService.getDamages(apartmentId!, { ...filters, page: pageParam }),
+    queryKey: damageWorkflowQueryKeys.list(validApartmentId ?? 0, filters),
+    queryFn: ({ pageParam }) => damageService.getDamages(requirePositiveId(apartmentId), { ...filters, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.page + 1 < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    enabled,
+    enabled: validApartmentId !== null,
     retry: 1,
   });
   const damages = useMemo(
@@ -31,27 +30,35 @@ export const useDamages = (
   return { ...query, damages };
 };
 
-export const useDamageDetail = (apartmentId: number, damageId: number, enabled = true) =>
-  useQuery({
-    queryKey: damageWorkflowQueryKeys.detail(apartmentId, damageId),
-    queryFn: () => damageService.getDamage(apartmentId, damageId),
-    enabled: enabled && isId(apartmentId) && isId(damageId),
-    retry: 1,
-  });
+export const useDamageDetail = (apartmentId: number | null | undefined, damageId: number | null | undefined, enabled = true) => {
+  const validApartmentId = parsePositiveId(apartmentId);
+  const validDamageId = parsePositiveId(damageId);
 
-export const useDamageAttachments = (apartmentId: number, damageId: number, enabled = true) =>
-  useQuery({
-    queryKey: damageWorkflowQueryKeys.attachments(apartmentId, damageId),
-    queryFn: () => damageService.getAttachments(apartmentId, damageId),
-    enabled: enabled && isId(apartmentId) && isId(damageId),
+  return useQuery({
+    queryKey: damageWorkflowQueryKeys.detail(validApartmentId ?? 0, validDamageId ?? 0),
+    queryFn: () => damageService.getDamage(requirePositiveId(apartmentId), requirePositiveId(damageId)),
+    enabled: enabled && validApartmentId !== null && validDamageId !== null,
     retry: 1,
   });
+};
+
+export const useDamageAttachments = (apartmentId: number | null | undefined, damageId: number | null | undefined, enabled = true) => {
+  const validApartmentId = parsePositiveId(apartmentId);
+  const validDamageId = parsePositiveId(damageId);
+
+  return useQuery({
+    queryKey: damageWorkflowQueryKeys.attachments(validApartmentId ?? 0, validDamageId ?? 0),
+    queryFn: () => damageService.getAttachments(requirePositiveId(apartmentId), requirePositiveId(damageId)),
+    enabled: enabled && validApartmentId !== null && validDamageId !== null,
+    retry: 1,
+  });
+};
 
 export const useCreateDamage = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ apartmentId, request }: { apartmentId: number; request: CreateDamageRequest }) =>
-      damageService.create(apartmentId, request),
+      damageService.create(requirePositiveId(apartmentId), request),
     onSuccess: async (damage: DamageResponse) => {
       queryClient.setQueryData(damageWorkflowQueryKeys.detail(damage.apartmentId, damage.damageId), damage);
       await queryClient.invalidateQueries({ queryKey: damageWorkflowQueryKeys.list(damage.apartmentId, { size: 20 }) });
@@ -67,7 +74,7 @@ export const useUploadDamageAttachment = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ apartmentId, damageId, file }: { apartmentId: number; damageId: number; file: DamageUploadFile }) =>
-      damageService.uploadAttachment(apartmentId, damageId, file),
+      damageService.uploadAttachment(requirePositiveId(apartmentId), requirePositiveId(damageId), file),
     onSuccess: async (_attachment, variables) => {
       await queryClient.invalidateQueries({
         queryKey: damageWorkflowQueryKeys.attachments(variables.apartmentId, variables.damageId),

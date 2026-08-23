@@ -13,6 +13,8 @@ import { useReservationDetail, useReservationStatusHistory } from "@/src/hooks/u
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { CheckOutResponse, OperationalTask, TaskStatusHistory } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { isAxiosError } from "axios";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
@@ -28,11 +30,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const parsePositiveId = (value: string | undefined) => {
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
-};
 
 const formatTimestamp = (value: string | null | undefined, locale: string) =>
   value ? new Date(value).toLocaleString(locale) : "—";
@@ -52,8 +49,8 @@ const toLocalDateKey = (value: string) => {
 const isNonZeroDecimal = (value: string | undefined) => Boolean(value && !/^0(?:\.0+)?$/.test(value.trim()));
 
 export default function CheckOutWorkflowScreen() {
-  const { id, taskId: taskIdParam } = useLocalSearchParams<{ id: string; taskId?: string }>();
-  const reservationId = Number(id);
+  const { id, taskId: taskIdParam } = useLocalSearchParams<{ id?: string | string[]; taskId?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const routeTaskId = parsePositiveId(taskIdParam);
   const { Colors } = useTheme();
   const { t } = useTranslation();
@@ -62,7 +59,7 @@ export default function CheckOutWorkflowScreen() {
   const payments = usePaymentSummary(reservationId);
   const guests = useReservationGuests(reservationId);
   const profile = useProfile();
-  const apartmentId = reservation.data?.apartmentId ?? 0;
+  const apartmentId = reservation.data?.apartmentId;
   const apartment = useApartmentCatalogDetail(apartmentId);
   const apartmentHistory = useApartmentStatusHistory(apartmentId);
   const [result, setResult] = useState<CheckOutResponse>();
@@ -173,8 +170,8 @@ export default function CheckOutWorkflowScreen() {
     });
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><CenteredState title={t("checkOutWorkflow.errors.invalidTitle")} description={t("checkOutWorkflow.errors.invalidDescription")} actionLabel={t("checkOutWorkflow.common.back")} onAction={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (reservation.isPending) {

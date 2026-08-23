@@ -1,4 +1,5 @@
 import { NotificationItem, UserRole } from "@/src/types/types";
+import { parsePositiveId } from "@/src/util/idParams";
 
 export type NotificationPushData = {
   notificationId: number | null;
@@ -6,30 +7,20 @@ export type NotificationPushData = {
   taskId: number | null;
 };
 
-const toPositiveInteger = (value: unknown): number | null => {
-  if (typeof value === "number") {
-    return Number.isSafeInteger(value) && value > 0 ? value : null;
-  }
-  if (typeof value !== "string" || !/^\d+$/.test(value.trim())) {
-    return null;
-  }
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
-};
-
 export const parseNotificationPushData = (data: unknown): NotificationPushData => {
   const record = data && typeof data === "object" ? data as Record<string, unknown> : {};
   return {
-    notificationId: toPositiveInteger(record.notificationId),
+    notificationId: parsePositiveId(record.notificationId),
     type: typeof record.type === "string" ? record.type : null,
-    taskId: toPositiveInteger(record.taskId),
+    taskId: parsePositiveId(record.taskId),
   };
 };
 
 export const canOpenWorkerTask = (role: UserRole, type: string | null, taskId: number | null) =>
   role === "OPERATIONAL_WORKER" && type === "TASK_AVAILABLE" && taskId !== null;
 
-export const notificationTaskId = (notification: NotificationItem): number | null =>
-  canOpenWorkerTask("OPERATIONAL_WORKER", notification.type, notification.taskId)
-    ? notification.taskId
-    : null;
+export const notificationTaskId = (notification: NotificationItem): number | null => {
+  const taskId = parsePositiveId(notification.taskId);
+
+  return canOpenWorkerTask("OPERATIONAL_WORKER", notification.type, taskId) ? taskId : null;
+};

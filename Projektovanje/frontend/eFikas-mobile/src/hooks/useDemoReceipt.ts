@@ -5,9 +5,7 @@ import {
 import { paymentWorkflowQueryKeys } from "@/src/api/services/paymentWorkflowService";
 import { reservationWorkflowQueryKeys } from "@/src/api/services/reservationWorkflowService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-const isValidReservationId = (reservationId: number) =>
-  Number.isInteger(reservationId) && reservationId > 0;
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const invalidateReceiptDependencies = async (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -26,19 +24,22 @@ const invalidateReceiptDependencies = async (
   ]);
 };
 
-export const useDemoReceipt = (reservationId: number) =>
-  useQuery({
-    queryKey: demoReceiptQueryKeys.receipt(reservationId),
-    queryFn: () => demoReceiptService.getReceipt(reservationId),
-    enabled: isValidReservationId(reservationId),
+export const useDemoReceipt = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
+
+  return useQuery({
+    queryKey: demoReceiptQueryKeys.receipt(validReservationId ?? 0),
+    queryFn: () => demoReceiptService.getReceipt(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
     retry: 1,
   });
+};
 
 export const useGenerateDemoReceipt = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (reservationId: number) => demoReceiptService.generateReceipt(reservationId),
+    mutationFn: (reservationId: number) => demoReceiptService.generateReceipt(requirePositiveId(reservationId)),
     onSuccess: async (receipt) => {
       queryClient.setQueryData(demoReceiptQueryKeys.receipt(receipt.reservationId), receipt);
       await invalidateReceiptDependencies(queryClient, receipt.reservationId);

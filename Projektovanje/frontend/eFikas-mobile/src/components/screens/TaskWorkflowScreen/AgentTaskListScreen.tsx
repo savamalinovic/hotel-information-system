@@ -3,6 +3,7 @@ import { WorkflowCard, WorkflowChip, WorkflowState, TaskStatusBadge, PriorityBad
 import { useAgentTasks, useSpecializations } from "@/src/hooks/useTaskWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { OperationalTask, TaskStatus } from "@/src/types/types";
+import { parsePositiveId } from "@/src/util/idParams";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,15 +20,18 @@ export default function AgentTaskListScreen() {
   const [apartmentIdText, setApartmentIdText] = useState("");
   const [reservationIdText, setReservationIdText] = useState("");
   const [workerIdText, setWorkerIdText] = useState("");
+  const apartmentId = parsePositiveId(apartmentIdText);
+  const reservationId = parsePositiveId(reservationIdText);
+  const workerId = parsePositiveId(workerIdText);
   const filters = useMemo<Omit<TaskListFilters, "page">>(() => ({
     size: 20,
     sort: "updatedAt,desc",
     ...(status ? { status } : {}),
     ...(specializationId ? { specializationId } : {}),
-    ...(positiveId(apartmentIdText) ? { apartmentId: positiveId(apartmentIdText) } : {}),
-    ...(positiveId(reservationIdText) ? { reservationId: positiveId(reservationIdText) } : {}),
-    ...(positiveId(workerIdText) ? { assignedWorkerId: positiveId(workerIdText) } : {}),
-  }), [apartmentIdText, reservationIdText, specializationId, status, workerIdText]);
+    ...(apartmentId !== null ? { apartmentId } : {}),
+    ...(reservationId !== null ? { reservationId } : {}),
+    ...(workerId !== null ? { assignedWorkerId: workerId } : {}),
+  }), [apartmentId, reservationId, specializationId, status, workerId]);
   const tasks = useAgentTasks(filters);
   const specializations = useSpecializations();
   const hasFilters = Boolean(status || specializationId || apartmentIdText || reservationIdText || workerIdText);
@@ -114,11 +118,6 @@ function AgentTaskCard({ task, locale }: { task: OperationalTask; locale: string
     <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>{t("taskWorkforce.agent.updatedAt", { value: formatTaskDate(task.updatedAt, locale) })}</Text>
   </Pressable>;
 }
-
-const positiveId = (value: string) => {
-  const numeric = Number(value);
-  return Number.isInteger(numeric) && numeric > 0 ? numeric : undefined;
-};
 
 const styles = StyleSheet.create({
   screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12 }, header: { gap: 12 }, titleRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, titleCopy: { flex: 1, gap: 4 }, title: { fontSize: 24, fontWeight: "800" }, createButton: { minWidth: 102 }, filterTitleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, filterTitle: { fontSize: 16, fontWeight: "800" }, filterLabel: { fontSize: 12, fontWeight: "800" }, chips: { gap: 8, paddingRight: 4 }, idInputs: { gap: 8 }, input: { minHeight: 44, borderWidth: 1, borderRadius: 11, paddingHorizontal: 11, fontSize: 14 }, taskCard: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 8 }, taskHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 }, taskTitle: { flex: 1, fontSize: 16, fontWeight: "800" }, badges: { flexDirection: "row", gap: 9, alignItems: "center", flexWrap: "wrap" },

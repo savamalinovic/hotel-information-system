@@ -6,6 +6,7 @@ import {
 } from "@/src/api/services/apartmentCatalogService";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const apartmentTypeFilters: ApartmentTypeFilters = {
   active: true,
@@ -40,26 +41,35 @@ export const useApartmentCatalog = (filters: Omit<ApartmentCatalogFilters, "page
   return { ...query, apartments };
 };
 
-export const useApartmentCatalogDetail = (apartmentId: number) =>
-  useQuery({
-    queryKey: apartmentCatalogQueryKeys.apartment(apartmentId),
-    queryFn: () => apartmentCatalogService.getApartment(apartmentId),
-    enabled: Number.isInteger(apartmentId) && apartmentId > 0,
-    retry: 1,
-  });
+export const useApartmentCatalogDetail = (apartmentId: number | null | undefined) => {
+  const validApartmentId = parsePositiveId(apartmentId);
 
-export const useApartmentStatusHistory = (apartmentId: number) =>
-  useQuery({
-    queryKey: apartmentCatalogQueryKeys.statusHistory(apartmentId),
-    queryFn: () => apartmentCatalogService.getStatusHistory(apartmentId),
-    enabled: Number.isInteger(apartmentId) && apartmentId > 0,
+  return useQuery({
+    queryKey: apartmentCatalogQueryKeys.apartment(validApartmentId ?? 0),
+    queryFn: () => apartmentCatalogService.getApartment(requirePositiveId(apartmentId)),
+    enabled: validApartmentId !== null,
     retry: 1,
   });
+};
 
-export const useApartmentUnavailability = (apartmentId: number) =>
-  useQuery({
-    queryKey: apartmentCatalogQueryKeys.unavailability(apartmentId),
-    queryFn: () => apartmentCatalogService.getUnavailability(apartmentId),
-    enabled: Number.isInteger(apartmentId) && apartmentId > 0,
+export const useApartmentStatusHistory = (apartmentId: number | null | undefined) => {
+  const validApartmentId = parsePositiveId(apartmentId);
+
+  return useQuery({
+    queryKey: apartmentCatalogQueryKeys.statusHistory(validApartmentId ?? 0),
+    queryFn: () => apartmentCatalogService.getStatusHistory(requirePositiveId(apartmentId)),
+    enabled: validApartmentId !== null,
     retry: 1,
   });
+};
+
+export const useApartmentUnavailability = (apartmentId: number | null | undefined) => {
+  const validApartmentId = parsePositiveId(apartmentId);
+
+  return useQuery({
+    queryKey: apartmentCatalogQueryKeys.unavailability(validApartmentId ?? 0),
+    queryFn: () => apartmentCatalogService.getUnavailability(requirePositiveId(apartmentId)),
+    enabled: validApartmentId !== null,
+    retry: 1,
+  });
+};

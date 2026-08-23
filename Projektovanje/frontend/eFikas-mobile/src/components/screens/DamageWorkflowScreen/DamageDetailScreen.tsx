@@ -6,6 +6,8 @@ import { useDamageAttachments, useDamageDetail, useUploadDamageAttachment } from
 import { useTaskDetail } from "@/src/hooks/useTaskWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,22 +18,22 @@ import { isAxiosError } from "axios";
 const activeWorkerStatuses = ["ASSIGNED", "IN_PROGRESS", "BLOCKED"] as const;
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
-export default function DamageDetailScreen({ workerTaskId }: { workerTaskId?: number } = {}) {
-  const { t, i18n } = useTranslation(); const { Colors } = useTheme(); const params = useLocalSearchParams<{ id?: string; apartmentId?: string; damageId?: string }>();
-  const apartmentId = Number(params.apartmentId); const damageId = Number(params.damageId ?? params.id); const isWorkerRoute = workerTaskId !== undefined;
-  const task = useTaskDetail(workerTaskId ?? 0);
+export default function DamageDetailScreen({ workerTaskId }: { workerTaskId?: number | null } = {}) {
+  const { t, i18n } = useTranslation(); const { Colors } = useTheme(); const params = useLocalSearchParams<{ id?: string | string[]; apartmentId?: string | string[]; damageId?: string | string[] }>();
+  const apartmentId = parsePositiveId(params.apartmentId); const damageId = parsePositiveId(params.damageId ?? params.id); const isWorkerRoute = workerTaskId !== undefined;
+  const task = useTaskDetail(workerTaskId);
   const taskAllowsAccess = !isWorkerRoute || Boolean(task.data?.apartmentId === apartmentId && task.data.assignedWorkerId !== null && activeWorkerStatuses.includes(task.data.status as typeof activeWorkerStatuses[number]));
   const damage = useDamageDetail(apartmentId, damageId, taskAllowsAccess);
   const attachments = useDamageAttachments(apartmentId, damageId, taskAllowsAccess);
   const accessRequestFailed = isAxiosError(damage.error) && (damage.error.response?.status === 403 || damage.error.response?.status === 404);
 
   useEffect(() => {
-    if (!isWorkerRoute || !workerTaskId || !Number.isInteger(workerTaskId)) return;
+    if (!isWorkerRoute || !workerTaskId) return;
     const timer = setInterval(() => void task.refetch(), 20_000);
     return () => clearInterval(timer);
   }, [isWorkerRoute, task, workerTaskId]);
 
-  if (!Number.isInteger(apartmentId) || apartmentId <= 0 || !Number.isInteger(damageId) || damageId <= 0) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.common.errorTitle")} description={t("damageWorkflow.detail.invalid")} /></SafeAreaView>;
+  if (apartmentId === null || damageId === null || (isWorkerRoute && parsePositiveId(workerTaskId) === null)) return isWorkerRoute ? <InvalidRouteState fallbackHref="/(worker)" fallbackKind="home" /> : <InvalidRouteState fallbackHref="/(home)/damages" />;
   if (isWorkerRoute && task.isPending) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("damageWorkflow.common.loading")} description={t("damageWorkflow.worker.checkingAccess")} /></SafeAreaView>;
   if (isWorkerRoute && (task.isError || !taskAllowsAccess)) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.worker.accessLostTitle")} description={t("damageWorkflow.worker.accessLost")} actionLabel={t("damageWorkflow.common.retry")} onAction={() => void task.refetch()} /></SafeAreaView>;
   if (damage.isPending) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("damageWorkflow.common.loading")} description={t("damageWorkflow.detail.loading")} /></SafeAreaView>;

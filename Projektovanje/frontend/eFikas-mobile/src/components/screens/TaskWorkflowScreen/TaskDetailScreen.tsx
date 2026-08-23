@@ -12,6 +12,8 @@ import { useSession } from "@/src/providers/SessionProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { OperationalTask, TaskAttachment, TaskStatus } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 
 const terminalStatuses: TaskStatus[] = ["COMPLETED", "CANCELLED"];
 
@@ -19,16 +21,18 @@ export default function TaskDetailScreen() {
   const { t, i18n } = useTranslation();
   const { Colors } = useTheme();
   const { session } = useSession();
-  const params = useLocalSearchParams<{ id?: string }>();
-  const taskId = Number(params.id);
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const taskId = parsePositiveId(params.id);
   const task = useTaskDetail(taskId);
   const history = useTaskHistory(taskId);
   const attachments = useTaskAttachments(taskId);
   const isWorker = session?.role === "OPERATIONAL_WORKER";
   const refresh = () => void Promise.all([task.refetch(), history.refetch(), attachments.refetch()]);
 
-  if (!Number.isInteger(taskId) || taskId <= 0) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.detail.invalidTask")} /></SafeAreaView>;
+  if (taskId === null) {
+    return isWorker
+      ? <InvalidRouteState fallbackHref="/(worker)" fallbackKind="home" />
+      : <InvalidRouteState fallbackHref="/(home)/tasks" />;
   }
   if (task.isPending) {
     return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("taskWorkforce.common.loading")} description={t("taskWorkforce.detail.loading")} /></SafeAreaView>;

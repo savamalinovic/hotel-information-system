@@ -6,8 +6,7 @@ import { paymentWorkflowQueryKeys } from "@/src/api/services/paymentWorkflowServ
 import { reservationWorkflowQueryKeys } from "@/src/api/services/reservationWorkflowService";
 import { isAxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-const isValidId = (value: number) => Number.isInteger(value) && value > 0;
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const invalidateCheckOutDependencies = async (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -35,7 +34,7 @@ export const useCheckOut = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (reservationId: number) => checkOutWorkflowService.checkOut(reservationId),
+    mutationFn: (reservationId: number) => checkOutWorkflowService.checkOut(requirePositiveId(reservationId)),
     onSuccess: (response) =>
       invalidateCheckOutDependencies(queryClient, response.reservationId, response.cleaningTaskId),
     onError: (error, reservationId) => {
@@ -48,26 +47,35 @@ export const useCheckOut = () => {
   });
 };
 
-export const useExistingCleaningTask = (reservationId: number, enabled: boolean) =>
-  useQuery({
-    queryKey: checkOutWorkflowQueryKeys.existingCleaningTask(reservationId),
-    queryFn: () => checkOutWorkflowService.getExistingCleaningTask(reservationId),
-    enabled: enabled && isValidId(reservationId),
-    retry: 1,
-  });
+export const useExistingCleaningTask = (reservationId: number | null | undefined, enabled: boolean) => {
+  const validReservationId = parsePositiveId(reservationId);
 
-export const useCheckOutTask = (taskId: number | undefined) =>
-  useQuery({
-    queryKey: checkOutWorkflowQueryKeys.task(taskId ?? 0),
-    queryFn: () => checkOutWorkflowService.getTask(taskId ?? 0),
-    enabled: taskId !== undefined && isValidId(taskId),
+  return useQuery({
+    queryKey: checkOutWorkflowQueryKeys.existingCleaningTask(validReservationId ?? 0),
+    queryFn: () => checkOutWorkflowService.getExistingCleaningTask(requirePositiveId(reservationId)),
+    enabled: enabled && validReservationId !== null,
     retry: 1,
   });
+};
 
-export const useCheckOutTaskHistory = (taskId: number | undefined) =>
-  useQuery({
-    queryKey: checkOutWorkflowQueryKeys.taskHistory(taskId ?? 0),
-    queryFn: () => checkOutWorkflowService.getTaskHistory(taskId ?? 0),
-    enabled: taskId !== undefined && isValidId(taskId),
+export const useCheckOutTask = (taskId: number | null | undefined) => {
+  const validTaskId = parsePositiveId(taskId);
+
+  return useQuery({
+    queryKey: checkOutWorkflowQueryKeys.task(validTaskId ?? 0),
+    queryFn: () => checkOutWorkflowService.getTask(requirePositiveId(taskId)),
+    enabled: validTaskId !== null,
     retry: 1,
   });
+};
+
+export const useCheckOutTaskHistory = (taskId: number | null | undefined) => {
+  const validTaskId = parsePositiveId(taskId);
+
+  return useQuery({
+    queryKey: checkOutWorkflowQueryKeys.taskHistory(validTaskId ?? 0),
+    queryFn: () => checkOutWorkflowService.getTaskHistory(requirePositiveId(taskId)),
+    enabled: validTaskId !== null,
+    retry: 1,
+  });
+};

@@ -15,6 +15,14 @@
     "message": "Tražena stranica nije dostupna.",
     "goHome": "Povratak na početnu stranicu"
   },
+  "routeValidation": {
+    "invalidLink": {
+      "title": "Neispravan ili nepotpun link",
+      "description": "Ovaj link nema ispravan identifikator, zato podaci nisu učitani.",
+      "backToList": "Povratak na listu",
+      "backToHome": "Povratak na početni ekran"
+    }
+  },
   "tabs": {
     "reservations": "Rezervacije",
     "home": "Početna",

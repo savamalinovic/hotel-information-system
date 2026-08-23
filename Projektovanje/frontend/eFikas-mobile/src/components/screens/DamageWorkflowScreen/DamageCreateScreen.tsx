@@ -1,8 +1,10 @@
 import { formatMoney, isOptionalPositiveMoney, normalizeMoneyInput } from "@/src/components/screens/ExpenseWorkflowScreen/expenseWorkflowHelpers";
-import { WorkflowButton, WorkflowCard, WorkflowState } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
+import { WorkflowButton, WorkflowCard } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
 import { useCreateDamage } from "@/src/hooks/useDamages";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +12,7 @@ import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DamageCreateScreen() {
-  const { t } = useTranslation(); const { Colors } = useTheme(); const { apartmentId: rawApartmentId } = useLocalSearchParams<{ apartmentId?: string }>(); const apartmentId = Number(rawApartmentId);
+  const { t } = useTranslation(); const { Colors } = useTheme(); const { apartmentId: rawApartmentId } = useLocalSearchParams<{ apartmentId?: string | string[] }>(); const apartmentId = parsePositiveId(rawApartmentId);
   const create = useCreateDamage(); const [title, setTitle] = useState(""); const [description, setDescription] = useState(""); const [estimatedAmount, setEstimatedAmount] = useState(""); const [confirmedAmount, setConfirmedAmount] = useState(""); const [validationError, setValidationError] = useState(""); const [requestError, setRequestError] = useState(""); const [confirming, setConfirming] = useState(false);
   const prepare = () => {
     const cleanedTitle = title.trim(); const cleanedDescription = description.trim(); const estimated = normalizeMoneyInput(estimatedAmount); const confirmed = normalizeMoneyInput(confirmedAmount);
@@ -20,7 +22,7 @@ export default function DamageCreateScreen() {
     else { setValidationError(""); setRequestError(""); setConfirming(true); }
   };
   const submit = () => create.mutate({ apartmentId, request: { title: title.trim(), description: description.trim(), estimatedAmount: normalizeMoneyInput(estimatedAmount) || null, confirmedAmount: normalizeMoneyInput(confirmedAmount) || null } }, { onSuccess: (damage) => { setConfirming(false); router.replace({ pathname: "/(home)/damages/[id]", params: { id: String(damage.damageId), apartmentId: String(apartmentId) } }); }, onError: (error) => setRequestError(getUserFacingErrorMessage(error, t("damageWorkflow.create.submitError"))) });
-  if (!Number.isInteger(apartmentId) || apartmentId <= 0) return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("damageWorkflow.common.errorTitle")} description={t("damageWorkflow.create.invalidApartment")} /></SafeAreaView>;
+  if (apartmentId === null) return <InvalidRouteState fallbackHref="/(home)/damages" />;
   return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled"><Text style={[styles.title, { color: Colors.textPrimary }]}>{t("damageWorkflow.create.title")}</Text><Text style={{ color: Colors.textSecondary }}>{t("damageWorkflow.create.hint", { id: apartmentId })}</Text><WorkflowCard><Field label={t("damageWorkflow.create.titleLabel")} value={title} onChangeText={setTitle} maxLength={120} placeholder={t("damageWorkflow.create.titlePlaceholder")} /><Field label={t("damageWorkflow.create.description")} value={description} onChangeText={setDescription} maxLength={2000} placeholder={t("damageWorkflow.create.descriptionPlaceholder")} multiline /><Field label={t("damageWorkflow.create.estimated")} value={estimatedAmount} onChangeText={setEstimatedAmount} placeholder="0.00" keyboardType="decimal-pad" /><Field label={t("damageWorkflow.create.confirmed")} value={confirmedAmount} onChangeText={setConfirmedAmount} placeholder="0.00" keyboardType="decimal-pad" />{validationError ? <Text style={{ color: Colors.error }}>{validationError}</Text> : null}{requestError ? <Text style={{ color: Colors.error }}>{requestError}</Text> : null}<WorkflowButton label={t("damageWorkflow.create.review")} onPress={prepare} icon="ChevronRight" /></WorkflowCard><Confirmation visible={confirming} submitting={create.isPending} title={title.trim()} description={description.trim()} estimated={normalizeMoneyInput(estimatedAmount)} confirmed={normalizeMoneyInput(confirmedAmount)} error={requestError} onClose={() => !create.isPending && setConfirming(false)} onConfirm={submit} /></ScrollView></SafeAreaView>;
 }
 

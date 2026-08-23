@@ -8,8 +8,7 @@ import { CreateOperationalExpenseRequest, OperationalExpenseResponse } from "@/s
 import { isAxiosError } from "axios";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-const isExpenseId = (expenseId: number) => Number.isInteger(expenseId) && expenseId > 0;
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const activeCategoryFilters: ExpenseCategoryFilters = {
   active: true,
@@ -42,13 +41,16 @@ export const useExpenses = (filters: Omit<ExpenseListFilters, "page">, enabled =
   return { ...query, expenses };
 };
 
-export const useExpenseDetail = (expenseId: number) =>
-  useQuery({
-    queryKey: operationalExpenseQueryKeys.detail(expenseId),
-    queryFn: () => expenseService.getExpense(expenseId),
-    enabled: isExpenseId(expenseId),
+export const useExpenseDetail = (expenseId: number | null | undefined) => {
+  const validExpenseId = parsePositiveId(expenseId);
+
+  return useQuery({
+    queryKey: operationalExpenseQueryKeys.detail(validExpenseId ?? 0),
+    queryFn: () => expenseService.getExpense(requirePositiveId(expenseId)),
+    enabled: validExpenseId !== null,
     retry: 1,
   });
+};
 
 export const useCreateExpense = () => {
   const queryClient = useQueryClient();

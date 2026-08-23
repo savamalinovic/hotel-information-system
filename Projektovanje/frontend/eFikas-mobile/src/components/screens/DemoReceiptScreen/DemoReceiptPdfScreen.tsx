@@ -5,6 +5,8 @@ import { useDemoReceipt } from "@/src/hooks/useDemoReceipt";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { persistDemoReceiptPdf, releaseDemoReceiptPdf } from "@/src/services/demoReceiptFileService";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { isAxiosError } from "axios";
 import * as Sharing from "expo-sharing";
 import { router, useLocalSearchParams } from "expo-router";
@@ -13,17 +15,12 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const parseReservationId = (id: string | undefined) => {
-  const parsed = Number(id);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
-};
-
 export default function DemoReceiptPdfScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = parseReservationId(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t } = useTranslation();
-  const receipt = useDemoReceipt(reservationId ?? 0);
+  const receipt = useDemoReceipt(reservationId);
   const attemptedReceiptId = useRef<number | undefined>(undefined);
   const downloadingRef = useRef(false);
   const [localUri, setLocalUri] = useState<string>();
@@ -110,8 +107,8 @@ export default function DemoReceiptPdfScreen() {
     setRendererError(true);
   };
 
-  if (!reservationId) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><EmptyOrErrorState icon="CircleAlert" title={t("demoReceipt.errors.invalidTitle")} description={t("demoReceipt.errors.invalidDescription")} retryLabel={t("demoReceipt.common.back")} onRetry={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (receipt.isPending) {

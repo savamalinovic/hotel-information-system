@@ -14,6 +14,8 @@ import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { CheckInClaimResponse, CheckInResponse } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
+import { parsePositiveId } from "@/src/util/idParams";
 import { isAxiosError } from "axios";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -22,14 +24,14 @@ import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from "react
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CheckInScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const reservationId = Number(id);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const reservationId = parsePositiveId(id);
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
   const { profile } = useProfile();
   const reservation = useReservationDetail(reservationId);
   const guests = useReservationGuests(reservationId);
-  const apartment = useApartmentCatalogDetail(reservation.data?.apartmentId ?? 0);
+  const apartment = useApartmentCatalogDetail(reservation.data?.apartmentId);
   const history = useCheckInClaimHistory(reservationId);
   const claim = useClaimCheckIn();
   const release = useReleaseCheckIn();
@@ -43,8 +45,8 @@ export default function CheckInScreen() {
     void Promise.all([reservation.refetch(), guests.refetch(), apartment.refetch(), history.refetch()]);
   };
 
-  if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScreenState title={t("guestCheckIn.errors.invalidReservation")} onRetry={() => router.back()} /></SafeAreaView>;
+  if (reservationId === null) {
+    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
   }
 
   if (reservation.isPending || guests.isPending) {

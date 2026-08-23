@@ -10,6 +10,7 @@ import {
 } from "@/src/types/types";
 import { isAxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const refreshPaymentDependencies = async (
   queryClient: ReturnType<typeof useQueryClient>,
@@ -44,27 +45,33 @@ const refreshAfterPaymentFailure = async (
   }
 };
 
-export const usePaymentSummary = (reservationId: number) =>
-  useQuery({
-    queryKey: paymentWorkflowQueryKeys.summary(reservationId),
-    queryFn: () => paymentWorkflowService.getSummary(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
-    retry: 1,
-  });
+export const usePaymentSummary = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
 
-export const usePaymentLedger = (reservationId: number) =>
-  useQuery({
-    queryKey: paymentWorkflowQueryKeys.ledger(reservationId),
-    queryFn: () => paymentWorkflowService.getLedger(reservationId),
-    enabled: Number.isInteger(reservationId) && reservationId > 0,
+  return useQuery({
+    queryKey: paymentWorkflowQueryKeys.summary(validReservationId ?? 0),
+    queryFn: () => paymentWorkflowService.getSummary(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
     retry: 1,
   });
+};
+
+export const usePaymentLedger = (reservationId: number | null | undefined) => {
+  const validReservationId = parsePositiveId(reservationId);
+
+  return useQuery({
+    queryKey: paymentWorkflowQueryKeys.ledger(validReservationId ?? 0),
+    queryFn: () => paymentWorkflowService.getLedger(requirePositiveId(reservationId)),
+    enabled: validReservationId !== null,
+    retry: 1,
+  });
+};
 
 export const useRecordPayment = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reservationId, request }: { reservationId: number; request: RecordPaymentRequest }) =>
-      paymentWorkflowService.recordPayment(reservationId, request),
+      paymentWorkflowService.recordPayment(requirePositiveId(reservationId), request),
     onSuccess: (_response, variables) => refreshPaymentDependencies(queryClient, variables.reservationId, true),
     onError: (error, variables) => refreshAfterPaymentFailure(queryClient, variables.reservationId, error),
   });
@@ -77,7 +84,11 @@ export const useCorrectPayment = () => {
       reservationId: number;
       paymentId: number;
       request: CorrectPaymentRequest;
-    }) => paymentWorkflowService.correctPayment(reservationId, paymentId, request),
+    }) => paymentWorkflowService.correctPayment(
+      requirePositiveId(reservationId),
+      requirePositiveId(paymentId),
+      request
+    ),
     onSuccess: (_response, variables) => refreshPaymentDependencies(queryClient, variables.reservationId, true),
     onError: (error, variables) => refreshAfterPaymentFailure(queryClient, variables.reservationId, error),
   });
@@ -90,7 +101,11 @@ export const useReversePayment = () => {
       reservationId: number;
       paymentId: number;
       request: ReversePaymentRequest;
-    }) => paymentWorkflowService.reversePayment(reservationId, paymentId, request),
+    }) => paymentWorkflowService.reversePayment(
+      requirePositiveId(reservationId),
+      requirePositiveId(paymentId),
+      request
+    ),
     onSuccess: (_response, variables) => refreshPaymentDependencies(queryClient, variables.reservationId, true),
     onError: (error, variables) => refreshAfterPaymentFailure(queryClient, variables.reservationId, error),
   });

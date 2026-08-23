@@ -11,8 +11,7 @@ import { OperationalTask, TaskStatus } from "@/src/types/types";
 import { isAxiosError } from "axios";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-const isTaskId = (taskId: number) => Number.isInteger(taskId) && taskId > 0;
+import { parsePositiveId, requirePositiveId } from "@/src/util/idParams";
 
 const invalidateTaskDependencies = async (queryClient: ReturnType<typeof useQueryClient>) => {
   await Promise.all([
@@ -74,31 +73,48 @@ export const useMyTasks = (filters: Omit<WorkerTaskListFilters, "page">) => {
   return { ...query, tasks };
 };
 
-export const useTaskDetail = (taskId: number) => useQuery({
-  queryKey: taskWorkflowQueryKeys.task(taskId),
-  queryFn: () => taskWorkflowService.getTask(taskId),
-  enabled: isTaskId(taskId),
-  retry: 1,
-});
+export const useTaskDetail = (taskId: number | null | undefined) => {
+  const validTaskId = parsePositiveId(taskId);
 
-export const useTaskHistory = (taskId: number) => useQuery({
-  queryKey: taskWorkflowQueryKeys.history(taskId),
-  queryFn: () => taskWorkflowService.getHistory(taskId),
-  enabled: isTaskId(taskId),
-  retry: 1,
-});
+  return useQuery({
+    queryKey: taskWorkflowQueryKeys.task(validTaskId ?? 0),
+    queryFn: () => taskWorkflowService.getTask(requirePositiveId(taskId)),
+    enabled: validTaskId !== null,
+    retry: 1,
+  });
+};
 
-export const useTaskAttachments = (taskId: number) => useQuery({
-  queryKey: taskWorkflowQueryKeys.attachments(taskId),
-  queryFn: () => taskWorkflowService.getAttachments(taskId),
-  enabled: isTaskId(taskId),
-  retry: 1,
-});
+export const useTaskHistory = (taskId: number | null | undefined) => {
+  const validTaskId = parsePositiveId(taskId);
+
+  return useQuery({
+    queryKey: taskWorkflowQueryKeys.history(validTaskId ?? 0),
+    queryFn: () => taskWorkflowService.getHistory(requirePositiveId(taskId)),
+    enabled: validTaskId !== null,
+    retry: 1,
+  });
+};
+
+export const useTaskAttachments = (taskId: number | null | undefined) => {
+  const validTaskId = parsePositiveId(taskId);
+
+  return useQuery({
+    queryKey: taskWorkflowQueryKeys.attachments(validTaskId ?? 0),
+    queryFn: () => taskWorkflowService.getAttachments(requirePositiveId(taskId)),
+    enabled: validTaskId !== null,
+    retry: 1,
+  });
+};
 
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: CreateTaskRequest) => taskWorkflowService.createTask(request),
+    mutationFn: (request: CreateTaskRequest) => taskWorkflowService.createTask({
+      ...request,
+      specializationId: requirePositiveId(request.specializationId),
+      ...(request.apartmentId === undefined ? {} : { apartmentId: requirePositiveId(request.apartmentId) }),
+      ...(request.reservationId === undefined ? {} : { reservationId: requirePositiveId(request.reservationId) }),
+    }),
     onSuccess: () => invalidateTaskDependencies(queryClient),
     onError: (error) => isAxiosError(error) && error.response?.status === 409 ? invalidateTaskDependencies(queryClient) : Promise.resolve(),
   });
@@ -113,13 +129,13 @@ const useTaskMutation = <TVariables>(mutationFn: (variables: TVariables) => Prom
   });
 };
 
-export const useClaimTask = () => useTaskMutation((taskId: number) => taskWorkflowService.claimTask(taskId));
-export const useStartTask = () => useTaskMutation((taskId: number) => taskWorkflowService.startTask(taskId));
-export const useBlockTask = () => useTaskMutation(({ taskId, reason }: { taskId: number; reason: string }) => taskWorkflowService.blockTask(taskId, reason));
-export const useResumeTask = () => useTaskMutation((taskId: number) => taskWorkflowService.resumeTask(taskId));
-export const useCompleteTask = () => useTaskMutation((taskId: number) => taskWorkflowService.completeTask(taskId));
-export const useCancelTask = () => useTaskMutation(({ taskId, reason }: { taskId: number; reason: string }) => taskWorkflowService.cancelTask(taskId, reason));
-export const useUploadTaskAttachment = () => useTaskMutation(({ taskId, file }: { taskId: number; file: TaskUploadFile }) => taskWorkflowService.uploadAttachment(taskId, file));
+export const useClaimTask = () => useTaskMutation((taskId: number) => taskWorkflowService.claimTask(requirePositiveId(taskId)));
+export const useStartTask = () => useTaskMutation((taskId: number) => taskWorkflowService.startTask(requirePositiveId(taskId)));
+export const useBlockTask = () => useTaskMutation(({ taskId, reason }: { taskId: number; reason: string }) => taskWorkflowService.blockTask(requirePositiveId(taskId), reason));
+export const useResumeTask = () => useTaskMutation((taskId: number) => taskWorkflowService.resumeTask(requirePositiveId(taskId)));
+export const useCompleteTask = () => useTaskMutation((taskId: number) => taskWorkflowService.completeTask(requirePositiveId(taskId)));
+export const useCancelTask = () => useTaskMutation(({ taskId, reason }: { taskId: number; reason: string }) => taskWorkflowService.cancelTask(requirePositiveId(taskId), reason));
+export const useUploadTaskAttachment = () => useTaskMutation(({ taskId, file }: { taskId: number; file: TaskUploadFile }) => taskWorkflowService.uploadAttachment(requirePositiveId(taskId), file));
 
 export const taskStatusGroups: Record<"active" | "blocked" | "history", TaskStatus[]> = {
   active: ["ASSIGNED", "IN_PROGRESS"],
