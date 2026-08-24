@@ -34,7 +34,7 @@ export default function ReservationWorkflowDetailScreen() {
   };
 
   if (reservationId === null) {
-    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
+    return <InvalidRouteState fallbackHref="/(tabs)/reservations" />;
   }
 
   if (detail.isPending) {

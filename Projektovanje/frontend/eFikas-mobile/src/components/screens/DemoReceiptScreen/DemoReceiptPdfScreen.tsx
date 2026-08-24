@@ -108,7 +108,7 @@ export default function DemoReceiptPdfScreen() {
   };
 
   if (reservationId === null) {
-    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
+    return <InvalidRouteState fallbackHref="/(tabs)/reservations" />;
   }
 
   if (receipt.isPending) {

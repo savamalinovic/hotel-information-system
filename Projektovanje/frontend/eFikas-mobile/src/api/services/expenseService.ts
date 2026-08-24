@@ -4,7 +4,6 @@ import {
   ExpenseCategoryResponse,
   OperationalExpenseResponse,
   PageResponse,
-  ApartmentExpenseDTO,
 } from "@/src/types/types";
 import { API_URLS } from "@/src/util/apiConstants";
 
@@ -80,10 +79,5 @@ export const expenseService = {
       request
     );
     return normalizeExpense(response.data);
-  },
-
-  getByApartment: async (apartmentId: number): Promise<ApartmentExpenseDTO[]> => {
-    const response = await axiosInstance.get<ApartmentExpenseDTO[]>(`/apartments/${apartmentId}/expenses`);
-    return response.data;
   },
 };

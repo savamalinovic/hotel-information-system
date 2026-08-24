@@ -48,7 +48,7 @@ export default function GuestFormScreen() {
   };
 
   if (reservationId === null || invalidGuestId) {
-    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
+    return <InvalidRouteState fallbackHref="/(tabs)/reservations" />;
   }
 
   if (reservation.isPending || (editing && guest.isPending)) {
