@@ -64,6 +64,7 @@
       "expo-notifications",
       "expo-secure-store",
       "expo-web-browser",
+      "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
       "@react-native-community/datetimepicker",
       "expo-font"
