@@ -194,7 +194,7 @@ export default function PaymentWorkflowScreen() {
   };
 
   if (reservationId === null) {
-    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
+    return <InvalidRouteState fallbackHref="/(tabs)/reservations" />;
   }
 
   return (

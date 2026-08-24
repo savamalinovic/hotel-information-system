@@ -1,7 +1,6 @@
 import axiosInstance from "@/src/api/axiosInstance";
 import {
   CreateDamageRequest,
-  ApartmentDamageDTO,
   DamageAttachmentResponse,
   DamageResponse,
   PageResponse,
@@ -91,11 +90,6 @@ export const damageService = {
       formData,
       { timeout: 60_000 }
     );
-    return response.data;
-  },
-
-  getByApartment: async (apartmentId: number): Promise<ApartmentDamageDTO[]> => {
-    const response = await axiosInstance.get<ApartmentDamageDTO[]>(`/apartments/${apartmentId}/damages`);
     return response.data;
   },
 };

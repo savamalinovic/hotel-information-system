@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, ScrollView, Dimensions, Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import { Accordion } from "@/src/components/atoms/Accordion/Accordion";
 // import { Colors } from "@/src/styles/style";
@@ -10,7 +9,6 @@ import { useTheme } from "@/src/providers/ThemeProvider";
 const screenHeight = Dimensions.get("window").height;
 
 export const AboutAppScreen = () => {
-  const navigation = useNavigation();
   const { t } = useTranslation();
   const { Colors } = useTheme();
 
@@ -32,12 +30,6 @@ export const AboutAppScreen = () => {
             <Icon name="CalendarDays" size={14} color={Colors.textPrimary} />
             <Text style={styles.accordionText}>
               {t('aboutApp.accordion.content_reservations')}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-3 mb-1">
-            <Icon name="ChartNoAxesCombined" size={14} color={Colors.textPrimary} />
-            <Text style={styles.accordionText}>
-              {t('aboutApp.accordion.content_statistics')}
             </Text>
           </View>
           <View className="flex-row items-center gap-3 mb-1">
@@ -63,7 +55,7 @@ export const AboutAppScreen = () => {
           <View className="flex-row items-center gap-3 mb-1">
             <Icon name="ReceiptText" size={14} color={Colors.textPrimary} />
             <Text style={styles.accordionText}>
-              {t('aboutApp.accordion.content_cashRegister')}
+              {t('aboutApp.accordion.content_demoReceiptPdf')}
             </Text>
           </View>
         </View>

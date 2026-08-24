@@ -21,37 +21,8 @@ export const API_URLS = {
 		resetPassword: `${API_BASE_URL}/auth/reset-password`,
     },
 
-	cashRegisters: {
-		list: `${API_BASE_URL}/cash-registers`,
-		create: `${API_BASE_URL}/cash-registers`,
-		delete: (id: number) => `${API_BASE_URL}/cash-registers/${id}`,
-	},
-
-	books: {
-		addIncome: `${API_BASE_URL}/books/income`,
-		getIncomeBookPdf: `${API_BASE_URL}/books/pdf/INCOME`,
-		getDomesticGuestsBookPdf: `${API_BASE_URL}/books/pdf/DOMESTIC_GUESTS`,
-		getForeignGuestsBookPdf: `${API_BASE_URL}/books/pdf/FOREIGN_GUESTS`,
-	},
-
 	reservations: {
 		list: `${API_BASE_URL}/reservations`,
-		listUser: () => `${API_BASE_URL}/reservations`,
-
-		listByApartment: (apartmentId: number) =>
-		`${API_BASE_URL}/apartments/${apartmentId}/reservations`,
-
-		getById: (reservationId: number, apartmentId: number) =>
-		`${API_BASE_URL}/reservations/${reservationId}?apartmentId=${apartmentId}`,
-
-		create: (apartmentId: number) =>
-		`${API_BASE_URL}/apartments/${apartmentId}/reservations`,
-
-		update: (reservationId: number) =>
-		`${API_BASE_URL}/reservations/${reservationId}`,
-
-		delete: (reservationId: number) =>
-		`${API_BASE_URL}/reservations/${reservationId}`,
 	},
 
   reservationWorkflows: {
@@ -135,9 +106,6 @@ export const API_URLS = {
 
     apartments: {
         list: `${API_BASE_URL}/apartments`,
-        create: `${API_BASE_URL}/apartments`,
-        delete: (id: number) => `${API_BASE_URL}/apartments/${id}`,
-        update: (id: number) => `${API_BASE_URL}/apartments/${id}`,
         getById: (id: number) => `${API_BASE_URL}/apartments/${id}`,
         statusHistory: (id: number) => `${API_BASE_URL}/apartments/${id}/status-history`,
         unavailability: (id: number) => `${API_BASE_URL}/apartments/${id}/unavailability`,
@@ -158,11 +126,7 @@ export const API_URLS = {
 
 	tasks: {
 		list: `${API_BASE_URL}/tasks`,
-		base: (apartmentId: number) =>
-            `${API_BASE_URL}/apartments/${apartmentId}/tasks`,
-        byName: (apartmentId: number, name: string) => 
-            `${API_BASE_URL}/apartments/${apartmentId}/tasks/${encodeURIComponent(name)}`,
-    },
+	},
 
     operationalExpenses: {
         categories: `${API_BASE_URL}/expense-categories`,

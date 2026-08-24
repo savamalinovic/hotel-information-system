@@ -112,7 +112,7 @@ export default function DemoReceiptScreen() {
   };
 
   if (reservationId === null) {
-    return <InvalidRouteState fallbackHref="/(home)/reservations" />;
+    return <InvalidRouteState fallbackHref="/(tabs)/reservations" />;
   }
 
   if (reservation.isPending) {

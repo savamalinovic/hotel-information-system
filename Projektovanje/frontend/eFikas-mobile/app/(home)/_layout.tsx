@@ -22,7 +22,6 @@ export default function HomeRootLayout() {
         }} >
             <Stack.Screen name="apartments" options={{ title: t('dashboard.navigation.apartmentsTitle') }} />
             <Stack.Screen name="apartments/[id]" options={{ title: t('dashboard.navigation.apartmentsTitle') }} />
-            <Stack.Screen name="reservations" options={{ title: t('dashboard.navigation.reservationsTitle') }} />
             <Stack.Screen name="reservations/[id]" options={{ title: t('reservationWorkflow.navigation.detailTitle') }} />
             <Stack.Screen name="reservations/[id]/guests" options={{ title: t('guestCheckIn.navigation.guests') }} />
             <Stack.Screen name="reservations/[id]/guest-form" options={{ title: t('guestCheckIn.navigation.guestForm') }} />
