@@ -14,6 +14,7 @@ import { OperationalTask, TaskAttachment, TaskStatus } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
 import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
 import { parsePositiveId } from "@/src/util/idParams";
+import { MAX_ATTACHMENT_SIZE_BYTES } from "@/src/components/molecules/PendingAttachmentField/PendingAttachmentField";
 
 const terminalStatuses: TaskStatus[] = ["COMPLETED", "CANCELLED"];
 
@@ -145,7 +146,7 @@ function TaskAttachmentsSection({ taskId, attachments, loading, error, canUpload
     const result = await DocumentPicker.getDocumentAsync({ type: "*/*", copyToCacheDirectory: true, multiple: false });
     if (result.canceled) { return; }
     const file = result.assets[0];
-    if (!file || (file.size ?? 0) > 10 * 1024 * 1024) { setUploadError(t("taskWorkforce.attachments.sizeError")); return; }
+    if (!file || (file.size !== undefined && (file.size < 1 || file.size > MAX_ATTACHMENT_SIZE_BYTES))) { setUploadError(t("taskWorkforce.attachments.sizeError")); return; }
     upload.mutate({ taskId, file: { uri: file.uri, name: file.name, mimeType: file.mimeType, size: file.size, ...(file.file ? { file: file.file } : {}) } }, { onSuccess: () => { setUploadError(""); onRefresh(); }, onError: (requestError) => setUploadError(getUserFacingErrorMessage(requestError, t("taskWorkforce.attachments.uploadError"))) });
   };
   return <WorkflowCard>

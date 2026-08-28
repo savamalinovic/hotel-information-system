@@ -1,7 +1,7 @@
 import { CreateTaskRequest } from "@/src/api/services/taskWorkflowService";
 import { WorkflowButton, WorkflowCard, WorkflowChip, WorkflowState } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
 import { useApartmentCatalogDetail } from "@/src/hooks/useApartmentCatalog";
-import { useCreateTask, useSpecializations } from "@/src/hooks/useTaskWorkflows";
+import { useCreateTask, useSpecializations, useUploadTaskAttachment } from "@/src/hooks/useTaskWorkflows";
 import { useReservationDetail } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { TaskPriority } from "@/src/types/types";
@@ -12,6 +12,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PendingAttachment, PendingAttachmentField } from "@/src/components/molecules/PendingAttachmentField/PendingAttachmentField";
+import { toastService } from "@/src/services/toastService";
 
 const priorities: TaskPriority[] = ["LOW", "NORMAL", "HIGH", "URGENT"];
 
@@ -25,8 +27,10 @@ export default function TaskCreateScreen() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("NORMAL");
   const [formError, setFormError] = useState("");
+  const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
   const specializations = useSpecializations();
   const createTask = useCreateTask();
+  const uploadAttachment = useUploadTaskAttachment();
   const apartmentId = parsePositiveId(apartmentIdText) ?? undefined;
   const reservationId = parsePositiveId(reservationIdText) ?? undefined;
   const reservation = useReservationDetail(reservationId);
@@ -35,7 +39,7 @@ export default function TaskCreateScreen() {
   const reservationApartmentMismatch = Boolean(reservation.data && apartmentId && reservation.data.apartmentId !== apartmentId);
   const selectedSpecialization = useMemo(() => specializations.data?.find((item) => item.id === specializationId), [specializationId, specializations.data]);
 
-  const submit = () => {
+  const submit = async () => {
     const cleanTitle = title.trim();
     const cleanDescription = description.trim();
     if (!specializationId) {
@@ -67,16 +71,27 @@ export default function TaskCreateScreen() {
       ...(reservationId ? { reservationId } : {}),
     };
     setFormError("");
-    createTask.mutate(request, {
-      onSuccess: (task) => router.replace({ pathname: "/(home)/tasks/[id]", params: { id: String(task.taskId) } }),
-      onError: (error) => setFormError(getUserFacingErrorMessage(error, t("taskWorkforce.agent.createError"))),
-    });
+    try {
+      const task = await createTask.mutateAsync(request);
+      if (attachment) {
+        try {
+          await uploadAttachment.mutateAsync({ taskId: task.taskId, file: attachment });
+        } catch (uploadError) {
+          toastService.warning(
+            t("attachmentPicker.createdWithoutAttachment"),
+            getUserFacingErrorMessage(uploadError, t("attachmentPicker.retryOnDetail")),
+          );
+        }
+      }
+      router.replace({ pathname: "/(home)/tasks/[id]", params: { id: String(task.taskId) } });
+    } catch (error) {
+      setFormError(getUserFacingErrorMessage(error, t("taskWorkforce.agent.createError")));
+    }
   };
 
   return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><KeyboardAvoidingView behavior={Platform.select({ ios: "padding", default: undefined })} style={styles.screen}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
     <Text style={[styles.title, { color: Colors.textPrimary }]}>{t("taskWorkforce.agent.createTitle")}</Text>
     <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.agent.createHint")}</Text>
-    {formError ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={formError} /> : null}
     <WorkflowCard>
       <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("taskWorkforce.agent.specialization")}</Text>
       {specializations.isPending ? <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.common.loading")}</Text> : specializations.isError ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.agent.specializationError")} actionLabel={t("taskWorkforce.common.retry")} onAction={() => void specializations.refetch()} /> : <View style={styles.chips}>{specializations.data?.map((item) => <WorkflowChip key={item.id} label={t(`taskWorkforce.specialization.${item.code}`, { defaultValue: item.name })} selected={item.id === specializationId} onPress={() => setSpecializationId(item.id)} />)}</View>}
@@ -95,8 +110,9 @@ export default function TaskCreateScreen() {
       <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("taskWorkforce.agent.description")}</Text><TextInput accessibilityLabel={t("taskWorkforce.agent.description")} value={description} onChangeText={setDescription} maxLength={1000} multiline textAlignVertical="top" placeholder={t("taskWorkforce.agent.descriptionPlaceholder")} placeholderTextColor={Colors.tertiary} style={[styles.input, styles.description, { color: Colors.textPrimary, backgroundColor: Colors.screenBackground, borderColor: Colors.divider }]} /><Text style={{ color: Colors.textSecondary }}>{description.length}/1000</Text>
       <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("taskWorkforce.agent.priority")}</Text><View style={styles.chips}>{priorities.map((item) => <WorkflowChip key={item} label={t(`taskWorkforce.priority.${item}`)} selected={priority === item} onPress={() => setPriority(item)} />)}</View>
     </WorkflowCard>
-    <WorkflowCard><Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.agent.notificationHint")}</Text><WorkflowButton label={t("taskWorkforce.agent.submit")} onPress={submit} loading={createTask.isPending} icon="Plus" /></WorkflowCard>
+    <WorkflowCard><PendingAttachmentField value={attachment} onChange={setAttachment} /></WorkflowCard>
+    <WorkflowCard>{formError ? <Text style={[styles.submitError, { color: Colors.error }]}>{formError}</Text> : null}<Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.agent.notificationHint")}</Text><WorkflowButton label={t("taskWorkforce.agent.submit")} onPress={submit} loading={createTask.isPending || uploadAttachment.isPending} icon="Plus" /></WorkflowCard>
   </ScrollView></KeyboardAvoidingView></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12 }, title: { fontSize: 24, fontWeight: "800" }, sectionTitle: { fontSize: 16, fontWeight: "800" }, fieldLabel: { fontSize: 13, fontWeight: "800" }, input: { minHeight: 46, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, fontSize: 15 }, description: { minHeight: 108, paddingTop: 12 }, chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 } });
+const styles = StyleSheet.create({ screen: { flex: 1 }, content: { padding: 16, paddingBottom: 32, gap: 12 }, title: { fontSize: 24, fontWeight: "800" }, sectionTitle: { fontSize: 16, fontWeight: "800" }, fieldLabel: { fontSize: 13, fontWeight: "800" }, input: { minHeight: 46, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, fontSize: 15 }, description: { minHeight: 108, paddingTop: 12 }, chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, submitError: { fontSize: 14, fontWeight: "700", lineHeight: 20 } });
