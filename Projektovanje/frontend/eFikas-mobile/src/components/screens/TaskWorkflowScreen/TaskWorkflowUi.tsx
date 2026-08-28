@@ -41,10 +41,17 @@ export function WorkflowButton({
     accessibilityState={{ disabled: disabled || loading, busy: loading }}
     disabled={disabled || loading}
     onPress={onPress}
-    style={[styles.button, { backgroundColor, borderColor: variant === "secondary" ? Colors.divider : backgroundColor }, (disabled || loading) && styles.disabled]}
+    style={[
+      styles.button,
+      { backgroundColor, borderColor: variant === "secondary" ? Colors.divider : backgroundColor },
+      (disabled || loading) && styles.disabled,
+    ]}
   >
-    {loading ? <ActivityIndicator color={color} /> : icon ? <Icon name={icon} size={18} color={color} /> : null}
-    <Text style={[styles.buttonText, { color }]}>{label}</Text>
+    {({ pressed }) => <>
+      {pressed ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, styles.pressedOverlay]} /> : null}
+      {loading ? <ActivityIndicator color={color} /> : icon ? <Icon name={icon} size={18} color={color} /> : null}
+      <Text style={[styles.buttonText, { color }]}>{label}</Text>
+    </>}
   </Pressable>;
 }
 
@@ -133,8 +140,9 @@ export function LoadMore({ visible, loading, onPress }: { visible: boolean; load
 }
 
 const styles = StyleSheet.create({
-  button: { minHeight: 44, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-  buttonText: { fontSize: 14, fontWeight: "800" },
+  button: { minHeight: 44, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, flexShrink: 1, overflow: "hidden" },
+  buttonText: { fontSize: 14, fontWeight: "800", flexShrink: 1, textAlign: "center" },
+  pressedOverlay: { backgroundColor: "rgba(0, 0, 0, 0.16)" },
   disabled: { opacity: 0.55 },
   card: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 10 },
   state: { borderWidth: 1, borderRadius: 16, padding: 24, gap: 10, alignItems: "center" },

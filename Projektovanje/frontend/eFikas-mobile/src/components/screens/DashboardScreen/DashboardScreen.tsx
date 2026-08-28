@@ -127,7 +127,10 @@ export default function DashboardScreen() {
           onPress={() => void dashboardQuery.refetch()}
           style={[styles.refreshButton, { borderColor: Colors.divider }]}
         >
-          <Icon name="RefreshCw" size={22} color={Colors.primary} />
+          {({ pressed }) => <>
+            {pressed ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, styles.refreshButtonPressed]} /> : null}
+            <Icon name="RefreshCw" size={22} color={Colors.primary} />
+          </>}
         </Pressable>
       </View>
 
@@ -156,9 +159,6 @@ export default function DashboardScreen() {
 
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("agentDashboard.agenda.title")}</Text>
-        <Pressable accessibilityRole="button" onPress={goToReservations}>
-          <Text style={[styles.linkText, { color: Colors.primary }]}>{t("agentDashboard.agenda.viewReservations")}</Text>
-        </Pressable>
       </View>
       {agenda.length === 0 ? (
         <View style={[styles.emptyCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
@@ -206,20 +206,22 @@ function AgendaRow({ item, showDivider }: { item: TodayAgendaItem; showDivider: 
       : t("agentDashboard.agenda.arrivalAndDeparture");
 
   return (
-    <View style={[styles.agendaRow, showDivider && { borderBottomColor: Colors.divider, borderBottomWidth: StyleSheet.hairlineWidth }]}>
-      <View style={styles.agendaCopy}>
-        <Text style={[styles.agendaApartment, { color: Colors.textPrimary }]} numberOfLines={1}>{reservation.apartmentName}</Text>
-        <Text style={[styles.agendaDates, { color: Colors.textSecondary }]}>
-          {reservation.checkInDate} — {reservation.checkOutDate}
-        </Text>
-        <Text style={[styles.agendaStatus, { color: Colors.textSecondary }]}>
-          {t(`agentDashboard.status.${reservation.status}`)}
-        </Text>
+    <Pressable accessibilityRole="button" accessibilityLabel={t("agentDashboard.agenda.openReservation", { apartment: reservation.apartmentName })} onPress={() => router.push({ pathname: "/(home)/reservations/[id]", params: { id: String(reservation.reservationId) } })} style={({ pressed }) => pressed && styles.pressed}>
+      <View style={[styles.agendaRow, showDivider && { borderBottomColor: Colors.divider, borderBottomWidth: StyleSheet.hairlineWidth }]}>
+        <View style={styles.agendaCopy}>
+          <Text style={[styles.agendaApartment, { color: Colors.textPrimary }]} numberOfLines={1}>{reservation.apartmentName}</Text>
+          <Text style={[styles.agendaDates, { color: Colors.textSecondary }]}>
+            {reservation.checkInDate} — {reservation.checkOutDate}
+          </Text>
+          <Text style={[styles.agendaStatus, { color: Colors.textSecondary }]}>
+            {t(`agentDashboard.status.${reservation.status}`)}
+          </Text>
+        </View>
+        <View style={[styles.agendaBadge, { backgroundColor: Colors.screenBackground }]}>
+          <Text style={[styles.agendaBadgeText, { color: Colors.primary }]}>{kindLabel}</Text>
+        </View>
       </View>
-      <View style={[styles.agendaBadge, { backgroundColor: Colors.screenBackground }]}>
-        <Text style={[styles.agendaBadgeText, { color: Colors.primary }]}>{kindLabel}</Text>
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -231,7 +233,8 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 14, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8 },
   name: { fontSize: 26, fontWeight: "700" },
   date: { fontSize: 14, textTransform: "capitalize" },
-  refreshButton: { width: 44, height: 44, borderWidth: 1, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  refreshButton: { width: 44, height: 44, borderWidth: 1, borderRadius: 22, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  refreshButtonPressed: { backgroundColor: "rgba(0, 0, 0, 0.16)" },
   sectionTitle: { fontSize: 18, fontWeight: "700", flexShrink: 1 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metricCard: { width: "31%", minWidth: 96, flexGrow: 1, borderWidth: 1, borderRadius: 14, padding: 12, gap: 4 },
@@ -239,11 +242,11 @@ const styles = StyleSheet.create({
   metricLabel: { fontSize: 12, lineHeight: 16 },
   metricUnavailable: { fontSize: 10, marginTop: 1 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12, marginTop: 4 },
-  linkText: { fontSize: 14, fontWeight: "600" },
   emptyCard: { borderWidth: 1, borderRadius: 14, padding: 22, alignItems: "center", gap: 10 },
   emptyText: { textAlign: "center", fontSize: 14 },
   agendaCard: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
   agendaRow: { flexDirection: "row", alignItems: "center", padding: 14, gap: 12 },
+  pressed: { opacity: 0.65 },
   agendaCopy: { flex: 1, gap: 3 },
   agendaApartment: { fontSize: 16, fontWeight: "600" },
   agendaDates: { fontSize: 13 },

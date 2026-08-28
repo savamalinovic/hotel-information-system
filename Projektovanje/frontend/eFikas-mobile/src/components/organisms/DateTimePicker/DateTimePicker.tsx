@@ -9,6 +9,8 @@ interface DateTimePickerProps {
 	timePicker?: boolean;
 	onClose: () => void;
 	onConfirm: (date: Date) => void;
+	minimumDate?: Date;
+	maximumDate?: Date;
 }
 
 const DateTimePicker = ({
@@ -17,8 +19,10 @@ const DateTimePicker = ({
 	timePicker = true,
 	onClose,
 	onConfirm,
+	minimumDate,
+	maximumDate,
 }: DateTimePickerProps) => {
-	const { Colors, theme } = useTheme();
+	const { theme } = useTheme();
 	const { i18n, t } = useTranslation();
 
 	const getSafeDate = (d: Date | null | string | undefined): Date => {
@@ -85,6 +89,8 @@ const DateTimePicker = ({
 			date={date}
 			onDateChange={setDate}
 			mode={timePicker ? "datetime" : "date"}
+			minimumDate={minimumDate}
+			maximumDate={maximumDate}
 			onConfirm={handleConfirm}
 			onCancel={onClose}
 			locale={getDatePickerLocale()}

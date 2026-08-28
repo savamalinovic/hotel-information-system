@@ -1,4 +1,5 @@
 import { ActionButton, ChoiceChip, InputField, ScreenState, Section } from "@/src/components/screens/GuestCheckInScreen/GuestCheckInUi";
+import { DateField } from "@/src/components/molecules/DateField/DateField";
 import { GuestFormValues, getGuestFormValues, getTodayDateKey, toGuestRequest, validateGuest } from "@/src/components/screens/GuestCheckInScreen/guestCheckInHelpers";
 import { useAddReservationGuest, useGuestDetail, useUpdateReservationGuest } from "@/src/hooks/useGuestCheckIn";
 import { useProfile } from "@/src/hooks/useProfile";
@@ -117,14 +118,14 @@ export default function GuestFormScreen() {
             <InputField label={t("guestCheckIn.form.phone")} value={values.phoneNumber} onChangeText={(value) => setValue("phoneNumber", value)} keyboardType="phone-pad" maxLength={30} />
           </Section>
           <Section title={t("guestCheckIn.form.birth")}>
-            <InputField label={t("guestCheckIn.form.birthDate")} value={values.birthDate} onChangeText={(value) => setValue("birthDate", value)} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" required maxLength={10} />
+            <DateField label={t("guestCheckIn.form.birthDate")} value={values.birthDate} onChange={(value) => setValue("birthDate", value)} required maximumDate={new Date(Date.now() - 86_400_000)} />
             <InputField label={t("guestCheckIn.form.birthPlace")} value={values.birthPlace} onChangeText={(value) => setValue("birthPlace", value)} required maxLength={50} />
             <InputField label={t("guestCheckIn.form.birthCountry")} value={values.birthCountry} onChangeText={(value) => setValue("birthCountry", value)} required maxLength={50} />
             <InputField label={t("guestCheckIn.form.address")} value={values.address} onChangeText={(value) => setValue("address", value)} required maxLength={100} />
           </Section>
           <Section title={t("guestCheckIn.form.residency")}>
             <View style={styles.choices}><ChoiceChip label={t("guestCheckIn.guest.domestic")} selected={values.local} onPress={() => setValue("local", true)} /><ChoiceChip label={t("guestCheckIn.guest.foreign")} selected={!values.local} onPress={() => setValue("local", false)} /></View>
-            {values.local ? <InputField label={t("guestCheckIn.form.birthMunicipality")} value={values.birthMunicipality} onChangeText={(value) => setValue("birthMunicipality", value)} required maxLength={50} /> : <ForeignFields values={values} setValue={setValue} />}
+            {values.local ? <InputField label={t("guestCheckIn.form.birthMunicipality")} value={values.birthMunicipality} onChangeText={(value) => setValue("birthMunicipality", value)} required maxLength={50} /> : <ForeignFields values={values} checkInDate={reservation.data.checkInDate} setValue={setValue} />}
           </Section>
           <Section title={t("guestCheckIn.form.reservationGuest")}>
             <View style={styles.choices}><ChoiceChip label={t("guestCheckIn.form.primaryYes")} selected={primaryGuest} onPress={() => setPrimaryGuest(true)} />{!wasPrimaryGuest ? <ChoiceChip label={t("guestCheckIn.form.primaryNo")} selected={!primaryGuest} onPress={() => setPrimaryGuest(false)} /> : null}</View>
@@ -159,15 +160,15 @@ function getFieldLabel(field: string, t: (key: string) => string) {
   return labels[field] ?? field;
 }
 
-function ForeignFields({ values, setValue }: { values: GuestFormValues; setValue: <Key extends keyof GuestFormValues>(key: Key, value: GuestFormValues[Key]) => void }) {
+function ForeignFields({ values, checkInDate, setValue }: { values: GuestFormValues; checkInDate: string; setValue: <Key extends keyof GuestFormValues>(key: Key, value: GuestFormValues[Key]) => void }) {
   const { t } = useTranslation();
   return <View style={styles.foreignFields}>
     <InputField label={t("guestCheckIn.form.citizenship")} value={values.citizenship} onChangeText={(value) => setValue("citizenship", value)} required maxLength={50} />
     <InputField label={t("guestCheckIn.form.passportNumber")} value={values.passportNumber} onChangeText={(value) => setValue("passportNumber", value)} required maxLength={30} />
-    <InputField label={t("guestCheckIn.form.passportIssuedDate")} value={values.passportIssuedDate} onChangeText={(value) => setValue("passportIssuedDate", value)} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" required maxLength={10} />
-    <InputField label={t("guestCheckIn.form.entryDate")} value={values.entryDate} onChangeText={(value) => setValue("entryDate", value)} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" required maxLength={10} />
+    <DateField label={t("guestCheckIn.form.passportIssuedDate")} value={values.passportIssuedDate} onChange={(value) => setValue("passportIssuedDate", value)} required maximumDate={new Date()} />
+    <DateField label={t("guestCheckIn.form.entryDate")} value={values.entryDate} onChange={(value) => setValue("entryDate", value)} required maximumDate={new Date(`${checkInDate}T12:00:00`)} />
     <InputField label={t("guestCheckIn.form.entryPlace")} value={values.entryPlace} onChangeText={(value) => setValue("entryPlace", value)} required maxLength={50} />
-    <InputField label={t("guestCheckIn.form.permittedResidenceDate")} value={values.permittedResidenceDate} onChangeText={(value) => setValue("permittedResidenceDate", value)} placeholder="YYYY-MM-DD" keyboardType="numbers-and-punctuation" maxLength={10} />
+    <DateField label={t("guestCheckIn.form.permittedResidenceDate")} value={values.permittedResidenceDate} onChange={(value) => setValue("permittedResidenceDate", value)} clearable minimumDate={new Date(`${checkInDate}T12:00:00`)} />
     <InputField label={t("guestCheckIn.form.visaType")} value={values.visaType} onChangeText={(value) => setValue("visaType", value)} maxLength={30} />
     <InputField label={t("guestCheckIn.form.visaNumber")} value={values.visaNumber} onChangeText={(value) => setValue("visaNumber", value)} maxLength={30} />
   </View>;

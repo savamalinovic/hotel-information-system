@@ -1,6 +1,7 @@
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTranslation } from "react-i18next";
 
@@ -8,9 +9,10 @@ import { useTranslation } from "react-i18next";
 export default function TabsRootLayout() {
     const { t } = useTranslation();
     const { Colors } = useTheme();
+    const insets = useSafeAreaInsets();
 
     return(
-        <Tabs initialRouteName="index" screenOptions={{
+        <Tabs initialRouteName="index" safeAreaInsets={{ bottom: insets.bottom }} screenOptions={{
             tabBarActiveTintColor: Colors.tabBarActiveTint,
             tabBarInactiveTintColor: Colors.tabBarInactiveTint,
             headerTintColor: Colors.textPrimary,
@@ -20,7 +22,12 @@ export default function TabsRootLayout() {
             sceneStyle: { backgroundColor: Colors.screenBackground },
             tabBarStyle: {
               backgroundColor: Colors.tabBackground,
-              paddingTop: 6,
+              paddingTop: 8,
+              paddingBottom: Math.max(insets.bottom, 10),
+              height: 64 + Math.max(insets.bottom, 10),
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
             },
             tabBarLabelStyle: {
               fontSize: 12,

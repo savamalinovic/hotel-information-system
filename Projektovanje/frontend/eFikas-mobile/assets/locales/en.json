@@ -47,6 +47,7 @@
     "agenda": {
       "title": "Today's agenda",
       "viewReservations": "Reservations",
+      "openReservation": "Open the reservation for {{apartment}}",
       "empty": "There are no arrivals or departures today.",
       "arrival": "Arrival",
       "departure": "Departure",
@@ -779,10 +780,24 @@
   "datePicker": {
     "titleDateTime": "Select date and time",
     "titleDateOnly": "Select date",
+    "chooseDate": "Choose a date",
+    "clear": "Clear date",
     "common": {
       "confirm": "Confirm",
       "cancel": "Cancel"
     }
+  },
+  "attachmentPicker": {
+    "title": "Attachment",
+    "limit": "You can attach an image or document up to 10 MB.",
+    "choose": "Choose attachment",
+    "replace": "Replace attachment",
+    "remove": "Remove",
+    "unknownSize": "Size is unavailable",
+    "sizeError": "Choose a file from 1 byte up to 10 MB.",
+    "pickError": "The attachment picker could not be opened.",
+    "createdWithoutAttachment": "The record was created without the attachment",
+    "retryOnDetail": "You can add the attachment again on the detail screen."
   },
   "taskWorkforce": {
     "common": { "all": "All", "clear": "Clear", "close": "Close", "errorTitle": "Something went wrong", "filters": "Filters", "loadMore": "Load more", "loading": "Loading…", "notAvailable": "Not available", "refresh": "Refresh", "retry": "Try again" },

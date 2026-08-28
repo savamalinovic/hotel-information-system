@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WorkflowButton, WorkflowCard, WorkflowState } from "@/src/components/screens/TaskWorkflowScreen/TaskWorkflowUi";
+import { DateField } from "@/src/components/molecules/DateField/DateField";
 import { formatDate, formatMoney, isExpenseDateValid, isPositiveMoney, normalizeMoneyInput } from "./expenseWorkflowHelpers";
 
 export default function ExpenseCreateScreen() {
@@ -85,7 +86,7 @@ export default function ExpenseCreateScreen() {
       <Field label={t("expenseWorkflow.create.name")} value={name} onChangeText={setName} maxLength={120} placeholder={t("expenseWorkflow.create.namePlaceholder")} />
       <Field label={t("expenseWorkflow.create.description")} value={description} onChangeText={setDescription} maxLength={1000} multiline placeholder={t("expenseWorkflow.create.descriptionPlaceholder")} />
       <Field label={t("expenseWorkflow.create.amount")} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" />
-      <Field label={t("expenseWorkflow.create.date")} value={expenseDate} onChangeText={setExpenseDate} placeholder="YYYY-MM-DD" autoCapitalize="none" />
+      <DateField label={t("expenseWorkflow.create.date")} value={expenseDate} onChange={setExpenseDate} required maximumDate={new Date()} />
       {validationError ? <Text style={{ color: Colors.error }}>{validationError}</Text> : null}
       {requestError ? <Text style={{ color: Colors.error }}>{requestError}</Text> : null}
       <WorkflowButton label={t("expenseWorkflow.create.review")} onPress={prepareConfirmation} icon="ChevronRight" disabled={!categories.data?.content.length} />

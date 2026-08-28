@@ -1,4 +1,5 @@
 import { EmptyOrErrorState, PrimaryButton, ReservationStatusBadge } from "@/src/components/screens/ReservationWorkflowScreen/ReservationWorkflowUi";
+import { DateField } from "@/src/components/molecules/DateField/DateField";
 import { formatDateKey, formatMoney, getLocalDateKey, isStayPeriodValid } from "@/src/components/screens/ReservationWorkflowScreen/reservationWorkflowHelpers";
 import { useReservationDetail, useReservationStatusHistory, useUpdateReservationStatus, useUpdateReservationStay } from "@/src/hooks/useReservationWorkflows";
 import { useTheme } from "@/src/providers/ThemeProvider";
@@ -48,6 +49,8 @@ export default function ReservationWorkflowDetailScreen() {
   const reservation = detail.data;
   const canUpdate = reservation.status === "CONFIRMED";
   const canMarkNoShow = canUpdate && reservation.checkInDate <= getLocalDateKey();
+  const earliestCheckout = new Date(`${reservation.checkInDate}T12:00:00`);
+  earliestCheckout.setDate(earliestCheckout.getDate() + 1);
 
   const saveStay = () => {
     const candidate = newCheckOutDate.trim();
@@ -166,7 +169,7 @@ export default function ReservationWorkflowDetailScreen() {
         </Section> : null}
         {canUpdate ? <Section title={t("reservationWorkflow.detail.allowedActions")}>
           <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("reservationWorkflow.detail.stayHint")}</Text>
-          <TextInput value={newCheckOutDate} onChangeText={setNewCheckOutDate} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.tertiary} keyboardType="numbers-and-punctuation" accessibilityLabel={t("reservationWorkflow.detail.newCheckOut")} style={[styles.input, { color: Colors.textPrimary, borderColor: Colors.divider, backgroundColor: Colors.screenBackground }]} />
+          <DateField label={t("reservationWorkflow.detail.newCheckOut")} value={newCheckOutDate} onChange={setNewCheckOutDate} minimumDate={earliestCheckout} required />
           <PrimaryButton label={t("reservationWorkflow.detail.saveStay")} onPress={saveStay} loading={updateStay.isPending} icon="Save" />
           <View style={styles.statusActions}><Pressable accessibilityRole="button" onPress={() => { setErrorMessage(""); setStatusAction("CANCELLED"); }} style={[styles.dangerButton, { borderColor: Colors.deleteColor }]}><Text style={{ color: Colors.deleteColor, fontWeight: "700" }}>{t("reservationWorkflow.detail.cancel")}</Text></Pressable>{canMarkNoShow ? <Pressable accessibilityRole="button" onPress={() => { setErrorMessage(""); setStatusAction("NO_SHOW"); }} style={[styles.dangerButton, { borderColor: Colors.deleteColor }]}><Text style={{ color: Colors.deleteColor, fontWeight: "700" }}>{t("reservationWorkflow.detail.noShow")}</Text></Pressable> : null}</View>
           {!canMarkNoShow ? <Text style={[styles.actionHint, { color: Colors.textSecondary }]}>{t("reservationWorkflow.detail.noShowUnavailable")}</Text> : null}
