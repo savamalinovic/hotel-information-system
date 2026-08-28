@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 import org.unibl.etf.efikas.models.responses.errors.ApiErrorCode;
 import org.unibl.etf.efikas.models.responses.errors.ApiErrorResponse;
@@ -135,6 +136,15 @@ public class GlobalExceptionHandler {
                 ? "This email address is not verified."
                 : ex.getMessage();
         return response(HttpStatus.BAD_REQUEST, ApiErrorCode.BUSINESS_RULE_VIOLATION, message, request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleUploadTooLarge(
+            MaxUploadSizeExceededException ex,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.PAYLOAD_TOO_LARGE, ApiErrorCode.BUSINESS_RULE_VIOLATION,
+                "Attachment must not exceed 10 MB.", request);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
