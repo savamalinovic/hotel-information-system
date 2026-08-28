@@ -2,7 +2,7 @@ package org.unibl.etf.efikas.security;
 
 import java.io.IOException;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.unibl.etf.efikas.models.responses.errors.ApiErrorCode;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,6 +30,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private ApiErrorResponseWriter errorWriter;
 
     public JwtAuthFilter(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -56,8 +60,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             try {
                 email = jwtUtil.extractEmail(token);
-            } catch (ExpiredJwtException e) {   // token has expired
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (JwtException e) {
+                writeUnauthorized(request, response);
                 return;
             }
         }
@@ -74,12 +78,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 }
-            } catch(UsernameNotFoundException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (UsernameNotFoundException | JwtException e) {
+                writeUnauthorized(request, response);
+                return;
             }
 
         }
         filterChain.doFilter(request, response);
 
+    }
+
+    private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        errorWriter.write(
+                request,
+                response,
+                HttpServletResponse.SC_UNAUTHORIZED,
+                ApiErrorCode.AUTHENTICATION_REQUIRED,
+                "Authentication is required.");
     }
 }
