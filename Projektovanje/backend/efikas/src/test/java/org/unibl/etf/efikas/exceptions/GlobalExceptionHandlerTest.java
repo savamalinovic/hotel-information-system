@@ -104,6 +104,17 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void uploadTooLargeUsesStablePayloadTooLargeEnvelope() throws Exception {
+        mockMvc.perform(get("/error-probe/upload-too-large"))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(413))
+                .andExpect(jsonPath("$.code").value("BUSINESS_RULE_VIOLATION"))
+                .andExpect(jsonPath("$.message").value("Attachment must not exceed 10 MB."))
+                .andExpect(jsonPath("$.path").value("/error-probe/upload-too-large"));
+    }
+
+    @Test
     void unexpectedFailureIsSanitized() throws Exception {
         mockMvc.perform(get("/error-probe/unexpected"))
                 .andExpect(status().isInternalServerError())

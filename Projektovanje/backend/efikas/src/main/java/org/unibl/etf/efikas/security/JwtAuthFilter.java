@@ -3,7 +3,7 @@ package org.unibl.etf.efikas.security;
 import java.io.IOException;
 
 import io.jsonwebtoken.JwtException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,32 +24,15 @@ import jakarta.servlet.http.HttpServletResponse;
 // Its purpose is to check if the request contains a valid JWT token
 // Filter is applied to all requests, exactly once, before the controller is called
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private ApiErrorResponseWriter errorWriter;
-
-    public JwtAuthFilter(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+    private final ApiErrorResponseWriter errorWriter;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        String path = request.getRequestURI();
-//        if (path.equals("/api/v1/users/login") ||
-//                path.equals("/api/v1/users/register") ||
-//                path.startsWith("/swagger-ui")) {
-//            System.out.println("Skipping JWT for path: " + path);
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
         final String authHeader = request.getHeader("Authorization");
 
@@ -58,6 +41,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            if (token.isBlank()) {
+                writeUnauthorized(request, response);
+                return;
+            }
             try {
                 email = jwtUtil.extractEmail(token);
             } catch (JwtException e) {

@@ -3,6 +3,7 @@ package org.unibl.etf.efikas.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -11,6 +12,7 @@ import org.unibl.etf.efikas.services.AnalyticsService;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.security.JwtAccessDeniedHandler;
 import org.unibl.etf.efikas.security.JwtAuthenticationEntryPoint;
+import org.unibl.etf.efikas.security.ApiErrorResponseWriter;
 
 import java.time.LocalDate;
 
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AnalyticsController.class)
+@Import(ApiErrorResponseWriter.class)
 class B16AnalyticsControllerTest {
     @Autowired MockMvc mockMvc;
     @MockitoBean AnalyticsService service;

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -14,6 +15,7 @@ import org.unibl.etf.efikas.models.responses.AppUserResponse;
 import org.unibl.etf.efikas.security.JwtAccessDeniedHandler;
 import org.unibl.etf.efikas.security.JwtAuthenticationEntryPoint;
 import org.unibl.etf.efikas.security.JwtUtil;
+import org.unibl.etf.efikas.security.ApiErrorResponseWriter;
 import org.unibl.etf.efikas.services.AppUserService;
 import org.unibl.etf.efikas.services.StoreService;
 
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AppUserController.class)
+@Import(ApiErrorResponseWriter.class)
 class C05CurrentUserIdentityControllerTest {
     @Autowired MockMvc mockMvc;
     @MockitoBean AppUserService appUserService;

@@ -3,6 +3,7 @@ package org.unibl.etf.efikas.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -13,6 +14,7 @@ import org.unibl.etf.efikas.models.responses.PageResponse;
 import org.unibl.etf.efikas.security.JwtAccessDeniedHandler;
 import org.unibl.etf.efikas.security.JwtAuthenticationEntryPoint;
 import org.unibl.etf.efikas.security.JwtUtil;
+import org.unibl.etf.efikas.security.ApiErrorResponseWriter;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
 import java.time.Instant;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(NotificationsController.class)
+@Import(ApiErrorResponseWriter.class)
 class B17NotificationControllerTest {
     @Autowired MockMvc mockMvc;
     @MockitoBean NotificationService service;

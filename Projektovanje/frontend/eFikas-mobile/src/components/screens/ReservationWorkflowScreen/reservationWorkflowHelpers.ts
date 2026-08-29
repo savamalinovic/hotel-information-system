@@ -1,12 +1,8 @@
 import { ReservationDetails, ReservationStatus } from "@/src/types/types";
-
-const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-type DateParts = {
-  year: number;
-  month: number;
-  day: number;
-};
+import {
+  isValidDateKey,
+  parseDateKeyParts,
+} from "@/src/util/dateKey";
 
 export type CalendarDayMark = {
   dots?: { key: string; color: string }[];
@@ -14,23 +10,7 @@ export type CalendarDayMark = {
   selectedColor?: string;
 };
 
-const parseDateParts = (value: string): DateParts | undefined => {
-  if (!DATE_KEY_PATTERN.test(value)) {
-    return undefined;
-  }
-
-  const [year, month, day] = value.split("-").map(Number);
-  const candidate = new Date(year, month - 1, day, 12);
-  if (
-    candidate.getFullYear() !== year ||
-    candidate.getMonth() !== month - 1 ||
-    candidate.getDate() !== day
-  ) {
-    return undefined;
-  }
-
-  return { year, month, day };
-};
+const parseDateParts = parseDateKeyParts;
 
 export const getLocalDateKey = (date = new Date()) => {
   const year = date.getFullYear();
@@ -39,7 +19,7 @@ export const getLocalDateKey = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
-export const isValidDateKey = (value: string) => Boolean(parseDateParts(value));
+export { isValidDateKey };
 
 export const compareDateKeys = (left: string, right: string) => left.localeCompare(right);
 

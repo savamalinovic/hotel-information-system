@@ -1,6 +1,7 @@
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import DateTimePicker from "@/src/components/organisms/DateTimePicker/DateTimePicker";
 import { useTheme } from "@/src/providers/ThemeProvider";
+import { parseDateKeyToLocalNoon, toDateKey } from "@/src/util/dateKey";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -11,26 +12,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-
-const parseDateKey = (value?: string): Date | null => {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-  const date = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3]),
-    12,
-  );
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const toDateKey = (value: Date) => {
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const day = String(value.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 
 export function DateField({
   label,
@@ -54,7 +35,7 @@ export function DateField({
   const { Colors } = useTheme();
   const { t, i18n } = useTranslation();
   const [visible, setVisible] = useState(false);
-  const parsed = parseDateKey(value);
+  const parsed = parseDateKeyToLocalNoon(value);
   const displayValue = parsed
     ? new Intl.DateTimeFormat(
         i18n.language.startsWith("sr") ? "sr-Latn-BA" : "en-GB",
