@@ -1,4 +1,5 @@
 import axiosInstance from "@/src/api/axiosInstance";
+import { postMultipart } from "@/src/api/multipartUpload";
 import {
   OperationalTask,
   PageResponse,
@@ -141,10 +142,9 @@ export const taskWorkflowService = {
       type: attachment.mimeType ?? "application/octet-stream",
     };
     formData.append("file", filePart as unknown as Blob);
-    const response = await axiosInstance.post<TaskAttachment>(
+    const response = await postMultipart<TaskAttachment>(
       API_URLS.taskWorkflows.attachments(taskId),
       formData,
-      { headers: { "Content-Type": "multipart/form-data" }, timeout: 60_000 }
     );
     return response.data;
   },

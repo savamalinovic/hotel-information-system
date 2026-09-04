@@ -5,8 +5,18 @@ export type StoredPushPreference = {
   enabled: boolean;
 };
 
-const preferenceKey = (email: string) =>
-  `push-notification-preference:${encodeURIComponent(email.toLowerCase())}`;
+const PUSH_PREFERENCE_KEY_VERSION = "v1";
+const PUSH_PREFERENCE_KEY_PREFIX = `push-notification-preference.${PUSH_PREFERENCE_KEY_VERSION}`;
+
+// This is the initial released key format. It is injective, uses only SecureStore-safe
+// characters, and is deliberately versioned so a future format change is explicit.
+const encodeKeyPart = (value: string) => Array.from(
+  value.trim().toLowerCase(),
+  (character) => character.codePointAt(0)?.toString(16) ?? "0"
+).join("-");
+
+export const preferenceKey = (email: string) =>
+  `${PUSH_PREFERENCE_KEY_PREFIX}.${encodeKeyPart(email)}`;
 
 const isStoredPushPreference = (value: unknown): value is StoredPushPreference =>
   Boolean(value)

@@ -2,8 +2,8 @@ package org.unibl.etf.efikas.security;
 
 import java.io.IOException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.unibl.etf.efikas.models.responses.errors.ApiErrorCode;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,29 +24,15 @@ import jakarta.servlet.http.HttpServletResponse;
 // Its purpose is to check if the request contains a valid JWT token
 // Filter is applied to all requests, exactly once, before the controller is called
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    public JwtAuthFilter(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+    private final ApiErrorResponseWriter errorWriter;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        String path = request.getRequestURI();
-//        if (path.equals("/api/v1/users/login") ||
-//                path.equals("/api/v1/users/register") ||
-//                path.startsWith("/swagger-ui")) {
-//            System.out.println("Skipping JWT for path: " + path);
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
         final String authHeader = request.getHeader("Authorization");
 
@@ -54,10 +41,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            if (token.isBlank()) {
+                writeUnauthorized(request, response);
+                return;
+            }
             try {
                 email = jwtUtil.extractEmail(token);
-            } catch (ExpiredJwtException e) {   // token has expired
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (JwtException e) {
+                writeUnauthorized(request, response);
                 return;
             }
         }
@@ -74,12 +65,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 }
-            } catch(UsernameNotFoundException e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (UsernameNotFoundException | JwtException e) {
+                writeUnauthorized(request, response);
+                return;
             }
 
         }
         filterChain.doFilter(request, response);
 
+    }
+
+    private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        errorWriter.write(
+                request,
+                response,
+                HttpServletResponse.SC_UNAUTHORIZED,
+                ApiErrorCode.AUTHENTICATION_REQUIRED,
+                "Authentication is required.");
     }
 }

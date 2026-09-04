@@ -1,5 +1,6 @@
 import { ReservationListFilters } from "@/src/api/services/reservationWorkflowService";
 import { Icon } from "@/src/components/atoms/Icon/Icon";
+import { DateField } from "@/src/components/molecules/DateField/DateField";
 import { EmptyOrErrorState, FilterChip, ReservationStatusBadge } from "@/src/components/screens/ReservationWorkflowScreen/ReservationWorkflowUi";
 import {
   formatDateKey,
@@ -19,7 +20,6 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const reservationStatuses: ReservationStatus[] = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "NO_SHOW"];
 
@@ -87,7 +87,7 @@ export default function ReservationListCalendarScreen() {
   };
 
   return (
-    <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
+    <View style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
       <FlatList
         data={list.reservations}
         keyExtractor={(reservation) => String(reservation.reservationId)}
@@ -106,57 +106,11 @@ export default function ReservationListCalendarScreen() {
                 onPress={() => router.push("/(home)/reservations/addReservation")}
                 style={[styles.createButton, { backgroundColor: Colors.primary }]}
               >
-                <Icon name="Plus" size={20} color={Colors.textLight} />
+                {({ pressed }) => <>
+                  {pressed ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, styles.createButtonPressed]} /> : null}
+                  <Icon name="Plus" size={20} color={Colors.textLight} />
+                </>}
               </Pressable>
-            </View>
-
-            <View style={[styles.filterCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
-              <View style={styles.filterHeading}>
-                <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("reservationWorkflow.filters.title")}</Text>
-                {hasFilters ? (
-                  <Pressable accessibilityRole="button" accessibilityLabel={t("reservationWorkflow.filters.reset")} onPress={resetFilters}>
-                    <Text style={[styles.reset, { color: Colors.primary }]}>{t("reservationWorkflow.filters.reset")}</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.status")}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-                <FilterChip label={t("reservationWorkflow.filters.allStatuses")} selected={!status} onPress={() => setStatus(undefined)} />
-                {reservationStatuses.map((item) => (
-                  <FilterChip key={item} label={t(`reservationWorkflow.status.${item}`)} selected={status === item} onPress={() => setStatus(item)} />
-                ))}
-              </ScrollView>
-              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.apartment")}</Text>
-              <TextInput
-                value={apartmentText}
-                onChangeText={setApartmentText}
-                keyboardType="number-pad"
-                placeholder={t("reservationWorkflow.filters.apartmentPlaceholder")}
-                placeholderTextColor={Colors.tertiary}
-                accessibilityLabel={t("reservationWorkflow.filters.apartment")}
-                style={[styles.input, { color: Colors.textPrimary, borderColor: hasValidApartmentId ? Colors.divider : Colors.error, backgroundColor: Colors.screenBackground }]}
-              />
-              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.period")}</Text>
-              <View style={styles.periodRow}>
-                <TextInput
-                  value={from}
-                  onChangeText={setFrom}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={Colors.tertiary}
-                  accessibilityLabel={t("reservationWorkflow.filters.from")}
-                  style={[styles.input, styles.periodInput, { color: Colors.textPrimary, borderColor: hasValidPeriod ? Colors.divider : Colors.error, backgroundColor: Colors.screenBackground }]}
-                />
-                <TextInput
-                  value={to}
-                  onChangeText={setTo}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={Colors.tertiary}
-                  accessibilityLabel={t("reservationWorkflow.filters.to")}
-                  style={[styles.input, styles.periodInput, { color: Colors.textPrimary, borderColor: hasValidPeriod ? Colors.divider : Colors.error, backgroundColor: Colors.screenBackground }]}
-                />
-              </View>
-              {!hasValidApartmentId ? <Text style={[styles.validation, { color: Colors.error }]}>{t("reservationWorkflow.validation.apartment")}</Text> : null}
-              {!hasValidPeriod ? <Text style={[styles.validation, { color: Colors.error }]}>{t("reservationWorkflow.validation.period")}</Text> : null}
             </View>
 
             <View style={[styles.calendarCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
@@ -235,6 +189,40 @@ export default function ReservationListCalendarScreen() {
                 </>
               )}
             </View>
+            <View style={[styles.filterCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
+              <View style={styles.filterHeading}>
+                <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("reservationWorkflow.filters.title")}</Text>
+                {hasFilters ? (
+                  <Pressable accessibilityRole="button" accessibilityLabel={t("reservationWorkflow.filters.reset")} onPress={resetFilters}>
+                    <Text style={[styles.reset, { color: Colors.primary }]}>{t("reservationWorkflow.filters.reset")}</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.status")}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+                <FilterChip label={t("reservationWorkflow.filters.allStatuses")} selected={!status} onPress={() => setStatus(undefined)} />
+                {reservationStatuses.map((item) => (
+                  <FilterChip key={item} label={t(`reservationWorkflow.status.${item}`)} selected={status === item} onPress={() => setStatus(item)} />
+                ))}
+              </ScrollView>
+              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.apartment")}</Text>
+              <TextInput
+                value={apartmentText}
+                onChangeText={setApartmentText}
+                keyboardType="number-pad"
+                placeholder={t("reservationWorkflow.filters.apartmentPlaceholder")}
+                placeholderTextColor={Colors.tertiary}
+                accessibilityLabel={t("reservationWorkflow.filters.apartment")}
+                style={[styles.input, { color: Colors.textPrimary, borderColor: hasValidApartmentId ? Colors.divider : Colors.error, backgroundColor: Colors.screenBackground }]}
+              />
+              <Text style={[styles.fieldLabel, { color: Colors.textSecondary }]}>{t("reservationWorkflow.filters.period")}</Text>
+              <View style={styles.periodRow}>
+                <DateField label={t("reservationWorkflow.filters.from")} value={from} onChange={setFrom} clearable containerStyle={styles.periodInput} />
+                <DateField label={t("reservationWorkflow.filters.to")} value={to} onChange={setTo} clearable containerStyle={styles.periodInput} />
+              </View>
+              {!hasValidApartmentId ? <Text style={[styles.validation, { color: Colors.error }]}>{t("reservationWorkflow.validation.apartment")}</Text> : null}
+              {!hasValidPeriod ? <Text style={[styles.validation, { color: Colors.error }]}>{t("reservationWorkflow.validation.period")}</Text> : null}
+            </View>
             <Text style={[styles.listTitle, { color: Colors.textPrimary }]}>{t("reservationWorkflow.list.results")}</Text>
           </View>
         }
@@ -255,7 +243,7 @@ export default function ReservationListCalendarScreen() {
         refreshControl={<RefreshControl refreshing={list.isRefetching || calendar.isRefetching} onRefresh={refresh} tintColor={Colors.primary} />}
         showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -302,13 +290,14 @@ function LoadingRows() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32, gap: 12, flexGrow: 1 },
+  content: { padding: 16, paddingBottom: 16, gap: 12, flexGrow: 1 },
   headerContent: { gap: 14 },
   headingRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   headingCopy: { flex: 1, gap: 2 },
   title: { fontSize: 24, fontWeight: "700" },
   subtitle: { fontSize: 14, lineHeight: 20 },
-  createButton: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  createButton: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  createButtonPressed: { backgroundColor: "rgba(0, 0, 0, 0.16)" },
   filterCard: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 8 },
   filterHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   sectionTitle: { fontSize: 17, fontWeight: "700" },

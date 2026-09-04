@@ -1,5 +1,6 @@
 package org.unibl.etf.efikas.security;
 
+import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.when;
 
 @WebMvcTest(RbacProbeController.class)
 @Import({SecurityConfig.class, JwtAuthFilter.class, JwtAuthenticationEntryPoint.class,
@@ -52,6 +54,20 @@ class RbacAuthorizationTest {
     @Test
     void anonymousUserCannotReadApartments() throws Exception {
         mockMvc.perform(get("/api/v1/apartments"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"))
+                .andExpect(jsonPath("$.path").value("/api/v1/apartments"));
+    }
+
+    @Test
+    void invalidJwtUsesUnauthorizedEnvelope() throws Exception {
+        when(jwtUtil.extractEmail("tampered-token"))
+                .thenThrow(new SignatureException("JWT signature does not match."));
+
+        mockMvc.perform(get("/api/v1/apartments")
+                        .header("Authorization", "Bearer tampered-token"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(401))

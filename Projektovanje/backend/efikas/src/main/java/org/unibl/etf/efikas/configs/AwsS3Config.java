@@ -9,7 +9,12 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner.Builder;
+
+import java.net.URI;
 
 @Configuration
 @Lazy
@@ -26,10 +31,14 @@ public class AwsS3Config {
                 awsProperties.getCredentials().getAccessKeyId(), awsProperties.getCredentials().getSecretAccessKey()
         );
 
-        return S3Client.builder()
+        S3ClientBuilder builder = S3Client.builder()
                 .region(Region.of(awsProperties.getRegion()))
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-                .build();
+                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials));
+        if (hasEndpointOverride()) {
+            builder.endpointOverride(URI.create(awsProperties.getEndpoint()))
+                    .serviceConfiguration(s3Configuration());
+        }
+        return builder.build();
     }
 
     @Bean
@@ -38,9 +47,23 @@ public class AwsS3Config {
                 awsProperties.getCredentials().getAccessKeyId(), awsProperties.getCredentials().getSecretAccessKey()
         );
 
-        return S3Presigner.builder()
+        Builder builder = S3Presigner.builder()
                 .region(Region.of(awsProperties.getRegion()))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
+        if (hasEndpointOverride()) {
+            builder.endpointOverride(URI.create(awsProperties.getEndpoint()))
+                    .serviceConfiguration(s3Configuration());
+        }
+        return builder.build();
+    }
+
+    private boolean hasEndpointOverride() {
+        return awsProperties.getEndpoint() != null && !awsProperties.getEndpoint().isBlank();
+    }
+
+    private S3Configuration s3Configuration() {
+        return S3Configuration.builder()
+                .pathStyleAccessEnabled(awsProperties.isPathStyleAccessEnabled())
                 .build();
     }
 

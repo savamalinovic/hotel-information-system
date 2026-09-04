@@ -20,7 +20,6 @@ export const useAuth = () => {
         t("auth.login.toastMessages.successTitle"),
         t("auth.login.toastMessages.successMsg")
       );
-      router.replace("/");
     },
     onError: (error: unknown) => {
       toastService.error(
@@ -66,7 +65,6 @@ export const useAuth = () => {
           t("auth.logout.toastMessages.successMsg")
         );
       }
-      router.replace("/");
     } finally {
       setIsLoggingOut(false);
     }

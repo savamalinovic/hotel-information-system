@@ -29,6 +29,8 @@ export const usePushNotificationSettings = () => {
       ]);
       setAvailability(nextAvailability);
       setPreference(nextPreference);
+    } catch {
+      setPreference(null);
     } finally {
       setIsLoading(false);
     }

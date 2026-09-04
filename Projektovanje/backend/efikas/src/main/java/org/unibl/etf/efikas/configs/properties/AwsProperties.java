@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 @Data
 public class AwsProperties {
     private String region;
+    private String endpoint;
+    private boolean pathStyleAccessEnabled;
     private Credentials credentials;
 
     @Data

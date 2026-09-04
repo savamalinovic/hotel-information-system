@@ -47,6 +47,7 @@
     "agenda": {
       "title": "Današnja agenda",
       "viewReservations": "Rezervacije",
+      "openReservation": "Otvori rezervaciju za {{apartment}}",
       "empty": "Danas nema dolazaka ni odlazaka.",
       "arrival": "Dolazak",
       "departure": "Odlazak",
@@ -779,10 +780,24 @@
   "datePicker": {
     "titleDateTime": "Izaberite datum i vrijeme",
     "titleDateOnly": "Izaberite datum",
+    "chooseDate": "Izaberite datum",
+    "clear": "Očisti datum",
     "common": {
       "confirm": "Potvrdi",
       "cancel": "Otkaži"
     }
+  },
+  "attachmentPicker": {
+    "title": "Prilog",
+    "limit": "Možete dodati sliku ili dokument veličine do 10 MB.",
+    "choose": "Izaberi prilog",
+    "replace": "Zamijeni prilog",
+    "remove": "Ukloni",
+    "unknownSize": "Veličina nije dostupna",
+    "sizeError": "Izaberite fajl veličine od 1 bajta do 10 MB.",
+    "pickError": "Nije moguće otvoriti izbor priloga.",
+    "createdWithoutAttachment": "Zapis je kreiran bez priloga",
+    "retryOnDetail": "Prilog možete ponovo dodati na ekranu detalja."
   },
   "taskWorkforce": {
     "common": { "all": "Sve", "clear": "Očisti", "close": "Zatvori", "errorTitle": "Došlo je do greške", "filters": "Filteri", "loadMore": "Učitaj još", "loading": "Učitavanje…", "notAvailable": "Nije dostupno", "refresh": "Osvježi", "retry": "Pokušaj ponovo" },

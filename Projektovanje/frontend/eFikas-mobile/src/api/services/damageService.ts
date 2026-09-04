@@ -1,4 +1,5 @@
 import axiosInstance from "@/src/api/axiosInstance";
+import { postMultipart } from "@/src/api/multipartUpload";
 import {
   CreateDamageRequest,
   DamageAttachmentResponse,
@@ -85,10 +86,9 @@ export const damageService = {
       type: attachment.mimeType ?? "application/octet-stream",
     };
     formData.append("file", filePart as unknown as Blob);
-    const response = await axiosInstance.post<DamageAttachmentResponse>(
+    const response = await postMultipart<DamageAttachmentResponse>(
       API_URLS.damageWorkflows.attachments(apartmentId, damageId),
       formData,
-      { timeout: 60_000 }
     );
     return response.data;
   },

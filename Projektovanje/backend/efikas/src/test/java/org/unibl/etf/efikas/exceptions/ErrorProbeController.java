@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
 
@@ -46,6 +47,11 @@ class ErrorProbeController {
     @GetMapping("/error-probe/unexpected")
     void unexpected() {
         throw new IllegalStateException("secret implementation detail");
+    }
+
+    @GetMapping("/error-probe/upload-too-large")
+    void uploadTooLarge() {
+        throw new MaxUploadSizeExceededException(10L * 1024 * 1024);
     }
 
     record ProbeRequest(
