@@ -28,6 +28,7 @@ import org.unibl.etf.efikas.repositories.LeaveRequestRepository;
 import org.unibl.etf.efikas.repositories.OperationalTaskRepository;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,14 +42,20 @@ public class WorkforceAvailabilityService {
 
     @Transactional(readOnly = true)
     public WorkerAvailabilityResponse current(String workerEmail) {
-        return currentAvailability(requireWorker(workerEmail), Instant.now());
+        return currentAvailability(requireParticipant(workerEmail), Instant.now());
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<WorkerAvailabilityResponse> currentWorkers(Pageable pageable) {
+    public PageResponse<WorkerAvailabilityResponse> currentParticipants(Pageable pageable, UserRole role) {
+        if (role != null) {
+            WorkforceParticipantPolicy.requireWorkforceParticipantRole(role);
+        }
         Instant now = Instant.now();
-        Page<WorkerAvailabilityResponse> page = appUserRepository
-                .findByRoleAndActiveTrue(UserRole.OPERATIONAL_WORKER, pageable)
+        Page<AppUser> participants = role == null
+                ? appUserRepository.findByRoleInAndActiveTrue(
+                        List.of(UserRole.AGENT, UserRole.OPERATIONAL_WORKER), pageable)
+                : appUserRepository.findByRoleAndActiveTrue(role, pageable);
+        Page<WorkerAvailabilityResponse> page = participants
                 .map(worker -> currentAvailability(worker, now));
         return PageResponse.from(page);
     }
@@ -72,7 +79,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional
     public WorkerAvailabilityResponse clockIn(String workerEmail) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         if (attendanceSessionRepository.existsByWorkerUserIdAndClockedOutAtIsNull(worker.getUserId())) {
             throw new DomainConflictException("The worker is already clocked in.");
         }
@@ -85,7 +92,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional
     public WorkerAvailabilityResponse startBreak(String workerEmail) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         AttendanceSession session = requireOpenSession(worker.getUserId());
         if (breakPeriodRepository.findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(
                 session.getAttendanceSessionId()).isPresent()) {
@@ -100,7 +107,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional
     public WorkerAvailabilityResponse endBreak(String workerEmail) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         AttendanceSession session = requireOpenSession(worker.getUserId());
         BreakPeriod period = breakPeriodRepository
                 .findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(session.getAttendanceSessionId())
@@ -112,7 +119,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional
     public WorkerAvailabilityResponse clockOut(String workerEmail) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         AttendanceSession session = requireOpenSession(worker.getUserId());
         if (breakPeriodRepository.findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(
                 session.getAttendanceSessionId()).isPresent()) {
@@ -125,7 +132,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional(readOnly = true)
     public PageResponse<AttendanceSessionResponse> attendanceHistory(String workerEmail, Pageable pageable) {
-        AppUser worker = requireWorker(workerEmail);
+        AppUser worker = requireParticipant(workerEmail);
         return PageResponse.from(attendanceSessionRepository
                 .findByWorkerUserIdOrderByClockedInAtDescAttendanceSessionIdDesc(worker.getUserId(), pageable)
                 .map(this::toAttendanceResponse));
@@ -135,7 +142,7 @@ public class WorkforceAvailabilityService {
     public AvailabilityOverrideResponse createOverride(
             String workerEmail, CreateAvailabilityOverrideRequest request
     ) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         Instant now = Instant.now();
         Instant startsAt = request.startsAt() == null ? now : request.startsAt();
         if (request.endsAt() != null && !request.endsAt().isAfter(startsAt)) {
@@ -164,7 +171,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional
     public AvailabilityOverrideResponse clearOverride(String workerEmail, Long overrideId) {
-        AppUser worker = lockWorker(workerEmail);
+        AppUser worker = lockParticipant(workerEmail);
         AvailabilityOverride override = availabilityOverrideRepository
                 .findByAvailabilityOverrideIdAndWorkerUserId(overrideId, worker.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Availability override not found."));
@@ -178,7 +185,7 @@ public class WorkforceAvailabilityService {
 
     @Transactional(readOnly = true)
     public PageResponse<AvailabilityOverrideResponse> overrideHistory(String workerEmail, Pageable pageable) {
-        AppUser worker = requireWorker(workerEmail);
+        AppUser worker = requireParticipant(workerEmail);
         return PageResponse.from(availabilityOverrideRepository
                 .findByWorkerUserIdOrderByStartsAtDescAvailabilityOverrideIdDesc(worker.getUserId(), pageable)
                 .map(WorkforceAvailabilityService::toOverrideResponse));
@@ -193,13 +200,14 @@ public class WorkforceAvailabilityService {
         BreakPeriod openBreak = session == null ? null : breakPeriodRepository
                 .findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(session.getAttendanceSessionId())
                 .orElse(null);
-        boolean busy = operationalTaskRepository.existsByAssignedWorkerUserIdAndStatusIn(
-                worker.getUserId(), java.util.List.of(org.unibl.etf.efikas.models.enums.TaskStatus.ASSIGNED,
-                        org.unibl.etf.efikas.models.enums.TaskStatus.IN_PROGRESS));
+        boolean busy = isBusyFromOperationalTask(worker.getRole(), operationalTaskRepository
+                .existsByAssignedWorkerUserIdAndStatusIn(
+                worker.getUserId(), List.of(org.unibl.etf.efikas.models.enums.TaskStatus.ASSIGNED,
+                        org.unibl.etf.efikas.models.enums.TaskStatus.IN_PROGRESS)));
         WorkerAvailabilityStatus status = deriveStatus(
                 session != null, leave != null, override != null, openBreak != null, busy);
         return new WorkerAvailabilityResponse(
-                worker.getUserId(), worker.getName(), worker.getSurname(), status,
+                worker.getUserId(), worker.getName(), worker.getSurname(), worker.getRole(), status,
                 session == null ? null : session.getAttendanceSessionId(),
                 session == null ? null : session.getClockedInAt(),
                 openBreak == null ? null : openBreak.getStartedAt(),
@@ -233,6 +241,10 @@ public class WorkforceAvailabilityService {
         return busy ? WorkerAvailabilityStatus.BUSY : WorkerAvailabilityStatus.AVAILABLE;
     }
 
+    static boolean isBusyFromOperationalTask(UserRole role, boolean hasActiveOperationalTask) {
+        return role == UserRole.OPERATIONAL_WORKER && hasActiveOperationalTask;
+    }
+
     @Transactional(readOnly = true)
     public void assertAvailableForTask(AppUser worker) {
         if (currentAvailability(worker, Instant.now()).status() != WorkerAvailabilityStatus.AVAILABLE) {
@@ -245,21 +257,18 @@ public class WorkforceAvailabilityService {
                 .orElseThrow(() -> new DomainConflictException("The worker is not clocked in."));
     }
 
-    private AppUser requireWorker(String email) {
-        return validateWorker(appUserRepository.findByEmailIgnoreCase(email)
+    private AppUser requireParticipant(String email) {
+        return requireParticipant(appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found.")));
     }
 
-    private AppUser lockWorker(String email) {
-        return validateWorker(appUserRepository.findByEmailIgnoreCaseForUpdate(email)
+    private AppUser lockParticipant(String email) {
+        return requireParticipant(appUserRepository.findByEmailIgnoreCaseForUpdate(email)
                 .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found.")));
     }
 
-    private static AppUser validateWorker(AppUser worker) {
-        if (!worker.isActive() || worker.getRole() != UserRole.OPERATIONAL_WORKER) {
-            throw new DomainConflictException("Only an active operational worker can use self workforce actions.");
-        }
-        return worker;
+    private static AppUser requireParticipant(AppUser participant) {
+        return WorkforceParticipantPolicy.requireActiveParticipant(participant);
     }
 
     private AttendanceSessionResponse toAttendanceResponse(AttendanceSession session) {

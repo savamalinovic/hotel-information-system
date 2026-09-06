@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.unibl.etf.efikas.models.entities.AppUser;
 import org.unibl.etf.efikas.models.enums.UserRole;
+
+import java.util.Collection;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -34,6 +36,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Integer>, JpaS
     @Query("select user from AppUser user where user.role = :role and user.active = true order by user.userId")
     List<AppUser> findActiveByRoleForUpdate(UserRole role);
     Page<AppUser> findByRoleAndActiveTrue(UserRole role, Pageable pageable);
+
+    Page<AppUser> findByRoleInAndActiveTrue(Collection<UserRole> roles, Pageable pageable);
     List<AppUser> findAllByRoleAndActiveTrue(UserRole role);
 
     @Query("""

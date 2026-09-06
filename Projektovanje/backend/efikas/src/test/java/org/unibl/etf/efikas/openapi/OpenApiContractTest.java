@@ -17,10 +17,12 @@ import org.unibl.etf.efikas.configs.OpenApiConfig;
 import org.unibl.etf.efikas.controllers.AppUserController;
 import org.unibl.etf.efikas.controllers.AuthController;
 import org.unibl.etf.efikas.controllers.HotelProfileController;
+import org.unibl.etf.efikas.controllers.LeaveRequestController;
 import org.unibl.etf.efikas.controllers.NotificationsController;
 import org.unibl.etf.efikas.controllers.SpecializationController;
 import org.unibl.etf.efikas.controllers.TaskController;
 import org.unibl.etf.efikas.controllers.UserManagementController;
+import org.unibl.etf.efikas.controllers.WorkforceController;
 import org.unibl.etf.efikas.security.JwtUtil;
 import org.unibl.etf.efikas.services.AppUserService;
 import org.unibl.etf.efikas.services.HotelProfileService;
@@ -28,6 +30,8 @@ import org.unibl.etf.efikas.services.SpecializationService;
 import org.unibl.etf.efikas.services.StoreService;
 import org.unibl.etf.efikas.services.UserManagementService;
 import org.unibl.etf.efikas.services.TaskService;
+import org.unibl.etf.efikas.services.LeaveRequestService;
+import org.unibl.etf.efikas.services.WorkforceAvailabilityService;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 import org.unibl.etf.efikas.services.interfaces.OAuthService;
 import org.unibl.etf.efikas.services.interfaces.OtpService;
@@ -75,6 +79,12 @@ class OpenApiContractTest {
 
     @MockitoBean
     private TaskService taskService;
+
+    @MockitoBean
+    private WorkforceAvailabilityService workforceAvailabilityService;
+
+    @MockitoBean
+    private LeaveRequestService leaveRequestService;
 
     @Test
     void generatedV1ContractContainsVersionedTypedLoginAndStableErrors() throws Exception {
@@ -129,6 +139,14 @@ class OpenApiContractTest {
                         .value("#/components/schemas/PageResponseTaskResponse"))
                 .andExpect(jsonPath("$.components.schemas.PageResponseTaskResponse.properties.content.items.$ref")
                         .value("#/components/schemas/TaskResponse"))
+                .andExpect(jsonPath("$.paths['/api/v1/workforce/availability'].get.parameters[?(@.name == 'role')]")
+                        .isNotEmpty())
+                .andExpect(jsonPath("$.paths['/api/v1/workforce/me/attendance/clock-in'].post").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/workforce/me/leave-requests'].post").exists())
+                .andExpect(jsonPath("$.components.schemas.WorkerAvailabilityResponse.properties.role.type")
+                        .value("string"))
+                .andExpect(jsonPath("$.components.schemas.LeaveRequestResponse.properties.workerRole.type")
+                        .value("string"))
                 .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.userId").doesNotExist())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/register']").doesNotExist());
     }
@@ -141,7 +159,7 @@ class OpenApiContractTest {
     })
     @Import({OpenApiConfig.class, AuthController.class, AppUserController.class, HotelProfileController.class,
             SpecializationController.class, UserManagementController.class, NotificationsController.class,
-            TaskController.class})
+            TaskController.class, WorkforceController.class, LeaveRequestController.class})
     static class ContractTestApplication {
     }
 }

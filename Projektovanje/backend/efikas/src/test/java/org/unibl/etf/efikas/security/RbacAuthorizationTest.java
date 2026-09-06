@@ -206,6 +206,10 @@ class RbacAuthorizationTest {
         mockMvc.perform(get("/api/v1/tasks/mine")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/tasks/1/claim").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/start").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/block").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/resume").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/tasks/1/complete").with(role(UserRole.AGENT))).andExpect(status().isForbidden());
         mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.AGENT))).andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/tasks/1/cancel").with(role(UserRole.OPERATIONAL_WORKER))).andExpect(status().isForbidden());
     }
@@ -280,27 +284,50 @@ class RbacAuthorizationTest {
     }
 
     @Test
-    void managerReadsWorkforceWhileOnlyWorkerUsesSelfAttendance() throws Exception {
+    void managerReadsWorkforceWhileBothParticipantsUseAllSelfServiceRoutes() throws Exception {
         mockMvc.perform(get("/api/v1/workforce/availability").with(role(UserRole.MANAGER)))
                 .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/workforce/availability").with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/v1/workforce/availability").with(role(UserRole.OPERATIONAL_WORKER)))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/api/v1/workforce/me/availability").with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-in")
-                        .with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isOk());
+
+        for (UserRole participant : new UserRole[]{UserRole.AGENT, UserRole.OPERATIONAL_WORKER}) {
+            mockMvc.perform(get("/api/v1/workforce/me/availability").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-in").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/attendance/breaks/start").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/attendance/breaks/end").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-out").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/workforce/me/attendance-sessions").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/workforce/me/availability-overrides").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/availability-overrides").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/availability-overrides/1/clear").with(role(participant)))
+                    .andExpect(status().isOk());
+        }
         mockMvc.perform(post("/api/v1/workforce/me/attendance/clock-in").with(role(UserRole.MANAGER)))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/api/v1/workforce/me/availability").with(role(UserRole.AGENT)))
+        mockMvc.perform(get("/api/v1/workforce/me/attendance-sessions").with(role(UserRole.MANAGER)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void workerOwnsLeaveRequestsWhileOnlyManagerDecides() throws Exception {
-        mockMvc.perform(post("/api/v1/workforce/me/leave-requests")
-                        .with(role(UserRole.OPERATIONAL_WORKER)))
-                .andExpect(status().isOk());
+    void participantsOwnLeaveRequestsWhileOnlyManagerDecides() throws Exception {
+        for (UserRole participant : new UserRole[]{UserRole.AGENT, UserRole.OPERATIONAL_WORKER}) {
+            mockMvc.perform(post("/api/v1/workforce/me/leave-requests").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/workforce/me/leave-requests").with(role(participant)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(post("/api/v1/workforce/me/leave-requests/1/cancel").with(role(participant)))
+                    .andExpect(status().isOk());
+        }
         mockMvc.perform(post("/api/v1/workforce/me/leave-requests").with(role(UserRole.MANAGER)))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/v1/workforce/leave-requests").with(role(UserRole.MANAGER)))
@@ -312,6 +339,9 @@ class RbacAuthorizationTest {
                         .with(role(UserRole.MANAGER)))
                 .andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/workforce/leave-requests/1/approve")
+                        .with(role(UserRole.AGENT)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/workforce/leave-requests/1/reject")
                         .with(role(UserRole.AGENT)))
                 .andExpect(status().isForbidden());
     }

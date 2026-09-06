@@ -126,7 +126,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/api/v1/workforce/leave-requests/**")
                         .hasRole(UserRole.MANAGER.name())
                         .requestMatchers("/api/v1/workforce/me/**")
-                        .hasRole(UserRole.OPERATIONAL_WORKER.name())
+                        .hasAnyRole(UserRole.AGENT.name(), UserRole.OPERATIONAL_WORKER.name())
                         .requestMatchers("/api/v1/workforce/**")
                         .denyAll()
                         // Hotel-level operational expenses; legacy apartment expenses stay closed.
