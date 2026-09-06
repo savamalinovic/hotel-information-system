@@ -35,6 +35,7 @@ export default function HomeRootLayout() {
             <Stack.Screen name="tasks" options={{ title: t('dashboard.navigation.tasksTitle') }} />
             <Stack.Screen name="tasks/create" options={{ title: t('taskWorkforce.agent.createTitle') }} />
             <Stack.Screen name="tasks/[id]" options={{ title: t('taskWorkforce.detail.title') }} />
+            <Stack.Screen name="workforce" options={{ title: t('taskWorkforce.selfService.title') }} />
             <Stack.Screen name="damages" options={{ title: t('dashboard.navigation.damagesTitle') }} />
             <Stack.Screen name="damages/create" options={{ title: t('damageWorkflow.create.title') }} />
             <Stack.Screen name="damages/[id]" options={{ title: t('damageWorkflow.detail.title') }} />

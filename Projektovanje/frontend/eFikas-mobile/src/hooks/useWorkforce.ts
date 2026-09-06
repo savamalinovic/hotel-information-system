@@ -18,6 +18,15 @@ const invalidateWorkforceDependencies = async (queryClient: ReturnType<typeof us
   ]);
 };
 
+export const workforceStateMayHaveChanged = (error: unknown) => isAxiosError(error)
+  && (
+    error.response?.status === 409
+    || error.response?.status === undefined
+    || (error.response?.status >= 500 && error.response.status < 600)
+    || error.code === "ECONNABORTED"
+    || error.code === "ETIMEDOUT"
+  );
+
 const useWorkforcePages = <T>(
   queryKey: readonly unknown[],
   filters: Omit<WorkforcePageFilters, "page">,
@@ -55,7 +64,7 @@ const useWorkforceMutation = <TVariables>(mutationFn: (variables: TVariables) =>
   return useMutation({
     mutationFn,
     onSuccess: () => invalidateWorkforceDependencies(queryClient),
-    onError: (error) => isAxiosError(error) && error.response?.status === 409 ? invalidateWorkforceDependencies(queryClient) : Promise.resolve(),
+    onError: (error) => workforceStateMayHaveChanged(error) ? invalidateWorkforceDependencies(queryClient) : Promise.resolve(),
   });
 };
 
