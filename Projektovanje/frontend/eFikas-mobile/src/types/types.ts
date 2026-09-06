@@ -268,6 +268,7 @@ export interface AttendanceSession {
 
 export interface WorkerAvailability {
   workerId: number;
+  role: UserRole;
   name: string;
   surname: string;
   status: WorkerAvailabilityStatus;
@@ -297,6 +298,7 @@ export interface AvailabilityOverride {
 export interface LeaveRequest {
   leaveRequestId: number;
   workerId: number;
+  workerRole: UserRole;
   workerName: string;
   workerSurname: string;
   startsAt: string;

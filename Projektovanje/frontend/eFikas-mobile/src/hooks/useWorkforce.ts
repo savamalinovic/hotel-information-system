@@ -18,6 +18,9 @@ const invalidateWorkforceDependencies = async (queryClient: ReturnType<typeof us
   ]);
 };
 
+const shouldReloadWorkforceState = (error: unknown) => isAxiosError(error)
+  && (error.response?.status === 409 || error.code === "ECONNABORTED" || error.code === "ETIMEDOUT");
+
 const useWorkforcePages = <T>(
   queryKey: readonly unknown[],
   filters: Omit<WorkforcePageFilters, "page">,
@@ -55,7 +58,7 @@ const useWorkforceMutation = <TVariables>(mutationFn: (variables: TVariables) =>
   return useMutation({
     mutationFn,
     onSuccess: () => invalidateWorkforceDependencies(queryClient),
-    onError: (error) => isAxiosError(error) && error.response?.status === 409 ? invalidateWorkforceDependencies(queryClient) : Promise.resolve(),
+    onError: (error) => shouldReloadWorkforceState(error) ? invalidateWorkforceDependencies(queryClient) : Promise.resolve(),
   });
 };
 
