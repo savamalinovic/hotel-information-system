@@ -800,6 +800,9 @@
     "createdWithoutAttachment": "The record was created without the attachment",
     "retryOnDetail": "You can add the attachment again on the detail screen."
   },
+  "workforceFeedback": {
+    "refreshStateAfterAction": "The server state is being refreshed. Check the current status before trying again."
+  },
   "taskWorkforce": {
     "common": { "all": "All", "clear": "Clear", "close": "Close", "errorTitle": "Something went wrong", "filters": "Filters", "loadMore": "Load more", "loading": "Loading…", "notAvailable": "Not available", "refresh": "Refresh", "retry": "Try again" },
     "status": { "NEW": "New", "ASSIGNED": "Assigned", "IN_PROGRESS": "In progress", "BLOCKED": "Blocked", "COMPLETED": "Completed", "CANCELLED": "Cancelled" },

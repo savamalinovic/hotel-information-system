@@ -800,6 +800,9 @@
     "createdWithoutAttachment": "Zapis je kreiran bez priloga",
     "retryOnDetail": "Prilog možete ponovo dodati na ekranu detalja."
   },
+  "workforceFeedback": {
+    "refreshStateAfterAction": "Stanje sa servera se osvježava. Provjerite trenutni status prije novog pokušaja."
+  },
   "taskWorkforce": {
     "common": { "all": "Sve", "clear": "Očisti", "close": "Zatvori", "errorTitle": "Došlo je do greške", "filters": "Filteri", "loadMore": "Učitaj još", "loading": "Učitavanje…", "notAvailable": "Nije dostupno", "refresh": "Osvježi", "retry": "Pokušaj ponovo" },
     "status": { "NEW": "Novo", "ASSIGNED": "Preuzeto", "IN_PROGRESS": "U toku", "BLOCKED": "Blokirano", "COMPLETED": "Završeno", "CANCELLED": "Otkazano" },

@@ -22,11 +22,12 @@ import {
   useLeaveRequests,
   useStartBreak,
   useWorkerAvailability,
+  workforceStateMayHaveChanged,
 } from "@/src/hooks/useWorkforce";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { AvailabilityOverride, AttendanceSession, LeaveRequest, WorkerAvailability } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -34,6 +35,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type SelfServiceSection = "overview" | "attendance" | "overrides" | "leave";
 
 const sections: SelfServiceSection[] = ["overview", "attendance", "overrides", "leave"];
+
+const getWorkforceActionErrorMessage = (error: unknown, fallback: string, refreshedStateMessage: string) =>
+  workforceStateMayHaveChanged(error) ? refreshedStateMessage : getUserFacingErrorMessage(error, fallback);
 
 export default function WorkforceSelfServiceScreen() {
   const { t } = useTranslation();
@@ -133,27 +137,66 @@ export function AttendanceActions({ availability }: { availability?: WorkerAvail
   const endBreak = useEndBreak();
   const clockOut = useClockOut();
   const [clockOutConfirmation, setClockOutConfirmation] = useState(false);
-  const [error, setError] = useState("");
-  const actionError = (requestError: unknown) => setError(getUserFacingErrorMessage(requestError, t("taskWorkforce.selfService.attendanceActionError")));
+  const [attendanceError, setAttendanceError] = useState("");
+  const [clockOutError, setClockOutError] = useState("");
+  const actionError = (requestError: unknown) => setAttendanceError(getWorkforceActionErrorMessage(requestError, t("taskWorkforce.selfService.attendanceActionError"), t("workforceFeedback.refreshStateAfterAction")));
+
+  useEffect(() => {
+    if (clockOutConfirmation && availability && !availability.attendanceSessionId) {
+      setClockOutConfirmation(false);
+      setClockOutError("");
+    }
+  }, [availability, clockOutConfirmation]);
+
+  const runAttendanceAction = (mutate: (options: { onSuccess: () => void; onError: (requestError: unknown) => void }) => void) => {
+    setAttendanceError("");
+    mutate({ onSuccess: () => setAttendanceError(""), onError: actionError });
+  };
+
+  const openClockOutConfirmation = () => {
+    setAttendanceError("");
+    setClockOutError("");
+    setClockOutConfirmation(true);
+  };
+
+  const closeClockOutConfirmation = () => {
+    if (!clockOut.isPending) {
+      setClockOutConfirmation(false);
+      setClockOutError("");
+    }
+  };
+
+  const confirmClockOut = () => {
+    setClockOutError("");
+    clockOut.mutate(undefined, {
+      onSuccess: () => {
+        setClockOutConfirmation(false);
+        setClockOutError("");
+        setAttendanceError("");
+      },
+      onError: (requestError) => setClockOutError(getWorkforceActionErrorMessage(requestError, t("taskWorkforce.selfService.attendanceActionError"), t("workforceFeedback.refreshStateAfterAction"))),
+    });
+  };
 
   if (!availability) {
     return null;
   }
 
   return <View style={styles.stack}>
-    {error ? <Text style={{ color: Colors.error }}>{error}</Text> : null}
-    {!availability.attendanceSessionId ? <WorkflowButton label={t("taskWorkforce.selfService.clockIn")} onPress={() => clockIn.mutate(undefined, { onError: actionError })} loading={clockIn.isPending} icon="Clock" /> : null}
-    {availability.attendanceSessionId && !availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.startBreak")} onPress={() => startBreak.mutate(undefined, { onError: actionError })} loading={startBreak.isPending} variant="secondary" /> : null}
-    {availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.endBreak")} onPress={() => endBreak.mutate(undefined, { onError: actionError })} loading={endBreak.isPending} /> : null}
-    {availability.attendanceSessionId && !availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.clockOut")} onPress={() => setClockOutConfirmation(true)} loading={clockOut.isPending} variant="danger" /> : null}
+    {attendanceError ? <Text style={{ color: Colors.error }}>{attendanceError}</Text> : null}
+    {!availability.attendanceSessionId ? <WorkflowButton label={t("taskWorkforce.selfService.clockIn")} onPress={() => runAttendanceAction((options) => clockIn.mutate(undefined, options))} loading={clockIn.isPending} icon="Clock" /> : null}
+    {availability.attendanceSessionId && !availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.startBreak")} onPress={() => runAttendanceAction((options) => startBreak.mutate(undefined, options))} loading={startBreak.isPending} variant="secondary" /> : null}
+    {availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.endBreak")} onPress={() => runAttendanceAction((options) => endBreak.mutate(undefined, options))} loading={endBreak.isPending} /> : null}
+    {availability.attendanceSessionId && !availability.breakStartedAt ? <WorkflowButton label={t("taskWorkforce.selfService.clockOut")} onPress={openClockOutConfirmation} loading={clockOut.isPending} variant="danger" /> : null}
     <ConfirmationDialog
       visible={clockOutConfirmation}
       title={t("taskWorkforce.selfService.clockOutTitle")}
       description={t("taskWorkforce.selfService.clockOutDescription")}
       confirmLabel={t("taskWorkforce.selfService.confirmClockOut")}
       confirming={clockOut.isPending}
-      onClose={() => !clockOut.isPending && setClockOutConfirmation(false)}
-      onConfirm={() => clockOut.mutate(undefined, { onSuccess: () => setClockOutConfirmation(false), onError: actionError })}
+      error={clockOutError}
+      onClose={closeClockOutConfirmation}
+      onConfirm={confirmClockOut}
     />
   </View>;
 }
@@ -178,9 +221,17 @@ export function AvailabilityOverridesSection() {
   const [picker, setPicker] = useState<"start" | "end">();
   const [formError, setFormError] = useState("");
   const [overrideToClear, setOverrideToClear] = useState<AvailabilityOverride>();
+  const [clearOverrideError, setClearOverrideError] = useState("");
   const overrides = useAvailabilityOverrides({ size: 20, sort: "startsAt,desc" });
   const create = useCreateAvailabilityOverride();
   const clear = useClearAvailabilityOverride();
+
+  useEffect(() => {
+    if (overrideToClear && !overrides.rows.some((item) => item.availabilityOverrideId === overrideToClear.availabilityOverrideId && !item.clearedAt)) {
+      setOverrideToClear(undefined);
+      setClearOverrideError("");
+    }
+  }, [overrideToClear, overrides.rows]);
 
   const submit = () => {
     const cleanedReason = reason.trim();
@@ -207,6 +258,32 @@ export function AvailabilityOverridesSection() {
     );
   };
 
+  const openClearConfirmation = (override: AvailabilityOverride) => {
+    setClearOverrideError("");
+    setOverrideToClear(override);
+  };
+
+  const closeClearConfirmation = () => {
+    if (!clear.isPending) {
+      setOverrideToClear(undefined);
+      setClearOverrideError("");
+    }
+  };
+
+  const confirmClear = () => {
+    if (!overrideToClear) {
+      return;
+    }
+    setClearOverrideError("");
+    clear.mutate(overrideToClear.availabilityOverrideId, {
+      onSuccess: () => {
+        setOverrideToClear(undefined);
+        setClearOverrideError("");
+      },
+      onError: (requestError) => setClearOverrideError(getWorkforceActionErrorMessage(requestError, t("taskWorkforce.selfService.clearOverrideError"), t("workforceFeedback.refreshStateAfterAction"))),
+    });
+  };
+
   return <View style={styles.stack}>
     <WorkflowCard>
       <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("taskWorkforce.selfService.overrideTitle")}</Text>
@@ -222,7 +299,7 @@ export function AvailabilityOverridesSection() {
     {overrides.isPending ? <WorkflowState icon="LoaderCircle" title={t("taskWorkforce.common.loading")} description={t("taskWorkforce.selfService.loadingOverrides")} /> : null}
     {overrides.isError ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.selfService.overrideLoadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={() => void overrides.refetch()} /> : null}
     {!overrides.isPending && !overrides.isError && overrides.rows.length === 0 ? <WorkflowState icon="ClipboardList" title={t("taskWorkforce.selfService.overrideEmptyTitle")} description={t("taskWorkforce.selfService.overrideEmptyDescription")} /> : null}
-    {overrides.rows.map((override) => <OverrideCard key={override.availabilityOverrideId} item={override} locale={i18n.language} onClear={() => setOverrideToClear(override)} clearing={clear.isPending && overrideToClear?.availabilityOverrideId === override.availabilityOverrideId} />)}
+    {overrides.rows.map((override) => <OverrideCard key={override.availabilityOverrideId} item={override} locale={i18n.language} onClear={() => openClearConfirmation(override)} clearing={clear.isPending && overrideToClear?.availabilityOverrideId === override.availabilityOverrideId} />)}
     <LoadMore visible={Boolean(overrides.hasNextPage)} loading={overrides.isFetchingNextPage} onPress={() => void overrides.fetchNextPage()} />
     <WorkflowButton label={t("taskWorkforce.common.refresh")} onPress={() => void overrides.refetch()} variant="secondary" />
     <DateTimePicker visible={picker !== undefined} initialValue={picker === "start" ? startsAt ?? null : endsAt ?? null} onClose={() => setPicker(undefined)} onConfirm={(value) => picker === "start" ? setStartsAt(value) : setEndsAt(value)} />
@@ -232,8 +309,9 @@ export function AvailabilityOverridesSection() {
       description={t("taskWorkforce.selfService.clearOverrideDescription")}
       confirmLabel={t("taskWorkforce.selfService.clearOverride")}
       confirming={clear.isPending}
-      onClose={() => !clear.isPending && setOverrideToClear(undefined)}
-      onConfirm={() => overrideToClear && clear.mutate(overrideToClear.availabilityOverrideId, { onSuccess: () => setOverrideToClear(undefined), onError: (requestError) => setFormError(getUserFacingErrorMessage(requestError, t("taskWorkforce.selfService.clearOverrideError"))) })}
+      error={clearOverrideError}
+      onClose={closeClearConfirmation}
+      onConfirm={confirmClear}
     />
   </View>;
 }
@@ -258,9 +336,17 @@ export function LeaveRequestsSection() {
   const [picker, setPicker] = useState<"start" | "end">();
   const [formError, setFormError] = useState("");
   const [leaveToCancel, setLeaveToCancel] = useState<LeaveRequest>();
+  const [cancelLeaveError, setCancelLeaveError] = useState("");
   const leaves = useLeaveRequests({ size: 20, sort: "createdAt,desc" });
   const create = useCreateLeaveRequest();
   const cancel = useCancelLeaveRequest();
+
+  useEffect(() => {
+    if (leaveToCancel && !leaves.rows.some((item) => item.leaveRequestId === leaveToCancel.leaveRequestId && (item.status === "PENDING" || item.status === "APPROVED"))) {
+      setLeaveToCancel(undefined);
+      setCancelLeaveError("");
+    }
+  }, [leaveToCancel, leaves.rows]);
 
   const submit = () => {
     const cleanedReason = reason.trim();
@@ -286,6 +372,32 @@ export function LeaveRequestsSection() {
     );
   };
 
+  const openCancelConfirmation = (leave: LeaveRequest) => {
+    setCancelLeaveError("");
+    setLeaveToCancel(leave);
+  };
+
+  const closeCancelConfirmation = () => {
+    if (!cancel.isPending) {
+      setLeaveToCancel(undefined);
+      setCancelLeaveError("");
+    }
+  };
+
+  const confirmCancel = () => {
+    if (!leaveToCancel) {
+      return;
+    }
+    setCancelLeaveError("");
+    cancel.mutate(leaveToCancel.leaveRequestId, {
+      onSuccess: () => {
+        setLeaveToCancel(undefined);
+        setCancelLeaveError("");
+      },
+      onError: (requestError) => setCancelLeaveError(getWorkforceActionErrorMessage(requestError, t("taskWorkforce.selfService.cancelLeaveError"), t("workforceFeedback.refreshStateAfterAction"))),
+    });
+  };
+
   return <View style={styles.stack}>
     <WorkflowCard>
       <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("taskWorkforce.selfService.leaveTitle")}</Text>
@@ -301,7 +413,7 @@ export function LeaveRequestsSection() {
     {leaves.isPending ? <WorkflowState icon="LoaderCircle" title={t("taskWorkforce.common.loading")} description={t("taskWorkforce.selfService.loadingLeave")} /> : null}
     {leaves.isError ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.selfService.leaveLoadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={() => void leaves.refetch()} /> : null}
     {!leaves.isPending && !leaves.isError && leaves.rows.length === 0 ? <WorkflowState icon="ClipboardList" title={t("taskWorkforce.selfService.leaveEmptyTitle")} description={t("taskWorkforce.selfService.leaveEmptyDescription")} /> : null}
-    {leaves.rows.map((leave) => <LeaveCard key={leave.leaveRequestId} item={leave} locale={i18n.language} onCancel={() => setLeaveToCancel(leave)} cancelling={cancel.isPending && leaveToCancel?.leaveRequestId === leave.leaveRequestId} />)}
+    {leaves.rows.map((leave) => <LeaveCard key={leave.leaveRequestId} item={leave} locale={i18n.language} onCancel={() => openCancelConfirmation(leave)} cancelling={cancel.isPending && leaveToCancel?.leaveRequestId === leave.leaveRequestId} />)}
     <LoadMore visible={Boolean(leaves.hasNextPage)} loading={leaves.isFetchingNextPage} onPress={() => void leaves.fetchNextPage()} />
     <WorkflowButton label={t("taskWorkforce.common.refresh")} onPress={() => void leaves.refetch()} variant="secondary" />
     <DateTimePicker visible={picker !== undefined} initialValue={picker === "start" ? startsAt ?? null : endsAt ?? null} onClose={() => setPicker(undefined)} onConfirm={(value) => picker === "start" ? setStartsAt(value) : setEndsAt(value)} />
@@ -311,8 +423,9 @@ export function LeaveRequestsSection() {
       description={t("taskWorkforce.selfService.cancelLeaveDescription")}
       confirmLabel={t("taskWorkforce.selfService.cancelLeave")}
       confirming={cancel.isPending}
-      onClose={() => !cancel.isPending && setLeaveToCancel(undefined)}
-      onConfirm={() => leaveToCancel && cancel.mutate(leaveToCancel.leaveRequestId, { onSuccess: () => setLeaveToCancel(undefined), onError: (requestError) => setFormError(getUserFacingErrorMessage(requestError, t("taskWorkforce.selfService.cancelLeaveError"))) })}
+      error={cancelLeaveError}
+      onClose={closeCancelConfirmation}
+      onConfirm={confirmCancel}
     />
   </View>;
 }
@@ -344,7 +457,7 @@ function InstantField({ label, value, locale, onPress, onClear }: { label: strin
   </View>;
 }
 
-function ConfirmationDialog({ visible, title, description, confirmLabel, confirming, onClose, onConfirm }: { visible: boolean; title: string; description: string; confirmLabel: string; confirming: boolean; onClose: () => void; onConfirm: () => void }) {
+function ConfirmationDialog({ visible, title, description, confirmLabel, confirming, error, onClose, onConfirm }: { visible: boolean; title: string; description: string; confirmLabel: string; confirming: boolean; error?: string; onClose: () => void; onConfirm: () => void }) {
   const { t } = useTranslation();
   const { Colors } = useTheme();
   return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -352,6 +465,7 @@ function ConfirmationDialog({ visible, title, description, confirmLabel, confirm
       <View style={[styles.modalCard, { backgroundColor: Colors.background }]}>
         <Text style={[styles.modalTitle, { color: Colors.textPrimary }]}>{title}</Text>
         <Text style={{ color: Colors.textSecondary }}>{description}</Text>
+        {error ? <View accessibilityLiveRegion="polite" style={[styles.modalError, { backgroundColor: `${Colors.error}18` }]}><Text style={{ color: Colors.error }}>{error}</Text></View> : null}
         <View style={styles.modalActions}>
           <View style={styles.flex}><WorkflowButton label={t("taskWorkforce.common.close")} onPress={onClose} variant="secondary" disabled={confirming} /></View>
           <View style={styles.flex}><WorkflowButton label={confirmLabel} onPress={onConfirm} loading={confirming} /></View>
@@ -380,6 +494,7 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, padding: 20, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.45)" },
   modalCard: { borderRadius: 16, padding: 18, gap: 12 },
   modalTitle: { fontSize: 20, fontWeight: "800" },
+  modalError: { borderRadius: 10, padding: 10 },
   modalActions: { flexDirection: "row", gap: 10 },
   flex: { flex: 1 },
 });
