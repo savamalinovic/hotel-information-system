@@ -28,7 +28,7 @@ public class LeaveRequestService {
 
     @Transactional
     public LeaveRequestResponse create(String workerEmail, CreateLeaveRequest input) {
-        AppUser worker = requireWorkerForUpdate(workerEmail);
+        AppUser worker = requireParticipantForUpdate(workerEmail);
         Instant now = Instant.now();
         if (!input.endsAt().isAfter(input.startsAt())) {
             throw new IllegalArgumentException("Leave end must be after its start.");
@@ -55,7 +55,7 @@ public class LeaveRequestService {
 
     @Transactional(readOnly = true)
     public PageResponse<LeaveRequestResponse> mine(String workerEmail, Pageable pageable) {
-        AppUser worker = requireWorker(workerEmail);
+        AppUser worker = requireParticipant(workerEmail);
         return PageResponse.from(leaveRequestRepository
                 .findByWorkerUserIdOrderByCreatedAtDescLeaveRequestIdDesc(worker.getUserId(), pageable)
                 .map(LeaveRequestService::toResponse));
@@ -63,7 +63,7 @@ public class LeaveRequestService {
 
     @Transactional
     public LeaveRequestResponse cancel(String workerEmail, Long requestId) {
-        AppUser worker = requireWorkerForUpdate(workerEmail);
+        AppUser worker = requireParticipantForUpdate(workerEmail);
         LeaveRequest request = leaveRequestRepository.findOwnedByIdForUpdate(requestId, worker.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Leave request not found."));
         if (request.getStatus() == LeaveRequestStatus.CANCELLED) {
@@ -119,7 +119,7 @@ public class LeaveRequestService {
         LeaveRequest snapshot = leaveRequestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("Leave request not found."));
         AppUser worker = appUserRepository.findByEmailIgnoreCaseForUpdate(snapshot.getWorker().getEmail())
-                .map(LeaveRequestService::validateWorker)
+                .map(LeaveRequestService::requireParticipant)
                 .orElseThrow();
         LeaveRequest request = leaveRequestRepository.findByIdForUpdate(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("Leave request not found."));
@@ -143,13 +143,13 @@ public class LeaveRequestService {
         return toResponse(request);
     }
 
-    private AppUser requireWorker(String email) {
-        return validateWorker(appUserRepository.findByEmailIgnoreCase(email)
+    private AppUser requireParticipant(String email) {
+        return requireParticipant(appUserRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found.")));
     }
 
-    private AppUser requireWorkerForUpdate(String email) {
-        return validateWorker(appUserRepository.findByEmailIgnoreCaseForUpdate(email)
+    private AppUser requireParticipantForUpdate(String email) {
+        return requireParticipant(appUserRepository.findByEmailIgnoreCaseForUpdate(email)
                 .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found.")));
     }
 
@@ -162,17 +162,15 @@ public class LeaveRequestService {
         return manager;
     }
 
-    private static AppUser validateWorker(AppUser worker) {
-        if (!worker.isActive() || worker.getRole() != UserRole.OPERATIONAL_WORKER) {
-            throw new DomainConflictException("Only an active operational worker can use leave actions.");
-        }
-        return worker;
+    private static AppUser requireParticipant(AppUser participant) {
+        return WorkforceParticipantPolicy.requireActiveParticipant(participant);
     }
 
     private static LeaveRequestResponse toResponse(LeaveRequest request) {
         return new LeaveRequestResponse(
                 request.getLeaveRequestId(), request.getWorker().getUserId(), request.getWorker().getName(),
-                request.getWorker().getSurname(), request.getStartsAt(), request.getEndsAt(), request.getReason(),
+                request.getWorker().getSurname(), request.getWorker().getRole(), request.getStartsAt(),
+                request.getEndsAt(), request.getReason(),
                 request.getStatus(), request.getCreatedAt(),
                 request.getDecidedBy() == null ? null : request.getDecidedBy().getUserId(), request.getDecidedAt(),
                 request.getDecisionReason(),

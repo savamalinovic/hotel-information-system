@@ -1,6 +1,7 @@
 package org.unibl.etf.efikas.models.responses;
 
 import org.unibl.etf.efikas.models.enums.LeaveRequestStatus;
+import org.unibl.etf.efikas.models.enums.UserRole;
 
 import java.time.Instant;
 
@@ -9,6 +10,7 @@ public record LeaveRequestResponse(
         Integer workerId,
         String workerName,
         String workerSurname,
+        UserRole workerRole,
         Instant startsAt,
         Instant endsAt,
         String reason,

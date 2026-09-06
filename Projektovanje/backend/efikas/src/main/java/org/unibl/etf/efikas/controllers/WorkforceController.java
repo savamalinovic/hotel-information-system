@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.unibl.etf.efikas.configs.OpenApiConfig;
 import org.unibl.etf.efikas.models.requests.CreateAvailabilityOverrideRequest;
+import org.unibl.etf.efikas.models.enums.UserRole;
 import org.unibl.etf.efikas.models.responses.AttendanceSessionResponse;
 import org.unibl.etf.efikas.models.responses.AvailabilityOverrideResponse;
 import org.unibl.etf.efikas.models.responses.PageResponse;
@@ -35,9 +36,10 @@ public class WorkforceController {
 
     @GetMapping("/availability")
     public PageResponse<WorkerAvailabilityResponse> workersAvailability(
-            @PageableDefault(size = 20, sort = {"surname", "name"}) Pageable pageable
+            @org.springframework.web.bind.annotation.RequestParam(required = false) UserRole role,
+            @PageableDefault(size = 20, sort = {"surname", "name", "userId"}) Pageable pageable
     ) {
-        return workforceAvailabilityService.currentWorkers(pageable);
+        return workforceAvailabilityService.currentParticipants(pageable, role);
     }
 
     @GetMapping("/me/availability")

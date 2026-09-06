@@ -2,6 +2,7 @@ package org.unibl.etf.efikas.services;
 
 import org.junit.jupiter.api.Test;
 import org.unibl.etf.efikas.models.enums.WorkerAvailabilityStatus;
+import org.unibl.etf.efikas.models.enums.UserRole;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,5 +21,12 @@ class B10WorkerAvailabilityStatusTest {
                 .isEqualTo(WorkerAvailabilityStatus.UNAVAILABLE);
         assertThat(WorkforceAvailabilityService.deriveStatus(true, false, false, true))
                 .isEqualTo(WorkerAvailabilityStatus.BUSY);
+    }
+
+    @Test
+    void onlyOperationalWorkersBecomeBusyFromOperationalTasks() {
+        assertThat(WorkforceAvailabilityService.isBusyFromOperationalTask(UserRole.AGENT, true)).isFalse();
+        assertThat(WorkforceAvailabilityService.isBusyFromOperationalTask(
+                UserRole.OPERATIONAL_WORKER, true)).isTrue();
     }
 }

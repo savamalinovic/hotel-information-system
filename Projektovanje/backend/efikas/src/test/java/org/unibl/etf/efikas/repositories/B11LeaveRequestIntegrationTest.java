@@ -17,12 +17,19 @@ import org.unibl.etf.efikas.models.requests.CreateLeaveRequest;
 import org.unibl.etf.efikas.services.LeaveRequestService;
 import org.unibl.etf.efikas.services.WorkforceAvailabilityService;
 import org.unibl.etf.efikas.services.interfaces.S3Service;
+import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
 import java.time.Instant;
+import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Transactional
@@ -33,6 +40,7 @@ class B11LeaveRequestIntegrationTest {
     @Autowired JdbcTemplate jdbcTemplate;
 
     @MockitoBean S3Service s3Service;
+    @MockitoBean NotificationService notificationService;
 
     @Test
     void completesApprovalAvailabilityAndCancellationLifecycle() {
@@ -84,6 +92,40 @@ class B11LeaveRequestIntegrationTest {
     }
 
     @Test
+    void agentCanCreateCancelAndReceiveManagerDecisionNotification() {
+        AppUser agent = user("agent-approval", UserRole.AGENT);
+        AppUser manager = user("manager-agent-approval", UserRole.MANAGER);
+        Instant start = Instant.now().plusSeconds(3600);
+
+        var created = leaveService.create(agent.getEmail(),
+                new CreateLeaveRequest(start, start.plusSeconds(3600), "Training"));
+        assertThat(created.workerRole()).isEqualTo(UserRole.AGENT);
+        var approved = leaveService.approve(manager.getEmail(), created.leaveRequestId());
+
+        assertThat(approved.status()).isEqualTo(LeaveRequestStatus.APPROVED);
+        verify(notificationService).notify(
+                argThat((Collection<AppUser> recipients) -> recipients.size() == 1
+                        && recipients.iterator().next().getUserId().equals(agent.getUserId())),
+                eq("LEAVE_REQUEST_DECIDED"), anyString(), anyString());
+        assertThat(leaveService.cancel(agent.getEmail(), created.leaveRequestId()).status())
+                .isEqualTo(LeaveRequestStatus.CANCELLED);
+    }
+
+    @Test
+    void managerCanRejectAnAgentLeaveRequest() {
+        AppUser agent = user("agent-reject", UserRole.AGENT);
+        AppUser manager = user("manager-agent-reject", UserRole.MANAGER);
+        Instant start = Instant.now().plusSeconds(3600);
+        var created = leaveService.create(agent.getEmail(),
+                new CreateLeaveRequest(start, start.plusSeconds(3600), "Personal reason"));
+
+        var rejected = leaveService.reject(manager.getEmail(), created.leaveRequestId(), "Coverage unavailable");
+
+        assertThat(rejected.status()).isEqualTo(LeaveRequestStatus.REJECTED);
+        assertThat(rejected.workerRole()).isEqualTo(UserRole.AGENT);
+    }
+
+    @Test
     void preventsOverlapsAndInvalidRepeatedDecisions() {
         AppUser worker = user("worker-overlap", UserRole.OPERATIONAL_WORKER);
         AppUser manager = user("manager-overlap", UserRole.MANAGER);
@@ -114,6 +156,45 @@ class B11LeaveRequestIntegrationTest {
                 .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("retained as history");
     }
 
+    @Test
+    void databaseAllowsValidDirectAgentLeaveRequestInsert() {
+        AppUser agent = user("agent-direct-leave", UserRole.AGENT);
+        Instant start = Instant.now().plusSeconds(3600);
+
+        Long requestId = jdbcTemplate.queryForObject("""
+                insert into efikas.leave_request ("WorkerId", "StartsAt", "EndsAt", "Reason")
+                values (?, ?, ?, ?) returning "LeaveRequestId"
+                """, Long.class, agent.getUserId(), Timestamp.from(start),
+                Timestamp.from(start.plusSeconds(3600)), "Training");
+
+        assertThat(requestId).isNotNull();
+    }
+
+    @Test
+    void databaseRejectsDirectManagerLeaveRequestInsert() {
+        AppUser manager = user("manager-direct-leave", UserRole.MANAGER);
+        Instant start = Instant.now().plusSeconds(3600);
+
+        assertThatThrownBy(() -> jdbcTemplate.update("""
+                insert into efikas.leave_request ("WorkerId", "StartsAt", "EndsAt", "Reason")
+                values (?, ?, ?, ?)
+                """, manager.getUserId(), Timestamp.from(start), Timestamp.from(start.plusSeconds(3600)), "Invalid"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("pending self leave request");
+    }
+
+    @Test
+    void anotherAgentCannotCancelSomeoneElsesLeaveRequest() {
+        AppUser owner = user("agent-owner", UserRole.AGENT);
+        AppUser anotherAgent = user("agent-other", UserRole.AGENT);
+        Instant start = Instant.now().plusSeconds(3600);
+        var created = leaveService.create(owner.getEmail(),
+                new CreateLeaveRequest(start, start.plusSeconds(3600), "Training"));
+
+        assertThatThrownBy(() -> leaveService.cancel(anotherAgent.getEmail(), created.leaveRequestId()))
+                .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
+    }
+
     private AppUser user(String label, UserRole role) {
         String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         AppUser user = new AppUser();
@@ -121,10 +202,10 @@ class B11LeaveRequestIntegrationTest {
         user.setSurname(label);
         user.setJmbg(String.format("%013d", Integer.toUnsignedLong(suffix.hashCode()) % 10_000_000_000_000L));
         user.setPasswordHash("not-a-real-password-hash");
-        user.setEmail("b11-" + label + "-" + suffix + "@example.invalid");
+        user.setEmail("b11-" + suffix + "@example.invalid");
         user.setRole(role);
         user.setAddress("Leave integration address");
         user.setActive(true);
-        return appUserRepository.save(user);
+        return appUserRepository.saveAndFlush(user);
     }
 }

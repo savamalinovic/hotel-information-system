@@ -226,6 +226,27 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/workforce/me/attendance/breaks/start")
+    ResponseEntity<Void> startBreak() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/workforce/me/attendance/breaks/end")
+    ResponseEntity<Void> endBreak() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/workforce/me/attendance/clock-out")
+    ResponseEntity<Void> clockOutWorker() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/workforce/me/attendance-sessions")
+    ResponseEntity<Void> attendanceSessions() { return ResponseEntity.ok().build(); }
+
+    @GetMapping("/api/v1/workforce/me/availability-overrides")
+    ResponseEntity<Void> availabilityOverrides() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/workforce/me/availability-overrides")
+    ResponseEntity<Void> createAvailabilityOverride() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/workforce/me/availability-overrides/1/clear")
+    ResponseEntity<Void> clearAvailabilityOverride() { return ResponseEntity.ok().build(); }
+
     @GetMapping("/api/v1/workforce/leave-requests")
     ResponseEntity<Void> managerLeaveRequests() {
         return ResponseEntity.ok().build();
@@ -236,10 +257,19 @@ class RbacProbeController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/v1/workforce/leave-requests/1/reject")
+    ResponseEntity<Void> rejectLeaveRequest() { return ResponseEntity.ok().build(); }
+
     @PostMapping("/api/v1/workforce/me/leave-requests")
     ResponseEntity<Void> createLeaveRequest() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/api/v1/workforce/me/leave-requests")
+    ResponseEntity<Void> myLeaveRequests() { return ResponseEntity.ok().build(); }
+
+    @PostMapping("/api/v1/workforce/me/leave-requests/1/cancel")
+    ResponseEntity<Void> cancelMyLeaveRequest() { return ResponseEntity.ok().build(); }
 
     @GetMapping("/api/v1/expense-categories")
     ResponseEntity<Void> expenseCategories() {
