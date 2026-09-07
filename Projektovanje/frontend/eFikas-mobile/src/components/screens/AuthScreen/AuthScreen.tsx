@@ -17,7 +17,7 @@ export default function AuthScreen() {
   const { t } = useTranslation();
   const { Colors } = useTheme();
   const { login, isLoggingIn } = useAuth();
-  const { control, handleSubmit, formState: { errors } } = useForm<LoginValidation.FormValues>({
+  const { control, handleSubmit } = useForm<LoginValidation.FormValues>({
     resolver: zodResolver(LoginValidation.schema),
     defaultValues: {
       email: "",
@@ -29,15 +29,12 @@ export default function AuthScreen() {
     label: string,
     name: Path<LoginValidation.FormValues>,
     placeholder: string,
-    helperText: string,
     type: "text" | "password",
     iconName: LucideIconName
   ) => (
     <FormField
       control={control}
-      helperText={helperText}
       iconName={iconName}
-      isInvalid={Boolean(errors[name])}
       label={label}
       name={name}
       placeholder={placeholder}
@@ -62,7 +59,6 @@ export default function AuthScreen() {
               "Email",
               "email",
               "markomarkovic@gmail.com",
-              t("auth.errors.emailError"),
               "text",
               "Mail"
             )}
@@ -70,7 +66,6 @@ export default function AuthScreen() {
               t("auth.login.password"),
               "password",
               "••••••••",
-              t("auth.errors.passwordLengthError"),
               "password",
               "Lock"
             )}
