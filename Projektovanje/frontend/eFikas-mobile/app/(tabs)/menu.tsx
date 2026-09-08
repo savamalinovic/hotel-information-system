@@ -1,6 +1,7 @@
 import { MenuItem } from "@/src/components/molecules/MenuItem/MenuItem";
 import { LogoutDialog } from "@/src/components/organisms/Dialogs/LogoutDialog/LogoutDialog";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useSession } from "@/src/providers/SessionProvider";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { LucideIconName } from "@/src/types/types";
 import { router } from "expo-router";
@@ -12,6 +13,7 @@ type MenuItemType = {
   id: string;
   icon: LucideIconName;
   i18nKey: string;
+  roles?: ("AGENT" | "OPERATIONAL_WORKER")[];
 };
 
 type MenuSection = {
@@ -25,6 +27,7 @@ const MENU_SECTIONS: MenuSection[] = [
     items: [
       { id: "profile", icon: "User", i18nKey: "menu.item.profile" },
       { id: "notifications", icon: "Bell", i18nKey: "menu.item.notifications" },
+      { id: "workforce", icon: "CalendarDays", i18nKey: "menu.item.workforce", roles: ["AGENT", "OPERATIONAL_WORKER"] },
     ],
   },
   {
@@ -51,6 +54,7 @@ export default function Menu() {
   const { Colors } = useTheme();
   const { t } = useTranslation();
   const { logout } = useAuth();
+  const { session } = useSession();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
   const handleItemPress = (itemId: string) => {
@@ -60,6 +64,9 @@ export default function Menu() {
         break;
       case "notifications":
         router.push("/(menu)/(profile)/notifications");
+        break;
+      case "workforce":
+        router.push("/(menu)/workforce");
         break;
       case "reservations":
         router.push("/(tabs)/reservations");
@@ -87,7 +94,12 @@ export default function Menu() {
       contentContainerStyle={styles.scrollContent}
       style={[styles.screenContainer, { backgroundColor: Colors.screenBackground }]}
     >
-      {MENU_SECTIONS.map((section, sectionIndex) => (
+      {MENU_SECTIONS.map((section, sectionIndex) => {
+        const items = section.items.filter((item) => item.roles
+          ? Boolean(session?.role && item.roles.includes(session.role as "AGENT" | "OPERATIONAL_WORKER"))
+          : session?.role === "AGENT");
+        if (!items.length) return null;
+        return (
         <View key={section.i18nTitleKey}>
           <Text
             style={[
@@ -99,18 +111,18 @@ export default function Menu() {
             {t(section.i18nTitleKey)}
           </Text>
           <View style={styles.listContainer}>
-            {section.items.map((item, itemIndex) => (
+            {items.map((item, itemIndex) => (
               <MenuItem
                 key={item.id}
                 leftIconName={item.icon}
                 text={t(item.i18nKey)}
                 onPress={() => handleItemPress(item.id)}
-                showDivider={itemIndex < section.items.length - 1}
+                showDivider={itemIndex < items.length - 1}
               />
             ))}
           </View>
         </View>
-      ))}
+      )})}
       <View style={{ height: 50 }} />
       <LogoutDialog
         visible={logoutDialogVisible}

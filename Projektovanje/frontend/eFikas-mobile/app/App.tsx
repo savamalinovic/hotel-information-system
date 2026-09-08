@@ -39,8 +39,11 @@ const AppNavigator = () => {
 
       <Stack.Protected guard={isAuthenticated && session?.role === "AGENT"}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(menu)" options={{ headerShown: false }} />
         <Stack.Screen name="(home)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={isAuthenticated && (session?.role === "AGENT" || session?.role === "OPERATIONAL_WORKER")}>
+        <Stack.Screen name="(menu)" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={isAuthenticated && session?.role === "OPERATIONAL_WORKER"}>

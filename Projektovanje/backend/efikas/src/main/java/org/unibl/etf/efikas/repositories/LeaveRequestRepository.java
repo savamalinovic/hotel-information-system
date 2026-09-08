@@ -10,7 +10,7 @@ import jakarta.persistence.LockModeType;
 import org.unibl.etf.efikas.models.entities.LeaveRequest;
 import org.unibl.etf.efikas.models.enums.LeaveRequestStatus;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long>,
@@ -36,19 +36,19 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             where request.worker.userId = :workerId
               and request.status in (org.unibl.etf.efikas.models.enums.LeaveRequestStatus.PENDING,
                                      org.unibl.etf.efikas.models.enums.LeaveRequestStatus.APPROVED)
-              and request.startsAt < :endsAt
-              and request.endsAt > :startsAt
+              and request.startDate <= :endDate
+              and request.endDate >= :startDate
             """)
-    boolean existsActiveOverlap(Integer workerId, Instant startsAt, Instant endsAt);
+    boolean existsActiveOverlap(Integer workerId, LocalDate startDate, LocalDate endDate);
 
     @Query("""
             select request from LeaveRequest request
             where request.worker.userId = :workerId
               and request.status = org.unibl.etf.efikas.models.enums.LeaveRequestStatus.APPROVED
-              and request.startsAt <= :at and request.endsAt > :at
-            order by request.startsAt, request.leaveRequestId
+              and request.startDate <= :date and request.endDate >= :date
+            order by request.startDate, request.leaveRequestId
             """)
-    Optional<LeaveRequest> findCurrentApproved(Integer workerId, Instant at);
+    Optional<LeaveRequest> findCurrentApproved(Integer workerId, LocalDate date);
 
     Page<LeaveRequest> findByStatus(LeaveRequestStatus status, Pageable pageable);
 

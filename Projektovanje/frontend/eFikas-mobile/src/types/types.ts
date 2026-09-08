@@ -279,7 +279,7 @@ export interface WorkerAvailability {
   unavailableUntil: string | null;
   unavailabilityReason: string | null;
   leaveRequestId: number | null;
-  leaveUntil: string | null;
+  leaveEndDate: string | null;
   leaveReason: string | null;
 }
 
@@ -301,8 +301,8 @@ export interface LeaveRequest {
   workerRole: UserRole;
   workerName: string;
   workerSurname: string;
-  startsAt: string;
-  endsAt: string;
+  startDate: string;
+  endDate: string;
   reason: string;
   status: LeaveRequestStatus;
   createdAt: string;

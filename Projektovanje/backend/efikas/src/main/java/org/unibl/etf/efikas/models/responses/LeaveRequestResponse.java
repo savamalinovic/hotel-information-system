@@ -4,6 +4,7 @@ import org.unibl.etf.efikas.models.enums.LeaveRequestStatus;
 import org.unibl.etf.efikas.models.enums.UserRole;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 public record LeaveRequestResponse(
         Long leaveRequestId,
@@ -11,8 +12,8 @@ public record LeaveRequestResponse(
         String workerName,
         String workerSurname,
         UserRole workerRole,
-        Instant startsAt,
-        Instant endsAt,
+        LocalDate startDate,
+        LocalDate endDate,
         String reason,
         LeaveRequestStatus status,
         Instant createdAt,

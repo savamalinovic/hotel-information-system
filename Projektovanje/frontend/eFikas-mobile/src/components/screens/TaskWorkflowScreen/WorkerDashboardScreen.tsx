@@ -44,6 +44,9 @@ export default function WorkerDashboardScreen() {
             <Text style={{ color: Colors.textSecondary }}>{profile.profile ? t("taskWorkforce.worker.greeting", { name: profile.profile.name }) : t("taskWorkforce.worker.homeSubtitle")}</Text>
           </View>
           <View style={styles.headerActions}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("tabs.menu")} onPress={() => router.push("/(menu)")} style={[styles.notificationButton, { borderColor: Colors.divider, backgroundColor: Colors.background }]}>
+              <Icon name="Menu" size={19} color={Colors.primary} />
+            </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel={t("notifications.openInbox")} onPress={() => router.push("/(worker)/notifications")} style={[styles.notificationButton, { borderColor: Colors.divider, backgroundColor: Colors.background }]}>
               <Icon name="Bell" size={19} color={Colors.primary} />
               {unreadNotifications.data && unreadNotifications.data > 0 ? <Text style={[styles.notificationCount, { backgroundColor: Colors.primary, color: Colors.textLight }]}>{unreadNotifications.data > 99 ? "99+" : unreadNotifications.data}</Text> : null}
