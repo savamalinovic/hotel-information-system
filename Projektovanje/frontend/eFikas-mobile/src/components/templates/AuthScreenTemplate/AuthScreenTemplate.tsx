@@ -3,7 +3,6 @@ import { useTheme } from '@/src/providers/ThemeProvider';
 import React, { useRef } from 'react';
 import {
     Dimensions,
-    Image,
     ImageBackground,
     KeyboardAvoidingView,
     Platform,
@@ -28,27 +27,21 @@ const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
 
   const defaultHeader = (
     <ImageBackground
-      source={require('@/assets/images/background2.png')}
+      source={require('@/assets/images/bluestars-auth-background.png')}
       style={{
         width: '100%',
         height: topImageHeight,
         justifyContent: 'center',
         alignItems: 'center',
       }}
-      blurRadius={2}
+      resizeMode="cover"
     >
       <View
         style={{
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: 'rgba(0,0,0,0.20)',
+          backgroundColor: 'rgba(0,0,0,0.08)',
         }}
       />
-      <VStack className="items-center mt-12">
-        <Image
-          source={require('@/assets/images/lqlogo.png')}
-          style={{ width: 120, height: 120, resizeMode: 'contain' }}
-        />
-      </VStack>
     </ImageBackground>
   );
 

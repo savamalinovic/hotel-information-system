@@ -40,11 +40,12 @@ export default function TabsRootLayout() {
                 headerTitle: t('tabs.home'),
                 tabBarIcon: ({ color }) => <Icon name="House" size={28} color={color} />,
             }} />
-            <Tabs.Screen name="reservations" options={{
-                title: t('tabs.reservations'),
-                headerTitle: t('tabs.reservations'),
-                tabBarIcon: ({ color }) => <Icon name="BookOpen" size={28} color={color} />,
+            <Tabs.Screen name="apartments" options={{
+                title: t('tabs.apartments'),
+                headerTitle: t('tabs.apartments'),
+                tabBarIcon: ({ color }) => <Icon name="Building2" size={28} color={color} />,
             }} />
+            <Tabs.Screen name="reservations" options={{ href: null }} />
             <Tabs.Screen name="menu" options={{
                 title: t('tabs.menu'),
                 headerTitle: t('tabs.menu'),
