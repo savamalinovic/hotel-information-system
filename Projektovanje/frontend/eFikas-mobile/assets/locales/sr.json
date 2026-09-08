@@ -1,6 +1,12 @@
 {
   "common": {
     "finish": "Završi",
+    "leave": {
+      "startDate": "Datum početka",
+      "endDate": "Datum završetka",
+      "inclusiveHint": "Period uključuje oba izabrana datuma.",
+      "invalidPeriod": "Izaberite datum završetka koji nije prije datuma početka."
+    },
     "selectApartment": "Izaberite stan",
     "errors": {
       "networkErrorTitle": "Greška u mreži.",
@@ -572,6 +578,7 @@
     "stackNavigation": {
       "profile": "Profil",
       "notifications": "Obavještenja",
+      "workforce": "Prisustvo i odsustva",
       "settingsMain": "Podešavanja",
       "aboutApp": "O aplikaciji"
     },

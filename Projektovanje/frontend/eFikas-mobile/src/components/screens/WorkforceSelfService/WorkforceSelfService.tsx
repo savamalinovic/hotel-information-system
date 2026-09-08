@@ -1,4 +1,5 @@
 import DateTimePicker from "@/src/components/organisms/DateTimePicker/DateTimePicker";
+import { DateField } from "@/src/components/molecules/DateField/DateField";
 import {
   AvailabilityBadge,
   DetailRow,
@@ -27,6 +28,7 @@ import {
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { AvailabilityOverride, AttendanceSession, LeaveRequest, WorkerAvailability } from "@/src/types/types";
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { formatLeaveDate, isValidInclusiveLeavePeriod } from "@/src/util/leaveDate";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -330,10 +332,9 @@ function OverrideCard({ item, locale, onClear, clearing }: { item: AvailabilityO
 export function LeaveRequestsSection() {
   const { t, i18n } = useTranslation();
   const { Colors } = useTheme();
-  const [startsAt, setStartsAt] = useState<Date>();
-  const [endsAt, setEndsAt] = useState<Date>();
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
-  const [picker, setPicker] = useState<"start" | "end">();
   const [formError, setFormError] = useState("");
   const [leaveToCancel, setLeaveToCancel] = useState<LeaveRequest>();
   const [cancelLeaveError, setCancelLeaveError] = useState("");
@@ -350,8 +351,8 @@ export function LeaveRequestsSection() {
 
   const submit = () => {
     const cleanedReason = reason.trim();
-    if (!startsAt || !endsAt || endsAt <= startsAt) {
-      setFormError(t("taskWorkforce.selfService.leavePeriodValidation"));
+    if (!isValidInclusiveLeavePeriod(startDate, endDate)) {
+      setFormError(t("common.leave.invalidPeriod"));
       return;
     }
     if (!cleanedReason || cleanedReason.length > 300) {
@@ -359,11 +360,11 @@ export function LeaveRequestsSection() {
       return;
     }
     create.mutate(
-      { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), reason: cleanedReason },
+      { startDate, endDate, reason: cleanedReason },
       {
         onSuccess: () => {
-          setStartsAt(undefined);
-          setEndsAt(undefined);
+          setStartDate("");
+          setEndDate("");
           setReason("");
           setFormError("");
         },
@@ -401,9 +402,9 @@ export function LeaveRequestsSection() {
   return <View style={styles.stack}>
     <WorkflowCard>
       <Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("taskWorkforce.selfService.leaveTitle")}</Text>
-      <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.selfService.leaveHint")}</Text>
-      <InstantField label={t("taskWorkforce.selfService.startsAt")} value={startsAt} locale={i18n.language} onPress={() => setPicker("start")} />
-      <InstantField label={t("taskWorkforce.selfService.endsAt")} value={endsAt} locale={i18n.language} onPress={() => setPicker("end")} />
+      <Text style={{ color: Colors.textSecondary }}>{t("common.leave.inclusiveHint")}</Text>
+      <DateField label={t("common.leave.startDate")} value={startDate} onChange={setStartDate} required />
+      <DateField label={t("common.leave.endDate")} value={endDate} onChange={setEndDate} required />
       <TextInput accessibilityLabel={t("taskWorkforce.selfService.reason")} value={reason} onChangeText={setReason} maxLength={300} multiline textAlignVertical="top" placeholder={t("taskWorkforce.selfService.reason")} placeholderTextColor={Colors.tertiary} style={[styles.reasonInput, { color: Colors.textPrimary, backgroundColor: Colors.screenBackground, borderColor: Colors.divider }]} />
       <Text style={{ color: Colors.textSecondary }}>{reason.length}/300</Text>
       {formError ? <Text style={{ color: Colors.error }}>{formError}</Text> : null}
@@ -416,7 +417,6 @@ export function LeaveRequestsSection() {
     {leaves.rows.map((leave) => <LeaveCard key={leave.leaveRequestId} item={leave} locale={i18n.language} onCancel={() => openCancelConfirmation(leave)} cancelling={cancel.isPending && leaveToCancel?.leaveRequestId === leave.leaveRequestId} />)}
     <LoadMore visible={Boolean(leaves.hasNextPage)} loading={leaves.isFetchingNextPage} onPress={() => void leaves.fetchNextPage()} />
     <WorkflowButton label={t("taskWorkforce.common.refresh")} onPress={() => void leaves.refetch()} variant="secondary" />
-    <DateTimePicker visible={picker !== undefined} initialValue={picker === "start" ? startsAt ?? null : endsAt ?? null} onClose={() => setPicker(undefined)} onConfirm={(value) => picker === "start" ? setStartsAt(value) : setEndsAt(value)} />
     <ConfirmationDialog
       visible={Boolean(leaveToCancel)}
       title={t("taskWorkforce.selfService.cancelLeaveTitle")}
@@ -436,8 +436,8 @@ function LeaveCard({ item, locale, onCancel, cancelling }: { item: LeaveRequest;
   const canCancel = item.status === "PENDING" || item.status === "APPROVED";
   return <WorkflowCard>
     <Text style={[styles.leaveStatus, { color: Colors.primary }]}>{t(`taskWorkforce.leaveStatus.${item.status}`)}</Text>
-    <DetailRow label={t("taskWorkforce.selfService.startsAt")} value={formatTaskDate(item.startsAt, locale)} />
-    <DetailRow label={t("taskWorkforce.selfService.endsAt")} value={formatTaskDate(item.endsAt, locale)} />
+    <DetailRow label={t("common.leave.startDate")} value={formatLeaveDate(item.startDate, locale)} />
+    <DetailRow label={t("common.leave.endDate")} value={formatLeaveDate(item.endDate, locale)} />
     <Text style={{ color: Colors.textPrimary }}>{item.reason}</Text>
     {item.decisionReason ? <DetailRow label={t("taskWorkforce.selfService.decisionReason")} value={item.decisionReason} /> : null}
     {item.decidedAt ? <DetailRow label={t("taskWorkforce.selfService.decidedAt")} value={formatTaskDate(item.decidedAt, locale)} /> : null}

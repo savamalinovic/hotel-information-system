@@ -34,7 +34,7 @@ export default function DashboardScreen() {
   const unreadNotifications = useUnreadNotificationCount();
 
   const goToFeature = (feature: "apartments" | "expenses" | "tasks" | "damages" | "workforce") => {
-    router.push(`/(home)/${feature}`);
+      router.push(feature === "workforce" ? "/(menu)/workforce" : `/(home)/${feature}`);
   };
 
   const goToReservations = () => router.push("/(tabs)/reservations");

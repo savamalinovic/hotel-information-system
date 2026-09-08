@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.unibl.etf.efikas.models.enums.LeaveRequestStatus;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -21,11 +22,11 @@ public class LeaveRequest {
     @JoinColumn(name = "\"WorkerId\"", nullable = false, updatable = false)
     private AppUser worker;
 
-    @Column(name = "\"StartsAt\"", nullable = false, updatable = false)
-    private Instant startsAt;
+    @Column(name = "\"StartDate\"", nullable = false, updatable = false)
+    private LocalDate startDate;
 
-    @Column(name = "\"EndsAt\"", nullable = false, updatable = false)
-    private Instant endsAt;
+    @Column(name = "\"EndDate\"", nullable = false, updatable = false)
+    private LocalDate endDate;
 
     @Column(name = "\"Reason\"", nullable = false, length = 300, updatable = false)
     private String reason;

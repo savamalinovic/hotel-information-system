@@ -10,7 +10,7 @@ import { API_URLS } from "@/src/util/apiConstants";
 
 export type WorkforcePageFilters = { page: number; size: number; sort: string };
 export type CreateAvailabilityOverrideRequest = { startsAt?: string; endsAt?: string; reason: string };
-export type CreateLeaveRequest = { startsAt: string; endsAt: string; reason: string };
+export type CreateLeaveRequest = { startDate: string; endDate: string; reason: string };
 
 export const workforceQueryKeys = {
   root: ["workforce"] as const,

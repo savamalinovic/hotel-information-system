@@ -18,6 +18,7 @@ import org.unibl.etf.efikas.repositories.LeaveRequestRepository;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -30,19 +31,20 @@ public class LeaveRequestService {
     public LeaveRequestResponse create(String workerEmail, CreateLeaveRequest input) {
         AppUser worker = requireParticipantForUpdate(workerEmail);
         Instant now = Instant.now();
-        if (!input.endsAt().isAfter(input.startsAt())) {
-            throw new IllegalArgumentException("Leave end must be after its start.");
+        LocalDate today = WorkforceCalendar.today();
+        if (input.endDate().isBefore(input.startDate())) {
+            throw new IllegalArgumentException("Leave end date must not be before its start date.");
         }
-        if (!input.endsAt().isAfter(now)) {
-            throw new IllegalArgumentException("Leave end must be in the future.");
+        if (input.endDate().isBefore(today)) {
+            throw new IllegalArgumentException("Leave end date must not be in the past.");
         }
-        if (leaveRequestRepository.existsActiveOverlap(worker.getUserId(), input.startsAt(), input.endsAt())) {
+        if (leaveRequestRepository.existsActiveOverlap(worker.getUserId(), input.startDate(), input.endDate())) {
             throw new DomainConflictException("The worker already has an overlapping active leave request.");
         }
         LeaveRequest request = new LeaveRequest();
         request.setWorker(worker);
-        request.setStartsAt(input.startsAt());
-        request.setEndsAt(input.endsAt());
+        request.setStartDate(input.startDate());
+        request.setEndDate(input.endDate());
         request.setReason(input.reason().trim());
         request.setStatus(LeaveRequestStatus.PENDING);
         request.setCreatedAt(now);
@@ -73,7 +75,7 @@ public class LeaveRequestService {
                 && request.getStatus() != LeaveRequestStatus.APPROVED) {
             throw new DomainConflictException("Only a pending or approved leave request can be cancelled.");
         }
-        if (!request.getEndsAt().isAfter(Instant.now())) {
+        if (request.getEndDate().isBefore(WorkforceCalendar.today())) {
             throw new DomainConflictException("An ended leave request cannot be cancelled.");
         }
         request.setStatus(LeaveRequestStatus.CANCELLED);
@@ -126,7 +128,7 @@ public class LeaveRequestService {
         if (request.getStatus() != LeaveRequestStatus.PENDING) {
             throw new DomainConflictException("Only a pending leave request can be decided.");
         }
-        if (!request.getEndsAt().isAfter(Instant.now())) {
+        if (request.getEndDate().isBefore(WorkforceCalendar.today())) {
             throw new DomainConflictException("An ended leave request cannot be decided.");
         }
         if (!request.getWorker().getUserId().equals(worker.getUserId())) {
@@ -169,8 +171,8 @@ public class LeaveRequestService {
     private static LeaveRequestResponse toResponse(LeaveRequest request) {
         return new LeaveRequestResponse(
                 request.getLeaveRequestId(), request.getWorker().getUserId(), request.getWorker().getName(),
-                request.getWorker().getSurname(), request.getWorker().getRole(), request.getStartsAt(),
-                request.getEndsAt(), request.getReason(),
+                request.getWorker().getSurname(), request.getWorker().getRole(), request.getStartDate(),
+                request.getEndDate(), request.getReason(),
                 request.getStatus(), request.getCreatedAt(),
                 request.getDecidedBy() == null ? null : request.getDecidedBy().getUserId(), request.getDecidedAt(),
                 request.getDecisionReason(),

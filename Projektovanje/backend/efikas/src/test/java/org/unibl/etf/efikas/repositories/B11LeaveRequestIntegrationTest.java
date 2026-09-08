@@ -19,8 +19,7 @@ import org.unibl.etf.efikas.services.WorkforceAvailabilityService;
 import org.unibl.etf.efikas.services.interfaces.S3Service;
 import org.unibl.etf.efikas.services.interfaces.NotificationService;
 
-import java.time.Instant;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -47,10 +46,10 @@ class B11LeaveRequestIntegrationTest {
         AppUser worker = user("worker-approval", UserRole.OPERATIONAL_WORKER);
         AppUser manager = user("manager-approval", UserRole.MANAGER);
         workforceService.clockIn(worker.getEmail());
-        Instant now = Instant.now();
+        LocalDate today = LocalDate.now();
 
         var created = leaveService.create(worker.getEmail(),
-                new CreateLeaveRequest(now.minusSeconds(60), now.plusSeconds(3600), "Annual leave"));
+                new CreateLeaveRequest(today, today, "Annual leave"));
         assertThat(created.status()).isEqualTo(LeaveRequestStatus.PENDING);
 
         var approved = leaveService.approve(manager.getEmail(), created.leaveRequestId());
@@ -78,9 +77,9 @@ class B11LeaveRequestIntegrationTest {
     void rejectsRequestWithReasonAndRetainsDecisionActors() {
         AppUser worker = user("worker-reject", UserRole.OPERATIONAL_WORKER);
         AppUser manager = user("manager-reject", UserRole.MANAGER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
         var created = leaveService.create(worker.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(3600), "Personal reason"));
+                new CreateLeaveRequest(start, start, "Personal reason"));
 
         var rejected = leaveService.reject(manager.getEmail(), created.leaveRequestId(), "Coverage unavailable");
 
@@ -95,10 +94,10 @@ class B11LeaveRequestIntegrationTest {
     void agentCanCreateCancelAndReceiveManagerDecisionNotification() {
         AppUser agent = user("agent-approval", UserRole.AGENT);
         AppUser manager = user("manager-agent-approval", UserRole.MANAGER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
 
         var created = leaveService.create(agent.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(3600), "Training"));
+                new CreateLeaveRequest(start, start, "Training"));
         assertThat(created.workerRole()).isEqualTo(UserRole.AGENT);
         var approved = leaveService.approve(manager.getEmail(), created.leaveRequestId());
 
@@ -115,9 +114,9 @@ class B11LeaveRequestIntegrationTest {
     void managerCanRejectAnAgentLeaveRequest() {
         AppUser agent = user("agent-reject", UserRole.AGENT);
         AppUser manager = user("manager-agent-reject", UserRole.MANAGER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
         var created = leaveService.create(agent.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(3600), "Personal reason"));
+                new CreateLeaveRequest(start, start, "Personal reason"));
 
         var rejected = leaveService.reject(manager.getEmail(), created.leaveRequestId(), "Coverage unavailable");
 
@@ -129,12 +128,12 @@ class B11LeaveRequestIntegrationTest {
     void preventsOverlapsAndInvalidRepeatedDecisions() {
         AppUser worker = user("worker-overlap", UserRole.OPERATIONAL_WORKER);
         AppUser manager = user("manager-overlap", UserRole.MANAGER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
         var first = leaveService.create(worker.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(7200), "Vacation"));
+                new CreateLeaveRequest(start, start.plusDays(1), "Vacation"));
 
         assertThatThrownBy(() -> leaveService.create(worker.getEmail(),
-                new CreateLeaveRequest(start.plusSeconds(60), start.plusSeconds(120), "Overlap")))
+                new CreateLeaveRequest(start.plusDays(1), start.plusDays(2), "Overlap")))
                 .isInstanceOf(DomainConflictException.class).hasMessageContaining("overlapping");
         leaveService.approve(manager.getEmail(), first.leaveRequestId());
         assertThatThrownBy(() -> leaveService.reject(manager.getEmail(), first.leaveRequestId(), "Changed mind"))
@@ -142,11 +141,24 @@ class B11LeaveRequestIntegrationTest {
     }
 
     @Test
+    void acceptsSingleDayLeaveAndRejectsAReversedCalendarPeriod() {
+        AppUser worker = user("worker-calendar-period", UserRole.OPERATIONAL_WORKER);
+        LocalDate date = LocalDate.now().plusDays(3);
+
+        var singleDay = leaveService.create(worker.getEmail(), new CreateLeaveRequest(date, date, "Annual leave"));
+        assertThat(singleDay.startDate()).isEqualTo(date);
+        assertThat(singleDay.endDate()).isEqualTo(date);
+        assertThatThrownBy(() -> leaveService.create(worker.getEmail(),
+                new CreateLeaveRequest(date.plusDays(3), date.plusDays(2), "Invalid")))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("end date");
+    }
+
+    @Test
     void managerCanFilterQueueAndDatabaseRetainsHistory() {
         AppUser worker = user("worker-list", UserRole.OPERATIONAL_WORKER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
         var created = leaveService.create(worker.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(3600), "Training"));
+                new CreateLeaveRequest(start, start, "Training"));
 
         assertThat(leaveService.list(worker.getUserId(), LeaveRequestStatus.PENDING,
                 PageRequest.of(0, 20)).content()).singleElement()
@@ -159,13 +171,12 @@ class B11LeaveRequestIntegrationTest {
     @Test
     void databaseAllowsValidDirectAgentLeaveRequestInsert() {
         AppUser agent = user("agent-direct-leave", UserRole.AGENT);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
 
         Long requestId = jdbcTemplate.queryForObject("""
-                insert into efikas.leave_request ("WorkerId", "StartsAt", "EndsAt", "Reason")
+                insert into efikas.leave_request ("WorkerId", "StartDate", "EndDate", "Reason")
                 values (?, ?, ?, ?) returning "LeaveRequestId"
-                """, Long.class, agent.getUserId(), Timestamp.from(start),
-                Timestamp.from(start.plusSeconds(3600)), "Training");
+                """, Long.class, agent.getUserId(), start, start, "Training");
 
         assertThat(requestId).isNotNull();
     }
@@ -173,12 +184,12 @@ class B11LeaveRequestIntegrationTest {
     @Test
     void databaseRejectsDirectManagerLeaveRequestInsert() {
         AppUser manager = user("manager-direct-leave", UserRole.MANAGER);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
 
         assertThatThrownBy(() -> jdbcTemplate.update("""
-                insert into efikas.leave_request ("WorkerId", "StartsAt", "EndsAt", "Reason")
+                insert into efikas.leave_request ("WorkerId", "StartDate", "EndDate", "Reason")
                 values (?, ?, ?, ?)
-                """, manager.getUserId(), Timestamp.from(start), Timestamp.from(start.plusSeconds(3600)), "Invalid"))
+                """, manager.getUserId(), start, start, "Invalid"))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("pending self leave request");
     }
@@ -187,9 +198,9 @@ class B11LeaveRequestIntegrationTest {
     void anotherAgentCannotCancelSomeoneElsesLeaveRequest() {
         AppUser owner = user("agent-owner", UserRole.AGENT);
         AppUser anotherAgent = user("agent-other", UserRole.AGENT);
-        Instant start = Instant.now().plusSeconds(3600);
+        LocalDate start = LocalDate.now().plusDays(2);
         var created = leaveService.create(owner.getEmail(),
-                new CreateLeaveRequest(start, start.plusSeconds(3600), "Training"));
+                new CreateLeaveRequest(start, start, "Training"));
 
         assertThatThrownBy(() -> leaveService.cancel(anotherAgent.getEmail(), created.leaveRequestId()))
                 .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);

@@ -1,6 +1,12 @@
 {
   "common": {
     "finish": "Finish",
+    "leave": {
+      "startDate": "Start date",
+      "endDate": "End date",
+      "inclusiveHint": "The period includes both selected dates.",
+      "invalidPeriod": "Choose an end date that is on or after the start date."
+    },
     "selectApartment": "Select apartment",
     "errors": {
       "networkErrorTitle": "Network error.",
@@ -572,6 +578,7 @@
     "stackNavigation": {
       "profile": "Profile",
       "notifications": "Notifications",
+      "workforce": "Attendance and leave",
       "settingsMain": "Settings",
       "aboutApp": "About the app"
     },

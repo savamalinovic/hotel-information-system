@@ -4,6 +4,7 @@ import org.unibl.etf.efikas.models.enums.WorkerAvailabilityStatus;
 import org.unibl.etf.efikas.models.enums.UserRole;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 public record WorkerAvailabilityResponse(
         Integer workerId,
@@ -18,7 +19,7 @@ public record WorkerAvailabilityResponse(
         Instant unavailableUntil,
         String unavailabilityReason,
         Long leaveRequestId,
-        Instant leaveUntil,
+        LocalDate leaveEndDate,
         String leaveReason
 ) {
 }

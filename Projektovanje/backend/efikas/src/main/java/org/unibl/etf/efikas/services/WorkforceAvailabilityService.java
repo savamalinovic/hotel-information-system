@@ -196,7 +196,7 @@ public class WorkforceAvailabilityService {
                 .findByWorkerUserIdAndClockedOutAtIsNull(worker.getUserId()).orElse(null);
         AvailabilityOverride override = availabilityOverrideRepository.findCurrent(worker.getUserId(), now)
                 .orElse(null);
-        LeaveRequest leave = leaveRequestRepository.findCurrentApproved(worker.getUserId(), now).orElse(null);
+        LeaveRequest leave = leaveRequestRepository.findCurrentApproved(worker.getUserId(), WorkforceCalendar.today()).orElse(null);
         BreakPeriod openBreak = session == null ? null : breakPeriodRepository
                 .findByAttendanceSessionAttendanceSessionIdAndEndedAtIsNull(session.getAttendanceSessionId())
                 .orElse(null);
@@ -215,7 +215,7 @@ public class WorkforceAvailabilityService {
                 override == null ? null : override.getEndsAt(),
                 override == null ? null : override.getReason(),
                 leave == null ? null : leave.getLeaveRequestId(),
-                leave == null ? null : leave.getEndsAt(),
+                leave == null ? null : leave.getEndDate(),
                 leave == null ? null : leave.getReason());
     }
 
