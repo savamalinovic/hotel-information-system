@@ -1,0 +1,104 @@
+package org.unibl.etf.blueStars.models.entities;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.unibl.etf.blueStars.models.enums.ReservationStatus;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "reservation", schema = "efikas")
+public class Reservation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "\"ReservationId\"", nullable = false)
+    private Integer reservationId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "\"ApartmentId\"", nullable = false)
+    private Apartment apartment;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "\"ApartmentTypeSnapshotId\"", nullable = false, updatable = false)
+    private ApartmentType apartmentTypeSnapshot;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"GuestId\"")
+    private GuestsBook guest;
+
+    @Column(name = "\"GuestQuantity\"", nullable = false)
+    private Integer guestQuantity;
+
+    @Column(name = "\"CheckInDate\"", nullable = false)
+    private LocalDate checkInDate;
+
+    @Column(name = "\"CheckOutDate\"", nullable = false)
+    private LocalDate checkOutDate;
+
+    @Column(name = "\"NightlyRate\"", nullable = false, precision = 12, scale = 2)
+    private BigDecimal nightlyRate;
+
+    @Column(name = "\"Note\"", length = 256)
+    private String note;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"TypeId\"")
+    private ReservationType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "\"Status\"", nullable = false, length = 32)
+    private ReservationStatus status = ReservationStatus.CONFIRMED;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "\"CreatedBy\"", nullable = false)
+    private AppUser createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"CheckInClaimedBy\"")
+    private AppUser checkInClaimedBy;
+
+    @Column(name = "\"CheckInClaimedAt\"")
+    private Instant checkInClaimedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"CheckedInBy\"")
+    private AppUser checkedInBy;
+
+    @Column(name = "\"CheckedInAt\"")
+    private Instant checkedInAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"CheckedOutBy\"")
+    private AppUser checkedOutBy;
+
+    @Column(name = "\"CheckedOutAt\"")
+    private Instant checkedOutAt;
+
+    @Version
+    @Column(name = "\"Version\"", nullable = false)
+    private Long version;
+
+    @Column(name = "\"CreatedAt\"", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "\"UpdatedAt\"", nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+}
