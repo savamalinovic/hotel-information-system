@@ -156,14 +156,14 @@ export const AboutAppScreen = () => {
         <View style={styles.appInfoContainer}>
           <View style={styles.appInfoSection}>
             <Image
-              source={require("@/assets/images/appLogo.png")}
+              source={require("@/assets/images/bluestars-icon.png")}
               style={styles.appIcon}
               resizeMode="contain"
             />
             <View style={styles.appTextContainer}>
-              <Text style={styles.appName}>eFikas</Text>
+              <Text style={styles.appName}>{t("aboutApp.systemName")}</Text>
               <Text style={styles.appDesc}>
-                Elektronski hotelski administrativni sistem
+                {t("aboutApp.systemDesc")}
               </Text>
             </View>
           </View>

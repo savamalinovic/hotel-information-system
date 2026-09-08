@@ -31,6 +31,7 @@
   },
   "tabs": {
     "reservations": "Reservations",
+    "apartments": "Apartments",
     "home": "Home",
     "menu": "Menu"
   },
@@ -71,8 +72,8 @@
       "reservations": "Reservations",
       "apartments": "Apartments",
       "tasks": "Tasks",
-      "expenses": "New expense",
-      "damages": "Report damage",
+      "expenses": "Expenses",
+      "damages": "Damages",
       "workforce": "Attendance and leave"
     },
     "error": {
@@ -88,7 +89,7 @@
       "reservations": "Reservations",
       "tasks": "Tasks",
       "expenses": "Operational expenses",
-      "damages": "Damage reports",
+      "damages": "Damages",
       "notifications": "Notifications"
     }
   },
@@ -660,7 +661,7 @@
   },
   "aboutApp": {
     "title": "About App",
-    "systemName": "eFikas",
+    "systemName": "BlueStars",
     "systemDesc": "Electronic hotel administration system",
     "accordion": {
       "functionalities": "Functionalities",

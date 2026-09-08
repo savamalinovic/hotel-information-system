@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "eFikas",
+    "name": "BlueStars",
     "slug": "eFikas-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/appLogo.png",
+    "icon": "./assets/images/bluestars-icon.png",
     "splash": {
-      "image": "./assets/images/appLogo.png",
+      "image": "./assets/images/bluestars-icon.png",
       "resizeMode": "contain"
     },
     "scheme": "efikasmobile",
@@ -23,7 +23,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/logoAppIcon.png"
+        "foregroundImage": "./assets/images/bluestars-adaptive-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -45,7 +45,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/appLogo.png",
+          "image": "./assets/images/bluestars-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#FFFFFF",

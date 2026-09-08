@@ -31,6 +31,7 @@
   },
   "tabs": {
     "reservations": "Rezervacije",
+    "apartments": "Apartmani",
     "home": "Početna",
     "menu": "Meni"
   },
@@ -71,8 +72,8 @@
       "reservations": "Rezervacije",
       "apartments": "Apartmani",
       "tasks": "Zadaci",
-      "expenses": "Novi trošak",
-      "damages": "Prijava štete",
+      "expenses": "Troškovi",
+      "damages": "Štete",
       "workforce": "Prisustvo i odsustva"
     },
     "error": {
@@ -88,7 +89,7 @@
       "reservations": "Rezervacije",
       "tasks": "Zadaci",
       "expenses": "Operativni troškovi",
-      "damages": "Prijave štete",
+      "damages": "Štete",
       "notifications": "Obavještenja"
     }
   },
@@ -660,7 +661,7 @@
   },
   "aboutApp": {
     "title": "O aplikaciji",
-    "systemName": "eFikas",
+    "systemName": "BlueStars",
     "systemDesc": "Elektronski hotelski administrativni sistem",
     "accordion": {
       "functionalities": "Funkcionalnosti",

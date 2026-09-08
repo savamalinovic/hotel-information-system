@@ -33,7 +33,7 @@ export default function DashboardScreen() {
   const dashboardQuery = useAgentDashboard();
   const unreadNotifications = useUnreadNotificationCount();
 
-  const goToFeature = (feature: "apartments" | "expenses" | "tasks" | "damages" | "workforce") => {
+  const goToFeature = (feature: "expenses" | "tasks" | "damages" | "workforce") => {
       router.push(feature === "workforce" ? "/(menu)/workforce" : `/(home)/${feature}`);
   };
 
@@ -96,7 +96,6 @@ export default function DashboardScreen() {
 
   const quickActions = [
     { key: "reservations", icon: "BookOpen", label: t("agentDashboard.actions.reservations"), onPress: goToReservations },
-    { key: "apartments", icon: "House", label: t("agentDashboard.actions.apartments"), onPress: () => goToFeature("apartments") },
     { key: "tasks", icon: "Wrench", label: t("agentDashboard.actions.tasks"), onPress: () => goToFeature("tasks") },
     { key: "expenses", icon: "Wallet", label: t("agentDashboard.actions.expenses"), onPress: () => goToFeature("expenses") },
     { key: "damages", icon: "TriangleAlert", label: t("agentDashboard.actions.damages"), onPress: () => goToFeature("damages") },
