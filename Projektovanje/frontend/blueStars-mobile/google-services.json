@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "993449222648",
+    "project_id": "efikas-1074f",
+    "storage_bucket": "efikas-1074f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993449222648:android:9c2820441f8c7164ffb60d",
+        "android_client_info": {
+          "package_name": "org.unibl.etf.blueStars"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoagPI4N1gGlmsBU9LWXBtTztlYRiaDgI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,13 +1,13 @@
-# eFikas ? hotelski informacioni sistem
+# BlueStars ? hotelski informacioni sistem
 
-eFikas se razvija kao interni informacioni sistem za jedan hotel. Ciljna platforma objedinjuje rezervacije, goste, naplate, apartmane, operativne zadatke, radnike, poslovne knjige, audit i analitiku za uloge `MANAGER`, `AGENT` i `OPERATIONAL_WORKER`.
+BlueStars se razvija kao interni informacioni sistem za jedan hotel. Ciljna platforma objedinjuje rezervacije, goste, naplate, apartmane, operativne zadatke, radnike, poslovne knjige, audit i analitiku za uloge `MANAGER`, `AGENT` i `OPERATIONAL_WORKER`.
 
 Repozitorijum je nastao iz ranijeg projekta za elektronsku fiskalnu i kontrolnu administraciju. Postoje?i kod i Git istorija su sa?uvani, a aktuelni razvoj je usmjeren na hotelski informacioni sistem. Integracija fizi?ke fiskalne kase nije dio ciljnog sistema; zamjenjuje je jasno ozna?en demo PDF ra?un.
 
 ## Struktura
 
-- `Projektovanje/backend/efikas` ? Spring Boot 3.5.7, Java 17, Maven i PostgreSQL backend;
-- `Projektovanje/frontend/eFikas-mobile` ? Expo 54, React Native i TypeScript mobilna aplikacija za agente i operativne radnike;
+- `Projektovanje/backend/blueStars` ? Spring Boot 3.5.7, Java 17, Maven i PostgreSQL backend;
+- `Projektovanje/frontend/blueStars-mobile` ? Expo 54, React Native i TypeScript mobilna aplikacija za agente i operativne radnike;
 - `Projektovanje/database` ? napomene o bazi i naslije?eni mock podaci; autoritativne SQL migracije su uz backend u `src/main/resources/db/migration`;
 - `Projektovanje/esir` ? naslije?eni ESIR materijal, van budu?eg funkcionalnog opsega;
 - `Dokumentacija` ? naslije?ena projektna dokumentacija;
@@ -33,7 +33,7 @@ Compose pravi razvojnu bazu `efikas` i testnu bazu `efikas_test`. Backend i test
 
 ## Backend
 
-Iz direktorijuma `Projektovanje/backend/efikas`:
+Iz direktorijuma `Projektovanje/backend/blueStars`:
 
 ```powershell
 Copy-Item src/main/resources/application.example.properties src/main/resources/application-local.properties
@@ -52,7 +52,7 @@ Backend compile/package ne zahtijevaju aktivnu bazu. Testovi koriste lokalnu `ef
 
 ## Mobilna aplikacija
 
-Iz direktorijuma `Projektovanje/frontend/eFikas-mobile`:
+Iz direktorijuma `Projektovanje/frontend/blueStars-mobile`:
 
 ```powershell
 Copy-Item .env.example .env.local
