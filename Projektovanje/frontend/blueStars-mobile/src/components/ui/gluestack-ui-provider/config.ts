@@ -9,8 +9,8 @@ export const config = {
     '--color-primary-200': '115 115 115',
     '--color-primary-300': '102 102 102',
     '--color-primary-400': '82 82 82',
-    '--color-primary-500': '49 118 191',   // promijenjeno sa default '51 51 51', 500 je bazna boja !
-    '--color-primary-600': '58 116 178',  // promijenjeno sa default '41 41 41', 600 je tamnija bazna boja - pritisnutno/kliknuto !
+    '--color-primary-500': '47 76 132',
+    '--color-primary-600': '32 54 95',
     '--color-primary-700': '31 31 31',
     '--color-primary-800': '13 13 13',
     '--color-primary-900': '10 10 10',
@@ -161,8 +161,8 @@ export const config = {
     '--color-primary-200': '197 197 197',
     '--color-primary-300': '212 212 212',
     '--color-primary-400': '221 221 221',
-    '--color-primary-500': '49 118 191', //bilo 230 230 230 (button background), 49 118 191
-    '--color-primary-600': '240 240 240',
+    '--color-primary-500': '47 76 132',
+    '--color-primary-600': '32 54 95',
     '--color-primary-700': '250 250 250',
     '--color-primary-800': '253 253 253',
     '--color-primary-900': '254 249 249',

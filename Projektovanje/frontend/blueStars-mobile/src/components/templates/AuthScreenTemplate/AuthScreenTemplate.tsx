@@ -21,7 +21,9 @@ interface AuthScreenTemplateProps {
 const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
   const { Colors } = useTheme();
   const windowHeight = Dimensions.get('window').height;
-  const topImageHeight = windowHeight * 0.25;
+  // A bounded proportional height keeps the branding prominent without hiding the form
+  // on compact Android screens or while the keyboard is open.
+  const topImageHeight = Math.min(Math.max(windowHeight * 0.3, 190), 280);
 
   const scrollRef = useRef<ScrollView | null>(null);
 
@@ -34,19 +36,19 @@ const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
         justifyContent: 'center',
         alignItems: 'center',
       }}
-      resizeMode="cover"
+      resizeMode="contain"
     >
       <View
         style={{
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: 'rgba(0,0,0,0.08)',
+          backgroundColor: 'rgba(0,0,0,0.04)',
         }}
       />
     </ImageBackground>
   );
 
   return (
-    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: Colors.background }}>
+    <SafeAreaView edges={["top", "bottom"]} style={{ flex: 1, backgroundColor: Colors.background }}>
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: Colors.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -59,8 +61,8 @@ const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
             backgroundColor: Colors.background,
           }}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={true}
-          bounces={true}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
           {props.header || defaultHeader}
 

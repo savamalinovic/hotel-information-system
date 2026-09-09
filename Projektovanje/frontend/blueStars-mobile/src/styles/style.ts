@@ -1,6 +1,10 @@
+export const brandColors = {
+  primary: '#2F4C84',
+  primaryPressed: '#20365F',
+} as const;
+
 export const Colors = {
-  primary: '#3176BF',
-  primaryPressed: '#326296',
+  ...brandColors,
   secondary: '#f9f9f9', 
   tertiary: '#999',
   background: '#ffffff',
@@ -27,8 +31,7 @@ export const Colors = {
 
   // For reference from Figma
   dark: {
-    primary: '#3176BF',
-    primaryPressed: '#326296',
+    ...brandColors,
     secondary: '#f9f9f9', 
     tertiary: '#999',
     background: '#ffffff',
@@ -45,7 +48,7 @@ export const Colors = {
     // ---- TODO: define colors ----
     tabBackground: '#34373c',
     tabBarInactiveTint: '#d9d9d9',
-    tabBarActiveTint: '#4c98e7',
+    tabBarActiveTint: brandColors.primary,
 
     screenBackground: '#292b2e'
   }
@@ -54,8 +57,7 @@ export const Colors = {
 
 
 export const lightTheme = {
-  primary: '#3176BF',
-  primaryPressed: '#326296',
+  ...brandColors,
   secondary: '#f9f9f9',
   tertiary: '#999',
   background: '#ffffff',
@@ -71,7 +73,7 @@ export const lightTheme = {
 
   tabBackground: '#fff',
   tabBarInactiveTint: '#999',
-  tabBarActiveTint: '#3176BF',
+  tabBarActiveTint: brandColors.primary,
 
   screenBackground: "#ffffff",
   successColor: '#4CAF50',
@@ -90,8 +92,7 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  primary: '#3176BF',
-  primaryPressed: '#326296',
+  ...brandColors,
   secondary: '#303338',
   tertiary: '#999',
   background: '#232528',
@@ -107,7 +108,7 @@ export const darkTheme = {
 
   tabBackground: '#34373c',
   tabBarInactiveTint: '#d9d9d9',
-  tabBarActiveTint: '#4c98e7',
+  tabBarActiveTint: brandColors.primary,
 
   screenBackground: "#282a2d",
 

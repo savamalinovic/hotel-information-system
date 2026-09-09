@@ -413,6 +413,12 @@
   },
   "auth": {
     "orSeparator": "ili",
+    "errors": {
+      "invalidCredentials": "Email ili lozinka nisu ispravni.",
+      "network": "Povezivanje sa serverom nije moguće. Provjerite internet vezu i pokušajte ponovo.",
+      "timeout": "Zahtjev je istekao. Pokušajte ponovo.",
+      "server": "Došlo je do greške na serveru. Pokušajte ponovo kasnije."
+    },
     "login": {
       "title": "Prijava",
       "firstName": "Ime",

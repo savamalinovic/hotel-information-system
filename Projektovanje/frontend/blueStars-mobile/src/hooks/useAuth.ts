@@ -6,7 +6,7 @@ import { authService } from "@/src/api/services/authService";
 import { useSession } from "@/src/providers/SessionProvider";
 import { toastService } from "@/src/services/toastService";
 import { LoginRequest, ResetPasswordRequest } from "@/src/types/types";
-import { getUserFacingErrorMessage } from "@/src/util/apiError";
+import { getAuthErrorMessage, getUserFacingErrorMessage } from "@/src/util/apiError";
 
 export const useAuth = () => {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ export const useAuth = () => {
     onError: (error: unknown) => {
       toastService.error(
         t("auth.login.toastMessages.errorTitle"),
-        getUserFacingErrorMessage(error, t("auth.login.toastMessages.errorMsg"))
+        getAuthErrorMessage(error, t)
       );
     },
   });
@@ -71,7 +71,10 @@ export const useAuth = () => {
   };
 
   return {
-    login: loginMutation.mutate,
+    login: (credentials: LoginRequest) => {
+      loginMutation.reset();
+      loginMutation.mutate(credentials);
+    },
     logout,
     resetPassword: resetPasswordMutation.mutate,
     isLoggingIn: loginMutation.isPending,
