@@ -16,6 +16,12 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+## Local backend endpoint
+
+Local and test builds expose a `Configure backend URL` action on the login screen and in Settings. Enter the backend root URL, for example `http://192.168.1.10:8080`. The selected address is stored on the device and is used for subsequent API requests, so changing the development computer's LAN IP does not require building a new APK.
+
+The initial value still comes from `EXPO_PUBLIC_API_SCHEME`, `EXPO_PUBLIC_API_ADDRESS`, and `EXPO_PUBLIC_API_PORT`. Production HTTPS builds keep the runtime override hidden.
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)

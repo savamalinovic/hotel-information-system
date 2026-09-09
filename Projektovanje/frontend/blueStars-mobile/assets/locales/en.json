@@ -16,6 +16,18 @@
       "lengthExactError": "This field must be exactly {{length}} characters long."
     }
   },
+  "apiEndpoint": {
+    "title": "Backend URL",
+    "description": "Set the local backend address used by this test build. Include the scheme and optional port, for example http://192.168.1.10:8080.",
+    "openSettings": "Configure backend URL",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "useDefault": "Use default address",
+    "savedTitle": "Backend URL updated",
+    "savedMessage": "Future requests will use the selected address.",
+    "invalidMessage": "Enter a valid HTTP or HTTPS backend URL without credentials, a query, or a path."
+  },
   "notFound": {
     "title": "Page not found",
     "message": "The page you requested is unavailable.",

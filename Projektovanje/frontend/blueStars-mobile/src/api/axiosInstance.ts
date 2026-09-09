@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { sessionStore } from "@/src/session/sessionStore";
-import { API_BASE_URL } from "@/src/util/apiConstants";
+import { API_BASE_PATH, apiEndpointService } from "@/src/services/apiEndpointService";
 
 type UnauthorizedHandler = () => Promise<void> | void;
 
@@ -18,11 +18,21 @@ export const resetUnauthorizedHandling = () => {
 const isLoginRequest = (url: string | undefined) => url?.endsWith("/auth/login") ?? false;
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: apiEndpointService.getBaseUrl(),
 });
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Rewrite the build-time API host to the locally selected test endpoint.
+    // API paths remain unchanged while the device can switch networks at runtime.
+    config.baseURL = apiEndpointService.getBaseUrl();
+    if (typeof config.url === "string") {
+      const apiPathStart = config.url.indexOf(API_BASE_PATH);
+      if (apiPathStart >= 0) {
+        config.url = config.url.slice(apiPathStart + API_BASE_PATH.length) || "/";
+      }
+    }
+
     const token = sessionStore.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

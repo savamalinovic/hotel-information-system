@@ -2,19 +2,22 @@
 import { settingsService } from "@/src/api/services/settingsService";
 import { Theme, useTheme } from "@/src/providers/ThemeProvider";
 import { toastService } from "@/src/services/toastService";
-import { AppErrorDTO, MenuSectionProps } from "@/src/types/types";
+import { AppErrorDTO, MenuItemProps, MenuSectionProps } from "@/src/types/types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageDialog } from "../../organisms/Dialogs/LanguageDialog/LanguageDialog";
 import { ReportDialog } from "../../organisms/Dialogs/ReportDialog/ReportDialog";
 import { ThemeDialog } from "../../organisms/Dialogs/ThemeDialog/ThemeDialog";
 import SettingsTemplate from "../../templates/SettingsTemplate/SettingsTemplate";
+import ApiEndpointDialog from "../../organisms/Dialogs/ApiEndpointDialog/ApiEndpointDialog";
+import { isLocalApiOverrideEnabled } from "@/src/services/apiEndpointService";
 
 
 export default function SettingsScreen() {
     const [languageDialogVisible, setLanguageDialogVisible] = useState(false);
     const [themeDialogVisible, setThemeDialogVisible] = useState(false);
     const [reportDialogVisible, setReportDialogVisible] = useState(false);
+    const [apiEndpointDialogVisible, setApiEndpointDialogVisible] = useState(false);
 
     const { t, i18n } = useTranslation();
     const { toggleTheme } = useTheme();
@@ -50,14 +53,24 @@ export default function SettingsScreen() {
     }
 
 
+    const generalSettingsItems: MenuItemProps[] = [
+        { id: "language", icon: "Languages", text: t('menu.mainSettings.settings.general.languageTitle'), onPressMenuItem: () => setLanguageDialogVisible(true), },
+        { id: "theme", icon: "SunMoon", text: t('menu.mainSettings.settings.general.themeTitle'), onPressMenuItem: () => setThemeDialogVisible(true), },
+    ];
+
+    if (isLocalApiOverrideEnabled) {
+        generalSettingsItems.push({
+            id: "apiEndpoint",
+            icon: "Globe",
+            text: t("apiEndpoint.openSettings"),
+            onPressMenuItem: () => setApiEndpointDialogVisible(true),
+        });
+    }
+
     const MENU_SECTIONS: MenuSectionProps[] = [
         {
             title: t('menu.mainSettings.settings.general.mainTitle'),
-            items: [
-                { id: "language", icon: "Languages", text: t('menu.mainSettings.settings.general.languageTitle'), onPressMenuItem: () => setLanguageDialogVisible(true), },
-                { id: "theme", icon: "SunMoon", text: t('menu.mainSettings.settings.general.themeTitle'), onPressMenuItem: () => setThemeDialogVisible(true), },
-
-            ],
+            items: generalSettingsItems,
         },
         {
             title: t('menu.mainSettings.settings.feedback.mainTitle'),
@@ -90,6 +103,11 @@ export default function SettingsScreen() {
                 visible={reportDialogVisible} 
                 onCancel={() => setReportDialogVisible(false)} 
                 onSubmit={(text: string) => onErrorReportSubmit(text)}            
+            />
+
+            <ApiEndpointDialog
+                visible={apiEndpointDialogVisible}
+                onClose={() => setApiEndpointDialogVisible(false)}
             />
         </>
         

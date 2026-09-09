@@ -16,6 +16,18 @@
       "lengthExactError": "Ovo polje mora biti {{length}} karaktera"
     }
   },
+  "apiEndpoint": {
+    "title": "Adresa backenda",
+    "description": "Postavite lokalnu adresu backenda koju koristi testna verzija. Unesite šemu i opcioni port, na primjer http://192.168.1.10:8080.",
+    "openSettings": "Podesi adresu backenda",
+    "cancel": "Odustani",
+    "save": "Sačuvaj",
+    "saving": "Čuvanje...",
+    "useDefault": "Koristi podrazumijevanu adresu",
+    "savedTitle": "Adresa backenda je izmijenjena",
+    "savedMessage": "Naredni zahtjevi će koristiti izabranu adresu.",
+    "invalidMessage": "Unesite ispravnu HTTP ili HTTPS adresu backenda bez kredencijala, upita ili putanje."
+  },
   "notFound": {
     "title": "Stranica nije pronađena",
     "message": "Tražena stranica nije dostupna.",
