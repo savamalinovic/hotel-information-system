@@ -1,10 +1,4 @@
-const scheme = process.env.EXPO_PUBLIC_API_SCHEME ?? "http";
-const address = process.env.EXPO_PUBLIC_API_ADDRESS ?? "localhost";
-const port = process.env.EXPO_PUBLIC_API_PORT;
-const authority = port ? `${address}:${port}` : address;
-const version = "v1";
-
-export const API_BASE_URL = `${scheme}://${authority}/api/${version}`;
+export const API_BASE_URL = "http://127.0.0.1:8080/api/v1";
 
 export const API_URLS = {
     auth: {
