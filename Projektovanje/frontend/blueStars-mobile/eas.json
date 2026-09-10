@@ -6,12 +6,7 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_SCHEME": "http",
-        "EXPO_PUBLIC_API_ADDRESS": "192.168.100.1",
-        "EXPO_PUBLIC_API_PORT": "8080"
-      }
+      "distribution": "internal"
     },
     "ios-simulator": {
       "extends": "development",
@@ -23,12 +18,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_API_SCHEME": "https",
-        "EXPO_PUBLIC_API_ADDRESS": "efikas-team.com",
-        "EXPO_PUBLIC_API_PORT": "443"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
