@@ -1,4 +1,4 @@
-name: efikas-local
+name: bluestars-local
 
 services:
   postgres:
