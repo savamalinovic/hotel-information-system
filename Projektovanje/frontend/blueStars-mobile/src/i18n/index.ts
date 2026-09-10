@@ -4,7 +4,7 @@ import en from '@assets/locales/en.json';
 import sr from '@assets/locales/sr.json';
 
 declare global {
-    var __efikasI18n: I18nInstance | undefined;
+    var __blueStarsI18n: I18nInstance | undefined;
 }
 
 const resources = {
@@ -12,9 +12,9 @@ const resources = {
     sr: { translation: sr, },
 };
 
-const i18n = globalThis.__efikasI18n ?? createInstance();
+const i18n = globalThis.__blueStarsI18n ?? createInstance();
 
-globalThis.__efikasI18n ??= i18n;
+globalThis.__blueStarsI18n ??= i18n;
 
 if (!i18n.isInitialized) {
     void i18n
