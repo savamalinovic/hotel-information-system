@@ -569,9 +569,6 @@
       }
     }
   },
-  "welcome": {
-    "loginButton": "Prijavi se"
-  },
   "dashboard": {
     "navigation": {
       "apartmentsTitle": "Stanovi",

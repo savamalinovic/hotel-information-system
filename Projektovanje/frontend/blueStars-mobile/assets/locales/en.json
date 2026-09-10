@@ -569,9 +569,6 @@
       }
     }
   },
-  "welcome": {
-    "loginButton": "Log In"
-  },
   "dashboard": {
     "navigation": {
       "apartmentsTitle": "Apartments",
