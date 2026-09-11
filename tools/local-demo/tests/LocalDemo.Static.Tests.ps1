@@ -94,6 +94,7 @@ if ($runnerSource -notmatch 'not owned by this local demo runner') { throw 'Runn
 if ($runnerSource -match 'Write-(Host|Output|Error).*\$(JwtSecret|PostgresPassword|token)') { throw 'Runner could write a secret.' }
 if ($runnerSource -notmatch 'if \(\$ShowDemoPassword\) \{ Write-Host "  Demo password: \$DemoPassword" \}') { throw 'Runner demo password display is not explicitly opt-in.' }
 if ($runnerSource -match '(?m)^\s*\$\w+Args\s*=.*(PostgresPassword|JwtSecret|DemoPassword)') { throw 'Runner passes a secret through child process arguments.' }
+if ($runnerSource -match "Stop-DemoBackend\.ps1'.*-PostgresPassword") { throw 'Runner cleanup passes the PostgreSQL password through child process arguments.' }
 if ($runnerSource -notmatch 'Set-TemporaryLocalDemoEnvironment' -or $runnerSource -notmatch 'Restore-TemporaryLocalDemoEnvironment') { throw 'Runner does not restore temporary secret environment values.' }
 if ($runnerSource -notmatch "Invoke-LocalDemoScript -Name 'Test-LocalDemo.ps1'") { throw 'Runner does not run final verification.' }
 if ($runnerSource -notmatch '\$verificationArgs\.SkipAdb' -or $runnerSource -notmatch '\$verificationArgs\.DeviceSerial') { throw 'Runner does not forward final verification options.' }

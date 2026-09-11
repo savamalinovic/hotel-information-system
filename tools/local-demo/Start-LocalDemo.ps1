@@ -35,8 +35,9 @@ function Invoke-LocalDemoScript([string]$Name, [hashtable]$Parameters) {
         if ($entry.Value -isnot [switch] -and $entry.Value -isnot [bool]) { $arguments += [string]$entry.Value }
     }
     $powerShell = Get-Command powershell.exe -CommandType Application -ErrorAction Stop
-    & $powerShell.Source @arguments
-    if ($null -eq $LASTEXITCODE -or $LASTEXITCODE -ne 0) { throw "$Name failed." }
+    $commandLine = ($arguments | ForEach-Object { '"' + ($_ -replace '"', '\"') + '"' }) -join ' '
+    $process = Start-Process -FilePath $powerShell.Source -ArgumentList $commandLine -Wait -PassThru -NoNewWindow
+    if ($process.ExitCode -ne 0) { throw "$Name failed." }
 }
 
 function Set-TemporaryLocalDemoEnvironment([hashtable]$Values) {
@@ -106,7 +107,7 @@ try {
 } catch {
     Write-Error "Local demo failed: $($_.Exception.Message)"
     if ($CleanupDatabaseOnFailure) {
-        try { & (Join-Path $PSScriptRoot 'Stop-DemoBackend.ps1') -Force -ServerPort $ServerPort -DropDatabase -DatabaseName $DatabaseName -PostgresHost $PostgresHost -PostgresPort $PostgresPort -PostgresUser $PostgresUser -PostgresPassword $PostgresPassword -PsqlPath $PsqlPath } catch { Write-Error 'CleanupDatabaseOnFailure could not remove the guarded demo database.' }
+        try { & (Join-Path $PSScriptRoot 'Stop-DemoBackend.ps1') -Force -ServerPort $ServerPort -DropDatabase -DatabaseName $DatabaseName -PostgresHost $PostgresHost -PostgresPort $PostgresPort -PostgresUser $PostgresUser -PsqlPath $PsqlPath } catch { Write-Error 'CleanupDatabaseOnFailure could not remove the guarded demo database.' }
     } elseif ($started) { [void](Stop-LocalDemoOwnedProcess -ServerPort $ServerPort) }
     exit 1
 } finally {
