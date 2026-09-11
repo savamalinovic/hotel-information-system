@@ -251,7 +251,7 @@ function Get-LocalDemoApiUri {
 function Invoke-LocalDemoApi {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('GET', 'POST', 'PUT', 'PATCH')][string]$Method,
+        [Parameter(Mandatory)][ValidateSet('GET', 'POST', 'PUT', 'PATCH', 'DELETE')][string]$Method,
         [Parameter(Mandatory)][string]$ApiBaseUrl,
         [Parameter(Mandatory)][string]$Path,
         [string]$Token,

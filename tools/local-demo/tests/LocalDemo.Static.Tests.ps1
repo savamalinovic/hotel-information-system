@@ -61,6 +61,14 @@ if ($result.Status -ne 'created' -or $counters.Create -ne 1) { throw 'Missing re
 
 $seedSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Seed-DemoData.ps1')
 if ($seedSource -match 'Write-(Host|Output|Error).*\$DemoPassword') { throw 'Seed script could write the demo password.' }
+$scenarioSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Seed-DemoScenarios.ps1')
+if ($scenarioSource -notmatch 'ReferenceDate must use ISO form yyyy-MM-dd') { throw 'Scenario seed does not validate ReferenceDate.' }
+if ($scenarioSource -notmatch '\[DEMO:\$\{Code\}:') { throw 'Scenario seed does not form stable scenario markers.' }
+if ($scenarioSource -match '(?i)\b(double|float)\b') { throw 'Scenario seed must not use binary floating-point values.' }
+if ($scenarioSource -notmatch 'Conflicting existing state') { throw 'Scenario seed does not stop on a conflicting existing scenario.' }
+if ($scenarioSource -notmatch "status -eq 'COMPLETED'.*status -eq 'CANCELLED'") { throw 'Scenario seed does not guard terminal task actions.' }
+if ($scenarioSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Scenario seed appears to use a direct database operation.' }
+if ($scenarioSource -match 'Write-(Host|Output|Error).*\$(managerToken|agentOneToken|agentTwoToken|DemoPassword)') { throw 'Scenario seed could write a secret.' }
 $startSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Start-DemoBackend.ps1')
 if ($startSource -match 'Write-(Host|Output|Error).*(\$JwtSecret|\$PostgresPassword|\$DemoPassword)') { throw 'Backend launcher could write a secret.' }
 
@@ -70,4 +78,4 @@ foreach ($script in $scripts) {
     [void][System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors)
     if ($errors.Count -gt 0) { throw "PowerShell parser errors in $($script.FullName): $($errors.Message -join '; ')" }
 }
-Write-Host "PASS: $($scripts.Count) PowerShell scripts parsed; local demo safety, PostgreSQL discovery, and ownership cleanup checks passed."
+Write-Host "PASS: $($scripts.Count) PowerShell scripts parsed; local demo safety, scenario idempotency guards, PostgreSQL discovery, and ownership cleanup checks passed."
