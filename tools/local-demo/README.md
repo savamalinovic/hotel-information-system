@@ -33,6 +33,52 @@ Skripte prihvataju iste vrijednosti i kao eksplicitne parametre. Lozinke, JWT se
 .\Reset-DemoDatabase.ps1 -PsqlPath 'C:\Program Files\PostgreSQL\17\bin\psql.exe'
 ```
 
+## Najbrže pokretanje
+
+U jednom PowerShell procesu, nakon postavljanja potrebnih varijabli iz prethodne sekcije:
+
+```powershell
+.\Start-LocalDemo.ps1
+```
+
+To koristi postojeći reset/create, backend launcher i oba API seedera, zatim postavlja Android `adb reverse` za port 8080. Lozinke i tokeni se ne ispisuju. Najvažnije procesne varijable su `POSTGRES_USER`, `POSTGRES_PASSWORD`, `EFIKAS_JWT_SECRET`, `BLUESTARS_DEMO_PASSWORD` i `BLUESTARS_DEMO_MANAGER_*` vrijednosti iz gornjeg primjera.
+
+Za eksplicitni čisti reset koristite:
+
+```powershell
+.\Start-LocalDemo.ps1 -ResetDatabase
+```
+
+Za izolovanu provjeru bez telefona i na drugom portu koristite `-SkipAdb`, npr. `-ServerPort 8081`. Android aplikacija ostaje vezana za 8080.
+
+## Provjera i zaustavljanje
+
+```powershell
+.\Test-LocalDemo.ps1
+.\Stop-DemoBackend.ps1 -Force
+```
+
+`Test-LocalDemo.ps1` radi read-only API provjere podataka i RBAC-a. Za uklanjanje samo Android prosljeđivanja dodajte `-RemoveAdbReverse`; za strogo čuvanu eksplicitnu brisanje demo/test baze dodajte `-DropDatabase -DatabaseName bluestars_demo`. Nikad se ne zaustavlja nepovezan proces niti PostgreSQL servis.
+
+## Opcionalni object-storage smoke
+
+Ako su u procesu postavljeni `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` i `AWS_S3_BUCKET`, pokrenite:
+
+```powershell
+.\Test-LocalDemoObjectStorage.ps1
+```
+
+Bez te konfiguracije rezultat je `SKIPPED`. Nema automatske instalacije ili preuzimanja storage programa.
+
+## Rješavanje problema
+
+- Pogrešna PostgreSQL lozinka: provjerite samo procesnu `POSTGRES_PASSWORD` vrijednost i ponovite komandu.
+- Port 8080 zauzet: runner odbija nepovezan proces; za izolaciju koristite `-ServerPort 8081 -SkipAdb`.
+- ADB nije autorizovan: otključajte telefon, potvrdite USB debugging i ponovite komandu.
+- Nedostaje JDK 17: instalirajte/odaberite JDK 17 prije pokretanja backenda.
+- Backend nije spreman: pregledajte putanje do lokalnih logova koje ispiše launcher, pa zaustavite evidentirani proces.
+- Object storage nije konfigurisan: osnovni demo je i dalje upotrebljiv; attachment smoke ostaje `SKIPPED`.
+
 ## Čist početak
 
 Iz ovog direktorijuma:

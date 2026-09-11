@@ -1,0 +1,96 @@
+[CmdletBinding()]
+param(
+    [string]$DatabaseName = 'bluestars_demo',
+    [string]$PostgresHost = 'localhost',
+    [ValidateRange(1, 65535)][int]$PostgresPort = 5432,
+    [string]$PostgresUser,
+    [string]$PostgresPassword,
+    [string]$PsqlPath,
+    [string]$JwtSecret,
+    [string]$DemoPassword,
+    [string]$ManagerEmail,
+    [string]$ManagerName,
+    [string]$ManagerSurname,
+    [string]$ManagerJmbg,
+    [string]$ManagerAddress,
+    [string]$ManagerPhone,
+    [ValidateRange(1, 65535)][int]$ServerPort = 8080,
+    [ValidateRange(10, 300)][int]$ReadinessTimeoutSeconds = 90,
+    [switch]$ResetDatabase,
+    [switch]$CleanupDatabaseOnFailure,
+    [switch]$SkipAdb,
+    [switch]$ShowDemoPassword,
+    [string]$DeviceSerial
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'LocalDemo.Common.ps1')
+
+function Invoke-LocalDemoScript([string]$Name, [hashtable]$Parameters) {
+    $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot $Name))
+    foreach ($entry in $Parameters.GetEnumerator()) {
+        $arguments += "-$($entry.Key)"
+        if ($entry.Value -isnot [switch] -and $entry.Value -isnot [bool]) { $arguments += [string]$entry.Value }
+        elseif ([bool]$entry.Value) { }
+        else { $arguments = $arguments[0..($arguments.Count - 2)] }
+    }
+    $powerShell = Get-Command powershell.exe -CommandType Application -ErrorAction Stop
+    & $powerShell.Source @arguments
+    if ($null -eq $LASTEXITCODE -or $LASTEXITCODE -ne 0) { throw "$Name failed." }
+}
+
+function Test-LocalPortOwnership([int]$Port) {
+    $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+    if ($listeners.Count -eq 0) { return }
+    $state = Get-LocalDemoProcessState
+    $owned = if ($null -eq $state) { @() } else { @($state.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ } | ForEach-Object { [int]$_.processId }) }
+    $foreign = @($listeners | Where-Object { $_.OwningProcess -notin $owned })
+    if ($foreign.Count -gt 0) { throw "Port $Port is occupied by a process not owned by this local demo runner; it was not stopped." }
+    throw "Port $Port is occupied by an existing local demo backend. Stop it first with Stop-DemoBackend.ps1 -Force -ServerPort $Port."
+}
+
+$started = $false
+$success = $false
+try {
+    Assert-LocalDemoHost -HostName $PostgresHost
+    $DatabaseName = Assert-LocalDemoDatabaseName -DatabaseName $DatabaseName
+    $PostgresUser = Get-LocalDemoValue -Value $PostgresUser -EnvironmentName 'POSTGRES_USER' -Label 'PostgreSQL user'
+    $PostgresPassword = Get-LocalDemoValue -Value $PostgresPassword -EnvironmentName 'POSTGRES_PASSWORD' -Label 'PostgreSQL password'
+    $JwtSecret = Get-LocalDemoValue -Value $JwtSecret -EnvironmentName 'EFIKAS_JWT_SECRET' -Label 'JWT secret'
+    $DemoPassword = Get-LocalDemoValue -Value $DemoPassword -EnvironmentName 'BLUESTARS_DEMO_PASSWORD' -Label 'Demo password'
+    $ManagerEmail = if ($ManagerEmail) { $ManagerEmail } else { Get-LocalDemoValue -Value $null -EnvironmentName 'BLUESTARS_DEMO_MANAGER_EMAIL' -Label 'Demo manager email' }
+    foreach ($setting in @(@{ Name='ManagerName'; Environment='BLUESTARS_DEMO_MANAGER_NAME' }, @{ Name='ManagerSurname'; Environment='BLUESTARS_DEMO_MANAGER_SURNAME' }, @{ Name='ManagerJmbg'; Environment='BLUESTARS_DEMO_MANAGER_JMBG' }, @{ Name='ManagerAddress'; Environment='BLUESTARS_DEMO_MANAGER_ADDRESS' }, @{ Name='ManagerPhone'; Environment='BLUESTARS_DEMO_MANAGER_PHONE' })) {
+        if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $setting.Name -ValueOnly))) { Set-Variable -Name $setting.Name -Value (Get-LocalDemoValue -Value $null -EnvironmentName $setting.Environment -Label $setting.Name) }
+    }
+    Test-LocalPortOwnership -Port $ServerPort
+    $resetArgs = @{ DatabaseName=$DatabaseName; PostgresHost=$PostgresHost; PostgresPort=$PostgresPort; PostgresUser=$PostgresUser; PostgresPassword=$PostgresPassword }
+    if ($PsqlPath) { $resetArgs.PsqlPath = $PsqlPath }; if ($ResetDatabase) { $resetArgs.Reset = $true }
+    Invoke-LocalDemoScript -Name 'Reset-DemoDatabase.ps1' -Parameters $resetArgs
+    $apiBaseUrl = "http://127.0.0.1:$ServerPort/api/v1"
+    $startArgs = @{ DatabaseName=$DatabaseName; PostgresHost=$PostgresHost; PostgresPort=$PostgresPort; PostgresUser=$PostgresUser; PostgresPassword=$PostgresPassword; JwtSecret=$JwtSecret; DemoPassword=$DemoPassword; ManagerEmail=$ManagerEmail; ManagerName=$ManagerName; ManagerSurname=$ManagerSurname; ManagerJmbg=$ManagerJmbg; ManagerAddress=$ManagerAddress; ManagerPhone=$ManagerPhone; ServerPort=$ServerPort; ReadinessTimeoutSeconds=$ReadinessTimeoutSeconds }
+    Invoke-LocalDemoScript -Name 'Start-DemoBackend.ps1' -Parameters $startArgs; $started = $true
+    Invoke-LocalDemoScript -Name 'Seed-DemoData.ps1' -Parameters @{ ApiBaseUrl=$apiBaseUrl; DemoPassword=$DemoPassword; ManagerEmail=$ManagerEmail }
+    Invoke-LocalDemoScript -Name 'Seed-DemoScenarios.ps1' -Parameters @{ ApiBaseUrl=$apiBaseUrl; DemoPassword=$DemoPassword; ManagerEmail=$ManagerEmail }
+    if (-not $SkipAdb) {
+        if ($ServerPort -ne 8080) { throw 'Android demo mode requires ServerPort 8080. Use -SkipAdb for an isolated port.' }
+        $adbArgs = @{}; if ($DeviceSerial) { $adbArgs.DeviceSerial = $DeviceSerial }
+        Invoke-LocalDemoScript -Name 'Set-AndroidAdbReverse.ps1' -Parameters $adbArgs
+    }
+    $success = $true
+    Write-Host "`nPASS: local demo is ready"
+    Write-Host "  Backend: $apiBaseUrl"
+    Write-Host "  Database: $DatabaseName"
+    Write-Host '  Backend readiness: ready; base seed: complete; R1-R8 scenarios: complete'
+    Write-Host (if ($SkipAdb) { '  ADB reverse: skipped' } else { '  ADB reverse: active for tcp:8080' })
+    Write-Host "  Accounts: $ManagerEmail (MANAGER), demo.agent.one@bluestars.local (AGENT), demo.agent.two@bluestars.local (AGENT), demo.worker.cleaning@bluestars.local (OPERATIONAL_WORKER)"
+    if ($ShowDemoPassword) { Write-Host "  Demo password: $DemoPassword" }
+    Write-Host "  Verify: .\Test-LocalDemo.ps1 -ApiBaseUrl $apiBaseUrl"
+    Write-Host "  Stop: .\Stop-DemoBackend.ps1 -Force -ServerPort $ServerPort"
+} catch {
+    Write-Error "Local demo failed: $($_.Exception.Message)"
+    if ($CleanupDatabaseOnFailure) {
+        try { & (Join-Path $PSScriptRoot 'Stop-DemoBackend.ps1') -Force -ServerPort $ServerPort -DropDatabase -DatabaseName $DatabaseName -PostgresHost $PostgresHost -PostgresPort $PostgresPort -PostgresUser $PostgresUser -PostgresPassword $PostgresPassword -PsqlPath $PsqlPath } catch { Write-Error 'CleanupDatabaseOnFailure could not remove the guarded demo database.' }
+    } elseif ($started) { [void](Stop-LocalDemoOwnedProcess -ServerPort $ServerPort) }
+    exit 1
+}

@@ -87,6 +87,17 @@ if ($scenarioSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { 
 if ($scenarioSource -match 'Write-(Host|Output|Error).*\$(managerToken|agentOneToken|agentTwoToken|DemoPassword)') { throw 'Scenario seed could write a secret.' }
 $startSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Start-DemoBackend.ps1')
 if ($startSource -match 'Write-(Host|Output|Error).*(\$JwtSecret|\$PostgresPassword|\$DemoPassword)') { throw 'Backend launcher could write a secret.' }
+$runnerSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Start-LocalDemo.ps1')
+if ($runnerSource -notmatch 'Seed-DemoData.ps1' -or $runnerSource -notmatch 'Seed-DemoScenarios.ps1') { throw 'Runner does not orchestrate both existing seed scripts.' }
+if ($runnerSource -notmatch '\[switch\]\$ResetDatabase' -or $runnerSource -notmatch '\[switch\]\$SkipAdb') { throw 'Runner reset or SkipAdb contract is missing.' }
+if ($runnerSource -notmatch 'not owned by this local demo runner') { throw 'Runner does not reject an unrelated occupied port.' }
+if ($runnerSource -match 'Write-(Host|Output|Error).*\$(JwtSecret|PostgresPassword|token)') { throw 'Runner could write a secret.' }
+if ($runnerSource -notmatch 'if \(\$ShowDemoPassword\) \{ Write-Host "  Demo password: \$DemoPassword" \}') { throw 'Runner demo password display is not explicitly opt-in.' }
+$verificationSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Test-LocalDemo.ps1')
+if ($verificationSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Verification appears to use direct database business operations.' }
+if ($verificationSource -match 'Write-(Host|Output|Error).*\$(DemoPassword|.*Token)') { throw 'Verification could write a secret.' }
+$storageSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Test-LocalDemoObjectStorage.ps1')
+if ($storageSource -notmatch 'SKIPPED: object storage is not configured') { throw 'Object-storage smoke does not report missing configuration as SKIPPED.' }
 
 $scripts = Get-ChildItem -Path (Join-Path $PSScriptRoot '..') -Filter '*.ps1' -File -Recurse
 foreach ($script in $scripts) {
