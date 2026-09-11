@@ -41,6 +41,7 @@ Iz ovog direktorijuma:
 .\Reset-DemoDatabase.ps1
 .\Start-DemoBackend.ps1
 .\Seed-DemoData.ps1
+.\Seed-DemoScenarios.ps1
 ```
 
 Prva skripta pravi samo praznu `bluestars_demo` bazu. Ako već postoji, bez `-Reset` je ne mijenja. Potpuni, eksplicitni reset je:
@@ -54,6 +55,40 @@ Skripta odbija produkcijske/sistemske nazive, nazive bez `demo`/`test` markera i
 Uobičajeni demo rad koristi backend i seed na portu 8080. Seed prihvata isključivo lokalne URL-ove `http://127.0.0.1:<port>/api/v1` ili `http://localhost:<port>/api/v1`; odbija HTTPS, udaljene hostove i pogrešan API path. Port 8081 je namijenjen samo izolovanoj lokalnoj verifikaciji kada nepovezan proces već koristi 8080, npr. `Seed-DemoData.ps1 -ApiBaseUrl http://127.0.0.1:8081/api/v1`. Ispisuje `created`, `already exists`, `updated` ili `failed`; svako ponovno pokretanje najprije traži postojeće resurse, tako da ne duplira podatke. Ako je ranije deaktiviran demo apartman ili tip, javni API ga ne može reaktivirati; seed sigurno prekida i navodi taj nedostatak umjesto da napravi duplikat.
 
 Seed kreira/pronalazi: bootstrap menadžera, dva agenta, šest aktivnih operativnih radnika (po jedan za svaku postojeću specijalizaciju), tri tipa apartmana, osam apartmana, četiri aktivne kategorije troška i singleton profil hotela. Na kraju bez lozinke ispisuje e-mail i ulogu svih demo naloga te provjerava prijavu svakog od njih.
+
+## Poslovni demo scenariji
+
+`Seed-DemoScenarios.ps1` se pokreće tek poslije uspješnog `Seed-DemoData.ps1`. Namijenjen je samo lokalnom demo okruženju i koristi postojeće javne `/api/v1` rute, redovnu autentifikaciju i RBAC. Ne koristi SQL za poslovne podatke niti pravi demo API rute.
+
+Kratki redoslijed za Android ručno testiranje je: (1) reset baze, (2) start backenda, (3) `Seed-DemoData.ps1`, (4) `Seed-DemoScenarios.ps1`, (5) `Set-AndroidAdbReverse.ps1`, pa (6) prijava u Android aplikaciju jednim od naloga ispod.
+
+Scenariji su vezani za današnji datum lokalnog backenda. Možete ga eksplicitno navesti samo kao današnji ISO datum:
+
+```powershell
+.\Seed-DemoScenarios.ps1 -ApiBaseUrl http://127.0.0.1:8080/api/v1 -ReferenceDate 2026-09-11
+```
+
+Skripta provjerava HTTP datum lokalnog backenda u zoni hotela prije nego što išta promijeni. Ponovno pokretanje istog dana dopunjava samo nedostajuće korake preko markera `[DEMO:<SCENARIO>:<DATE>]`. Za čisto ponavljanje drugog dana resetujte demo bazu, zatim ponovite osnovni i scenario seed. Upload priloga/object storage i stvarni mobilni push nisu dio seeda.
+
+| Uloga | Demo nalog |
+| --- | --- |
+| Manager | vrijednost `BLUESTARS_DEMO_MANAGER_EMAIL` |
+| Agent | `demo.agent.one@bluestars.local` |
+| Agent | `demo.agent.two@bluestars.local` |
+| Operational worker | `demo.worker.<specialization>@bluestars.local` |
+
+| Scenario | Završno stanje |
+| --- | --- |
+| R1 | domaći gost, dvije uplate, check-out, demo račun i novi cleaning task |
+| R2 | strani i domaći gost, puna uplata, check-out, demo račun i završen cleaning |
+| R3 | trenutno prijavljen, djelimično plaćen |
+| R4 | potvrđen današnji check-in sa claim/release/takeover istorijom |
+| R5 | budući potvrđen i neplaćen boravak po default cijeni |
+| R6 | budući potvrđen boravak sa override cijenom, korekcijom i stornom uplate |
+| R7 | otkazan budući boravak |
+| R8 | današnji no-show bez knjige gostiju i računa |
+
+Uz matricu rezervacija seed pravi ručne taskove u svim lifecycle stanjima, attendance/override/leave primjere, 12 kategorisanih operativnih troškova (jedan storniran), četiri štete i budući period van upotrebe. Knjige, audit, notifikacije i istorije nastaju isključivo kao posljedica tih poslovnih akcija.
 
 ## Android uređaj
 

@@ -251,7 +251,7 @@ function Get-LocalDemoApiUri {
 function Invoke-LocalDemoApi {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('GET', 'POST', 'PUT', 'PATCH')][string]$Method,
+        [Parameter(Mandatory)][ValidateSet('GET', 'POST', 'PUT', 'PATCH', 'DELETE')][string]$Method,
         [Parameter(Mandatory)][string]$ApiBaseUrl,
         [Parameter(Mandatory)][string]$Path,
         [string]$Token,
@@ -317,6 +317,13 @@ function Invoke-LocalDemoEnsure {
         return [pscustomobject]@{ Status = 'already exists'; Value = $existing }
     }
     return [pscustomobject]@{ Status = 'created'; Value = (& $Create) }
+}
+
+function ConvertTo-LocalDemoMoney {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][decimal]$Value)
+
+    return $Value.ToString('0.00', [Globalization.CultureInfo]::InvariantCulture)
 }
 
 function Write-LocalDemoStatus {
