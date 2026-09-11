@@ -1,18 +1,16 @@
 [CmdletBinding()]
-param([switch]$Force)
+param(
+    [switch]$Force,
+    [ValidateRange(1, 65535)][int]$ServerPort = 8080
+)
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'LocalDemo.Common.ps1')
 
 try {
     if (-not $Force) { throw 'Refusing to stop a process without -Force.' }
-    $listener = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($null -eq $listener) { Write-Host 'No listener is using port 8080.'; exit 0 }
-    $processInfo = Get-CimInstance Win32_Process -Filter "ProcessId = $($listener.OwningProcess)"
-    if ($null -eq $processInfo -or $processInfo.Name -notmatch '^(java|javaw)\.exe$' -or $processInfo.CommandLine -notmatch 'blueStars') {
-        throw "Port 8080 belongs to PID $($listener.OwningProcess), which is not recognized as the local demo backend."
-    }
-    Stop-Process -Id $listener.OwningProcess -Force
-    Write-Host "Stopped local demo backend PID $($listener.OwningProcess)."
+    if (-not (Stop-LocalDemoOwnedProcess)) { throw 'No recognized backend process started by the local demo tool is recorded.' }
+    Write-Host "Stopped the recorded local demo backend process tree for port $ServerPort."
 } catch {
     Write-Error $_.Exception.Message
     exit 1

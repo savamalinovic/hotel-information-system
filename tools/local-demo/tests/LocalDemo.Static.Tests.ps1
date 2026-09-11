@@ -20,6 +20,33 @@ $base = Resolve-LocalDemoApiBaseUrl -ApiBaseUrl 'http://localhost:8080'
 if ($base -ne 'http://localhost:8080/api/v1') { throw 'API base URL was not normalized correctly.' }
 if ((Get-LocalDemoApiUri -ApiBaseUrl $base -Path 'users') -ne 'http://localhost:8080/api/v1/users') { throw 'API request URL was not assembled correctly.' }
 
+$standardPsql = Resolve-LocalDemoPsql
+if (-not (Test-Path -LiteralPath $standardPsql -PathType Leaf)) { throw 'Standard PostgreSQL client discovery failed.' }
+if ((Resolve-LocalDemoPsql -PsqlPath $standardPsql) -ne $standardPsql) { throw 'Explicit PostgreSQL client path did not take priority.' }
+Assert-Throws { Resolve-LocalDemoPsql -PsqlPath (Join-Path $env:TEMP 'missing-psql.exe') } 'Missing PostgreSQL client path was accepted.'
+Assert-Throws { Resolve-LocalDemoPsql -PsqlPath "$env:SystemRoot\System32\cmd.exe" } 'Non-psql executable path was accepted.'
+
+$statePath = Get-LocalDemoStatePath
+$originalState = if (Test-Path -LiteralPath $statePath) { Get-Content -Raw -LiteralPath $statePath } else { $null }
+try {
+    $testProcess = Start-Process -FilePath "$env:SystemRoot\System32\ping.exe" -ArgumentList @('-n', '30', '127.0.0.1') -PassThru
+    $identity = Get-LocalDemoProcessIdentity -ProcessId $testProcess.Id
+    Save-LocalDemoProcessState -State ([pscustomobject]@{ launcher = $identity; ownedProcesses = @($identity) })
+    if (-not (Stop-LocalDemoOwnedProcess)) { throw 'Owned test process was not cleaned up.' }
+    Start-Sleep -Milliseconds 250
+    if (Get-Process -Id $testProcess.Id -ErrorAction SilentlyContinue) { throw 'Cleanup did not stop its owned test process.' }
+    if (Test-Path -LiteralPath $statePath) { throw 'Cleanup did not remove its state file.' }
+
+    $current = Get-LocalDemoProcessIdentity -ProcessId $PID
+    $stale = [pscustomobject]@{ processId = $current.processId; startedAt = ([datetime]$current.startedAt).AddSeconds(-1).ToString('o') }
+    Save-LocalDemoProcessState -State ([pscustomobject]@{ launcher = $stale; ownedProcesses = @($stale) })
+    if (Stop-LocalDemoOwnedProcess) { throw 'Cleanup accepted a process identity it did not own.' }
+    if (-not (Get-Process -Id $PID -ErrorAction SilentlyContinue)) { throw 'Cleanup stopped an unrelated current process.' }
+} finally {
+    Remove-LocalDemoProcessState
+    if ($null -ne $originalState) { Set-Content -LiteralPath $statePath -Value $originalState -Encoding UTF8 -NoNewline }
+}
+
 $counters = [pscustomobject]@{ Lookup = 0; Create = 0 }
 $existing = [pscustomobject]@{ id = 1 }
 $result = Invoke-LocalDemoEnsure -Lookup { [void]($counters.Lookup++); $existing } -Create { [void]($counters.Create++); [pscustomobject]@{ id = 2 } }
@@ -38,4 +65,4 @@ foreach ($script in $scripts) {
     [void][System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors)
     if ($errors.Count -gt 0) { throw "PowerShell parser errors in $($script.FullName): $($errors.Message -join '; ')" }
 }
-Write-Host "PASS: $($scripts.Count) PowerShell scripts parsed; local demo safety helpers passed."
+Write-Host "PASS: $($scripts.Count) PowerShell scripts parsed; local demo safety, PostgreSQL discovery, and ownership cleanup checks passed."

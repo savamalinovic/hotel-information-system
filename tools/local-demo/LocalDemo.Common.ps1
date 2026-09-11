@@ -48,6 +48,152 @@ function Assert-LocalDemoDatabaseName {
     return $normalized
 }
 
+function Resolve-LocalDemoPsql {
+    [CmdletBinding()]
+    param(
+        [string]$PsqlPath,
+        [string]$PostgreSqlRoot = 'C:\Program Files\PostgreSQL'
+    )
+
+    function Assert-PsqlExecutable([string]$Candidate, [string]$Source) {
+        if (-not (Test-Path -LiteralPath $Candidate -PathType Leaf)) {
+            throw "PostgreSQL client from $Source does not exist: $Candidate"
+        }
+        $item = Get-Item -LiteralPath $Candidate
+        if ($item.Name -ine 'psql.exe') {
+            throw "PostgreSQL client from $Source must be named psql.exe: $Candidate"
+        }
+        try {
+            & $item.FullName '--version' *> $null
+            if ($LASTEXITCODE -ne 0) { throw 'non-zero exit code' }
+        } catch {
+            throw "PostgreSQL client from $Source cannot be executed: $Candidate"
+        }
+        return $item.FullName
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($PsqlPath)) {
+        return Assert-PsqlExecutable -Candidate $PsqlPath -Source 'the explicit -PsqlPath parameter'
+    }
+
+    $pathCommand = Get-Command psql.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -ne $pathCommand) {
+        return Assert-PsqlExecutable -Candidate $pathCommand.Source -Source 'PATH'
+    }
+
+    if (Test-Path -LiteralPath $PostgreSqlRoot -PathType Container) {
+        $candidates = foreach ($directory in Get-ChildItem -LiteralPath $PostgreSqlRoot -Directory) {
+            if ($directory.Name -notmatch '^\d+(?:\.\d+){0,3}$') { continue }
+            $versionText = if ($directory.Name -notmatch '\.') { "$($directory.Name).0" } else { $directory.Name }
+            try { $version = [Version]::Parse($versionText) } catch { continue }
+            $candidatePath = Join-Path $directory.FullName 'bin\psql.exe'
+            if (Test-Path -LiteralPath $candidatePath -PathType Leaf) {
+                [pscustomobject]@{ Version = $version; Path = $candidatePath }
+            }
+        }
+        $candidates = @($candidates | Sort-Object Version -Descending)
+        if ($candidates) {
+            return Assert-PsqlExecutable -Candidate $candidates[0].Path -Source 'the standard PostgreSQL installation directory'
+        }
+    }
+
+    throw 'PostgreSQL client psql.exe was not found. Install PostgreSQL client tools, add psql.exe to PATH, or pass -PsqlPath.'
+}
+
+function Get-LocalDemoStatePath {
+    Join-Path ([IO.Path]::GetTempPath()) 'bluestars-local-demo-backend-state.json'
+}
+
+function Get-LocalDemoProcessIdentity {
+    param([Parameter(Mandatory)][int]$ProcessId)
+    try {
+        $process = Get-Process -Id $ProcessId -ErrorAction Stop
+        return [pscustomobject]@{ processId = $ProcessId; startedAt = $process.StartTime.ToUniversalTime().ToString('o') }
+    } catch {
+        return $null
+    }
+}
+
+function Test-LocalDemoProcessIdentity {
+    param([Parameter(Mandatory)]$Identity)
+    $actual = Get-LocalDemoProcessIdentity -ProcessId ([int]$Identity.processId)
+    if ($null -eq $actual) { return $false }
+    return ([datetime]$actual.startedAt).ToUniversalTime().Ticks -eq ([datetime]$Identity.startedAt).ToUniversalTime().Ticks
+}
+
+function Get-LocalDemoProcessTree {
+    param([Parameter(Mandatory)][int]$RootProcessId)
+    $allProcesses = @(Get-CimInstance Win32_Process)
+    $pending = [System.Collections.Generic.Queue[int]]::new()
+    $pending.Enqueue($RootProcessId)
+    $ids = [System.Collections.Generic.List[int]]::new()
+    while ($pending.Count -gt 0) {
+        $current = $pending.Dequeue()
+        if ($ids.Contains($current)) { continue }
+        $ids.Add($current)
+        foreach ($child in $allProcesses | Where-Object { [int]$_.ParentProcessId -eq $current }) {
+            $pending.Enqueue([int]$child.ProcessId)
+        }
+    }
+    return @($ids | ForEach-Object { Get-LocalDemoProcessIdentity -ProcessId $_ } | Where-Object { $null -ne $_ })
+}
+
+function Get-LocalDemoProcessState {
+    $statePath = Get-LocalDemoStatePath
+    if (-not (Test-Path -LiteralPath $statePath -PathType Leaf)) { return $null }
+    try { return Get-Content -Raw -LiteralPath $statePath | ConvertFrom-Json } catch { Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue; return $null }
+}
+
+function Save-LocalDemoProcessState {
+    param([Parameter(Mandatory)]$State)
+    $statePath = Get-LocalDemoStatePath
+    $temporaryPath = "$statePath.$([Guid]::NewGuid().ToString('N')).tmp"
+    $State | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $temporaryPath -Encoding UTF8 -NoNewline
+    Move-Item -LiteralPath $temporaryPath -Destination $statePath -Force
+}
+
+function Remove-LocalDemoProcessState {
+    Remove-Item -LiteralPath (Get-LocalDemoStatePath) -Force -ErrorAction SilentlyContinue
+}
+
+function Initialize-LocalDemoProcessState {
+    param([Parameter(Mandatory)][int]$LauncherProcessId)
+    $existing = Get-LocalDemoProcessState
+    if ($null -ne $existing) {
+        $live = @($existing.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ })
+        if ($live.Count -gt 0) { throw 'A backend process previously started by this local demo tool is still recorded. Stop it with Stop-DemoBackend.ps1 first.' }
+        Remove-LocalDemoProcessState
+    }
+    $launcher = Get-LocalDemoProcessIdentity -ProcessId $LauncherProcessId
+    if ($null -eq $launcher) { throw 'The backend launcher process ended before ownership state could be recorded.' }
+    $state = [pscustomobject]@{ launcher = $launcher; ownedProcesses = @($launcher) }
+    Save-LocalDemoProcessState -State $state
+    return $state
+}
+
+function Update-LocalDemoProcessStateTree {
+    param([Parameter(Mandatory)]$State)
+    $tree = Get-LocalDemoProcessTree -RootProcessId ([int]$State.launcher.processId)
+    if ($tree.Count -gt 0) {
+        $State.ownedProcesses = @($tree)
+        Save-LocalDemoProcessState -State $State
+    }
+}
+
+function Stop-LocalDemoOwnedProcess {
+    [CmdletBinding()]
+    param()
+    $state = Get-LocalDemoProcessState
+    if ($null -eq $state) { return $false }
+    $owned = @($state.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ })
+    if ($owned.Count -eq 0) { Remove-LocalDemoProcessState; return $false }
+    foreach ($identity in @($owned | Sort-Object { [int]$_.processId } -Descending)) {
+        Stop-Process -Id ([int]$identity.processId) -Force -ErrorAction SilentlyContinue
+    }
+    Remove-LocalDemoProcessState
+    return $true
+}
+
 function Resolve-LocalDemoApiBaseUrl {
     [CmdletBinding()]
     param([string]$ApiBaseUrl = 'http://127.0.0.1:8080/api/v1')

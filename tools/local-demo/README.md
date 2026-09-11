@@ -27,6 +27,12 @@ $env:BLUESTARS_DEMO_MANAGER_PHONE = '+387 65 100 000'
 
 Skripte prihvataju iste vrijednosti i kao eksplicitne parametre. Lozinke, JWT secret i JWT nikada se ne pišu u tracked fajl, terminalski izlaz ili seed rezultat. Za reset se PostgreSQL lozinka prosljeđuje procesu `psql` samo kroz privremenu procesnu `PGPASSWORD` varijablu.
 
+`Reset-DemoDatabase.ps1` automatski traži `psql.exe`: prvo na `PATH`, zatim pod standardnim Windows direktorijumom `C:\Program Files\PostgreSQL`, birajući najnoviju numeričku verziju. Ako je potreban drugi klijent, eksplicitno navedite provjerenu putanju:
+
+```powershell
+.\Reset-DemoDatabase.ps1 -PsqlPath 'C:\Program Files\PostgreSQL\17\bin\psql.exe'
+```
+
 ## Čist početak
 
 Iz ovog direktorijuma:
@@ -43,7 +49,7 @@ Prva skripta pravi samo praznu `bluestars_demo` bazu. Ako već postoji, bez `-Re
 .\Reset-DemoDatabase.ps1 -DatabaseName bluestars_demo -Reset
 ```
 
-Skripta odbija produkcijske/sistemske nazive, nazive bez `demo`/`test` markera i nelokalne hostove; prije brisanja prikazuje server, port i bazu. `Start-DemoBackend.ps1` provjerava JDK 17 i slobodan port 8080, koristi `application.example.properties` samo kao read-only izvor lokalne konfiguracije, uključuje manager bootstrap samo u tom procesu i čeka da backend postane dostupan. Ne nastavlja dok Flyway kroz normalan Spring Boot start ne obradi postojeće V1–V21 migracije.
+Skripta odbija produkcijske/sistemske nazive, nazive bez `demo`/`test` markera i nelokalne hostove; prije brisanja prikazuje server, port i bazu. `Start-DemoBackend.ps1` provjerava JDK 17 i slobodan port 8080, koristi `application.example.properties` samo kao read-only izvor lokalne konfiguracije, uključuje manager bootstrap samo u tom procesu i čeka da backend postane dostupan. Ne nastavlja dok Flyway kroz normalan Spring Boot start ne obradi postojeće V1–V21 migracije. Za izolovanu lokalnu provjeru kada je 8080 zauzet može se navesti `-ServerPort`; Android rad ostaje na podrazumijevanom portu 8080.
 
 Seed se spaja samo na `http://127.0.0.1:8080/api/v1` ili `http://localhost:8080/api/v1`. Odbija HTTPS, udaljene hostove i pogrešan API path. Ispisuje `created`, `already exists`, `updated` ili `failed`; svako ponovno pokretanje najprije traži postojeće resurse, tako da ne duplira podatke. Ako je ranije deaktiviran demo apartman ili tip, javni API ga ne može reaktivirati; seed sigurno prekida i navodi taj nedostatak umjesto da napravi duplikat.
 
@@ -73,7 +79,7 @@ Za zaustavljanje lokalnog Java backend procesa na portu 8080:
 .\Stop-DemoBackend.ps1 -Force
 ```
 
-Skripta odbija zaustavljanje neprepoznatog procesa. Za ponovni čisti demo prvo je ugasite, zatim uradite `Reset-DemoDatabase.ps1 -Reset`, pokrenite backend i seed redoslijedom iznad.
+Skripta za pokretanje upisuje privremeni PID/state zapis bez tajni, koji sadrži samo identitete procesa koje je sama pokrenula. Ako readiness ne uspije, launcher i njegovi zabilježeni potomci se gase i zapis se briše. Nakon uspješnog starta `Stop-DemoBackend.ps1` provjerava taj identitet prije gašenja; ne zaustavlja proizvoljne Java ili Maven procese. Za ponovni čisti demo prvo je ugasite, zatim uradite `Reset-DemoDatabase.ps1 -Reset`, pokrenite backend i seed redoslijedom iznad.
 
 Statičke provjere bez dodatnog test frameworka:
 

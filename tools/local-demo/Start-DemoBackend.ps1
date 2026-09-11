@@ -13,6 +13,7 @@ param(
     [string]$ManagerJmbg,
     [string]$ManagerAddress,
     [string]$ManagerPhone,
+    [ValidateRange(1, 65535)][int]$ServerPort = 8080,
     [ValidateRange(10, 300)][int]$ReadinessTimeoutSeconds = 90
 )
 
@@ -20,12 +21,13 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'LocalDemo.Common.ps1')
 
 function Get-JavaMajorVersion {
-    $javaVersion = (& java -version 2>&1 | Select-Object -First 1).ToString()
+    $javaVersion = (& $env:ComSpec /d /c 'java -version 2>&1' | Select-Object -First 1).ToString()
     if ($javaVersion -notmatch 'version "17(?:\.|\")') {
         throw "JDK 17 is required; java reported: $javaVersion"
     }
 }
 
+$ready = $false
 try {
     Assert-LocalDemoHost -HostName $PostgresHost
     $DatabaseName = Assert-LocalDemoDatabaseName -DatabaseName $DatabaseName
@@ -41,8 +43,8 @@ try {
     $ManagerPhone = Get-LocalDemoValue -Value $ManagerPhone -EnvironmentName 'BLUESTARS_DEMO_MANAGER_PHONE' -Label 'Demo manager phone'
     Get-JavaMajorVersion
 
-    if (Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue) {
-        throw 'Port 8080 is already in use. Stop the existing process before starting the local demo backend.'
+    if (Get-NetTCPConnection -LocalPort $ServerPort -State Listen -ErrorAction SilentlyContinue) {
+        throw "Port $ServerPort is already in use. Stop the existing process before starting the local demo backend."
     }
 
     $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -60,6 +62,7 @@ try {
         EFIKAS_BOOTSTRAP_MANAGER_PASSWORD = $DemoPassword; EFIKAS_BOOTSTRAP_MANAGER_NAME = $ManagerName
         EFIKAS_BOOTSTRAP_MANAGER_SURNAME = $ManagerSurname; EFIKAS_BOOTSTRAP_MANAGER_JMBG = $ManagerJmbg
         EFIKAS_BOOTSTRAP_MANAGER_ADDRESS = $ManagerAddress; EFIKAS_BOOTSTRAP_MANAGER_PHONE = $ManagerPhone
+        SERVER_PORT = "$ServerPort"
         SPRING_CONFIG_ADDITIONAL_LOCATION = "file:$exampleConfig"
     }
     $previousEnvironment = @{}
@@ -72,6 +75,7 @@ try {
         $logPath = Join-Path ([IO.Path]::GetTempPath()) 'bluestars-local-demo-backend.out.log'
         $errorLogPath = Join-Path ([IO.Path]::GetTempPath()) 'bluestars-local-demo-backend.err.log'
         $process = Start-Process -FilePath $mavenWrapper -ArgumentList @('spring-boot:run') -WorkingDirectory $backendPath -RedirectStandardOutput $logPath -RedirectStandardError $errorLogPath -PassThru
+        $state = Initialize-LocalDemoProcessState -LauncherProcessId $process.Id
     } finally {
         foreach ($item in $previousEnvironment.GetEnumerator()) {
             [Environment]::SetEnvironmentVariable($item.Key, $item.Value, 'Process')
@@ -82,9 +86,11 @@ try {
     do {
         Start-Sleep -Seconds 2
         try {
-            $response = Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:8080/v3/api-docs/v1' -TimeoutSec 3 -ErrorAction Stop
+            Update-LocalDemoProcessStateTree -State $state
+            $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ServerPort/v3/api-docs/v1" -TimeoutSec 3 -ErrorAction Stop
             if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
-                Write-Host "Local demo backend is ready at http://127.0.0.1:8080/api/v1 (launcher PID $($process.Id))."
+                $ready = $true
+                Write-Host "Local demo backend is ready at http://127.0.0.1:$ServerPort/api/v1 (launcher PID $($process.Id))."
                 Write-Host "Flyway ran through the normal Spring Boot startup path. Output: $logPath ; errors: $errorLogPath"
                 exit 0
             }
@@ -98,4 +104,6 @@ try {
 } catch {
     Write-Error $_.Exception.Message
     exit 1
+} finally {
+    if (-not $ready) { [void](Stop-LocalDemoOwnedProcess) }
 }
