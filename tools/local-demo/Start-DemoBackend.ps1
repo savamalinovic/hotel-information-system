@@ -92,7 +92,7 @@ try {
                 $ready = $true
                 Write-Host "Local demo backend is ready at http://127.0.0.1:$ServerPort/api/v1 (launcher PID $($process.Id))."
                 Write-Host "Flyway ran through the normal Spring Boot startup path. Output: $logPath ; errors: $errorLogPath"
-                exit 0
+                return
             }
         } catch {
             if ($process.HasExited) {

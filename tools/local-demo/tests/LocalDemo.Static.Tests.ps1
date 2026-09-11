@@ -87,6 +87,7 @@ if ($scenarioSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { 
 if ($scenarioSource -match 'Write-(Host|Output|Error).*\$(managerToken|agentOneToken|agentTwoToken|DemoPassword)') { throw 'Scenario seed could write a secret.' }
 $startSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Start-DemoBackend.ps1')
 if ($startSource -match 'Write-(Host|Output|Error).*(\$JwtSecret|\$PostgresPassword|\$DemoPassword)') { throw 'Backend launcher could write a secret.' }
+if ($startSource -match 'exit 0') { throw 'Backend launcher must return after readiness so orchestration can continue.' }
 $runnerSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Start-LocalDemo.ps1')
 if ($runnerSource -notmatch 'Seed-DemoData.ps1' -or $runnerSource -notmatch 'Seed-DemoScenarios.ps1') { throw 'Runner does not orchestrate both existing seed scripts.' }
 if ($runnerSource -notmatch '\[switch\]\$ResetDatabase' -or $runnerSource -notmatch '\[switch\]\$SkipAdb') { throw 'Runner reset or SkipAdb contract is missing.' }

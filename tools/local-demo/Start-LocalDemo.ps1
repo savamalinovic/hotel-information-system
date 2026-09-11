@@ -35,9 +35,18 @@ function Invoke-LocalDemoScript([string]$Name, [hashtable]$Parameters) {
         if ($entry.Value -isnot [switch] -and $entry.Value -isnot [bool]) { $arguments += [string]$entry.Value }
     }
     $powerShell = Get-Command powershell.exe -CommandType Application -ErrorAction Stop
-    $commandLine = ($arguments | ForEach-Object { '"' + ($_ -replace '"', '\"') + '"' }) -join ' '
-    $process = Start-Process -FilePath $powerShell.Source -ArgumentList $commandLine -Wait -PassThru -NoNewWindow
-    if ($process.ExitCode -ne 0) { throw "$Name failed." }
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-Host "START: $Name"
+    try {
+        & $powerShell.Source @arguments
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) { throw "$Name failed with exit code $exitCode." }
+        Write-Host ("PASS: {0} (exit {1}, {2:N1} s)" -f $Name, $exitCode, $watch.Elapsed.TotalSeconds)
+    } catch {
+        $code = if ($null -eq $LASTEXITCODE) { 'unknown' } else { $LASTEXITCODE }
+        Write-Host ("FAIL: {0} (exit {1}, {2:N1} s)" -f $Name, $code, $watch.Elapsed.TotalSeconds)
+        throw
+    }
 }
 
 function Set-TemporaryLocalDemoEnvironment([hashtable]$Values) {
