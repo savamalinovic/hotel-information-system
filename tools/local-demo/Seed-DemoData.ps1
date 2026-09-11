@@ -116,7 +116,7 @@ try {
     foreach ($code in $requiredCodes) {
         $specialization = $specializations | Where-Object { $_.code -eq $code } | Select-Object -First 1
         if ($null -eq $specialization) { throw "Required specialization $code is missing from the Flyway catalog." }
-        $specializationIds[$code] = [int]$specialization.id
+        $specializationIds[$code] = [int]($specialization.id)
     }
 
     $accounts = @(
@@ -138,7 +138,7 @@ try {
     $typeIds = @{}
     foreach ($type in $typeDefinitions) {
         $savedType = Ensure-DemoApartmentType -Definition $type -Token $token
-        $typeIds[$type.name] = [int]$savedType.apartmentTypeId
+        $typeIds[$type.name] = [int]($savedType.apartmentTypeId)
     }
     $apartmentDefinitions = @(
         @{ name = 'Demo A101'; address = 'Demo Street 10'; floor = 1; apartmentTypeId = $typeIds['Demo Studio'] },
