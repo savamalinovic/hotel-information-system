@@ -75,7 +75,7 @@ try {
         $logPath = Join-Path ([IO.Path]::GetTempPath()) 'bluestars-local-demo-backend.out.log'
         $errorLogPath = Join-Path ([IO.Path]::GetTempPath()) 'bluestars-local-demo-backend.err.log'
         $process = Start-Process -FilePath $mavenWrapper -ArgumentList @('spring-boot:run') -WorkingDirectory $backendPath -RedirectStandardOutput $logPath -RedirectStandardError $errorLogPath -PassThru
-        $state = Initialize-LocalDemoProcessState -LauncherProcessId $process.Id
+        $state = Initialize-LocalDemoProcessState -LauncherProcessId $process.Id -ServerPort $ServerPort
     } finally {
         foreach ($item in $previousEnvironment.GetEnumerator()) {
             [Environment]::SetEnvironmentVariable($item.Key, $item.Value, 'Process')
@@ -105,5 +105,5 @@ try {
     Write-Error $_.Exception.Message
     exit 1
 } finally {
-    if (-not $ready) { [void](Stop-LocalDemoOwnedProcess) }
+    if (-not $ready) { [void](Stop-LocalDemoOwnedProcess -ServerPort $ServerPort) }
 }

@@ -51,7 +51,7 @@ Prva skripta pravi samo praznu `bluestars_demo` bazu. Ako već postoji, bez `-Re
 
 Skripta odbija produkcijske/sistemske nazive, nazive bez `demo`/`test` markera i nelokalne hostove; prije brisanja prikazuje server, port i bazu. `Start-DemoBackend.ps1` provjerava JDK 17 i slobodan port 8080, koristi `application.example.properties` samo kao read-only izvor lokalne konfiguracije, uključuje manager bootstrap samo u tom procesu i čeka da backend postane dostupan. Ne nastavlja dok Flyway kroz normalan Spring Boot start ne obradi postojeće V1–V21 migracije. Za izolovanu lokalnu provjeru kada je 8080 zauzet može se navesti `-ServerPort`; Android rad ostaje na podrazumijevanom portu 8080.
 
-Seed se spaja samo na `http://127.0.0.1:8080/api/v1` ili `http://localhost:8080/api/v1`. Odbija HTTPS, udaljene hostove i pogrešan API path. Ispisuje `created`, `already exists`, `updated` ili `failed`; svako ponovno pokretanje najprije traži postojeće resurse, tako da ne duplira podatke. Ako je ranije deaktiviran demo apartman ili tip, javni API ga ne može reaktivirati; seed sigurno prekida i navodi taj nedostatak umjesto da napravi duplikat.
+Uobičajeni demo rad koristi backend i seed na portu 8080. Seed prihvata isključivo lokalne URL-ove `http://127.0.0.1:<port>/api/v1` ili `http://localhost:<port>/api/v1`; odbija HTTPS, udaljene hostove i pogrešan API path. Port 8081 je namijenjen samo izolovanoj lokalnoj verifikaciji kada nepovezan proces već koristi 8080, npr. `Seed-DemoData.ps1 -ApiBaseUrl http://127.0.0.1:8081/api/v1`. Ispisuje `created`, `already exists`, `updated` ili `failed`; svako ponovno pokretanje najprije traži postojeće resurse, tako da ne duplira podatke. Ako je ranije deaktiviran demo apartman ili tip, javni API ga ne može reaktivirati; seed sigurno prekida i navodi taj nedostatak umjesto da napravi duplikat.
 
 Seed kreira/pronalazi: bootstrap menadžera, dva agenta, šest aktivnih operativnih radnika (po jedan za svaku postojeću specijalizaciju), tri tipa apartmana, osam apartmana, četiri aktivne kategorije troška i singleton profil hotela. Na kraju bez lozinke ispisuje e-mail i ulogu svih demo naloga te provjerava prijavu svakog od njih.
 
@@ -69,7 +69,7 @@ Za više uređaja navedite serial:
 .\Set-AndroidAdbReverse.ps1 -DeviceSerial YOUR_DEVICE_SERIAL
 ```
 
-Skripta prikazuje `adb devices`, odbija `unauthorized`, `offline` i dvosmislene uređaje, postavlja i provjerava `adb reverse tcp:8080 tcp:8080`. Android aplikacija koristi `127.0.0.1:8080`; preko aktivnog `adb reverse` pravila taj port vodi na port 8080 računara. Bez aktivnog pravila aplikacija neće vidjeti lokalni backend. Nakon toga pokrenite već instaliranu Android aplikaciju i prijavite se jednim e-mailom koje seed prikaže.
+Skripta prikazuje `adb devices`, odbija `unauthorized`, `offline` i dvosmislene uređaje, postavlja i provjerava `adb reverse tcp:8080 tcp:8080`. Android aplikacija ima fiksni `127.0.0.1:8080` URL; preko aktivnog `adb reverse` pravila taj port vodi na port 8080 računara. Zato Android i običan demo rad uvijek koriste backend na 8080; alternativni 8081 port je samo za izolovanu provjeru i ne mijenja mobilni URL. Bez aktivnog pravila aplikacija neće vidjeti lokalni backend. Nakon toga pokrenite već instaliranu Android aplikaciju i prijavite se jednim e-mailom koje seed prikaže.
 
 ## Gašenje, reset i provjere
 

@@ -31,17 +31,22 @@ $originalState = if (Test-Path -LiteralPath $statePath) { Get-Content -Raw -Lite
 try {
     $testProcess = Start-Process -FilePath "$env:SystemRoot\System32\ping.exe" -ArgumentList @('-n', '30', '127.0.0.1') -PassThru
     $identity = Get-LocalDemoProcessIdentity -ProcessId $testProcess.Id
-    Save-LocalDemoProcessState -State ([pscustomobject]@{ launcher = $identity; ownedProcesses = @($identity) })
-    if (-not (Stop-LocalDemoOwnedProcess)) { throw 'Owned test process was not cleaned up.' }
+    Save-LocalDemoProcessState -State ([pscustomobject]@{ serverPort = 18081; launcher = $identity; ownedProcesses = @($identity) })
+    Assert-Throws { Stop-LocalDemoOwnedProcess -ServerPort 18082 } 'Cleanup accepted a mismatched port.'
+    if (-not (Get-Process -Id $testProcess.Id -ErrorAction SilentlyContinue)) { throw 'Mismatched port cleanup stopped its process.' }
+    if (-not (Stop-LocalDemoOwnedProcess -ServerPort 18081)) { throw 'Owned test process was not cleaned up.' }
     Start-Sleep -Milliseconds 250
     if (Get-Process -Id $testProcess.Id -ErrorAction SilentlyContinue) { throw 'Cleanup did not stop its owned test process.' }
     if (Test-Path -LiteralPath $statePath) { throw 'Cleanup did not remove its state file.' }
 
     $current = Get-LocalDemoProcessIdentity -ProcessId $PID
     $stale = [pscustomobject]@{ processId = $current.processId; startedAt = ([datetime]$current.startedAt).AddSeconds(-1).ToString('o') }
-    Save-LocalDemoProcessState -State ([pscustomobject]@{ launcher = $stale; ownedProcesses = @($stale) })
-    if (Stop-LocalDemoOwnedProcess) { throw 'Cleanup accepted a process identity it did not own.' }
+    Save-LocalDemoProcessState -State ([pscustomobject]@{ serverPort = 18081; launcher = $stale; ownedProcesses = @($stale) })
+    if (Stop-LocalDemoOwnedProcess -ServerPort 18081) { throw 'Cleanup accepted a process identity it did not own.' }
     if (-not (Get-Process -Id $PID -ErrorAction SilentlyContinue)) { throw 'Cleanup stopped an unrelated current process.' }
+    Save-LocalDemoProcessState -State ([pscustomobject]@{ launcher = $current; ownedProcesses = @($current) })
+    if (Stop-LocalDemoOwnedProcess -ServerPort 18081) { throw 'Legacy state was accepted as current.' }
+    if (Test-Path -LiteralPath $statePath) { throw 'Legacy state was not removed.' }
 } finally {
     Remove-LocalDemoProcessState
     if ($null -ne $originalState) { Set-Content -LiteralPath $statePath -Value $originalState -Encoding UTF8 -NoNewline }

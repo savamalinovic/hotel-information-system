@@ -9,8 +9,8 @@ $ErrorActionPreference = 'Stop'
 
 try {
     if (-not $Force) { throw 'Refusing to stop a process without -Force.' }
-    if (-not (Stop-LocalDemoOwnedProcess)) { throw 'No recognized backend process started by the local demo tool is recorded.' }
-    Write-Host "Stopped the recorded local demo backend process tree for port $ServerPort."
+    if (-not (Stop-LocalDemoOwnedProcess -ServerPort $ServerPort)) { throw 'No recognized current backend state with a recorded port is available.' }
+    Write-Host "Stopped the recorded local demo backend process tree for verified port $ServerPort."
 } catch {
     Write-Error $_.Exception.Message
     exit 1

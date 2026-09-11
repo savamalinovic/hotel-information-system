@@ -167,13 +167,15 @@ try {
         Write-LocalDemoStatus -Status 'updated' -Resource 'hotel profile'
     } else { Write-LocalDemoStatus -Status 'already exists' -Resource 'hotel profile' }
 
-    foreach ($account in @(@{ email = $ManagerEmail; role = 'MANAGER' }) + $accounts) {
+    $accountsForLogin = @($accounts)
+    $accountsForLogin += @{ email = $ManagerEmail; role = 'MANAGER' }
+    foreach ($account in $accountsForLogin) {
         $accountLogin = Invoke-LocalDemoApi -Method POST -ApiBaseUrl $ApiBaseUrl -Path '/auth/login' -Body @{ email = $account.email; password = $DemoPassword }
         if ([string]::IsNullOrWhiteSpace($accountLogin.token) -or $accountLogin.role -ne $account.role) { throw "Login verification failed for $($account.email)." }
     }
     Write-Host 'Demo accounts (password intentionally not shown):'
-    Write-Host "  $ManagerEmail — MANAGER"
-    foreach ($account in $accounts) { Write-Host "  $($account.email) — $($account.role)" }
+    Write-Host "  $ManagerEmail - MANAGER"
+    foreach ($account in $accounts) { Write-Host "  $($account.email) - $($account.role)" }
     Write-Host 'Local demo seed completed successfully.'
 } catch {
     Write-LocalDemoStatus -Status 'failed' -Resource 'local demo seed'

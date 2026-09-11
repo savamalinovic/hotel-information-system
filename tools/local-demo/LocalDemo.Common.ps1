@@ -157,16 +157,23 @@ function Remove-LocalDemoProcessState {
 }
 
 function Initialize-LocalDemoProcessState {
-    param([Parameter(Mandatory)][int]$LauncherProcessId)
+    param(
+        [Parameter(Mandatory)][int]$LauncherProcessId,
+        [Parameter(Mandatory)][ValidateRange(1, 65535)][int]$ServerPort
+    )
     $existing = Get-LocalDemoProcessState
     if ($null -ne $existing) {
+        if ($null -eq $existing.PSObject.Properties['serverPort']) {
+            Remove-LocalDemoProcessState
+        } else {
         $live = @($existing.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ })
         if ($live.Count -gt 0) { throw 'A backend process previously started by this local demo tool is still recorded. Stop it with Stop-DemoBackend.ps1 first.' }
         Remove-LocalDemoProcessState
+        }
     }
     $launcher = Get-LocalDemoProcessIdentity -ProcessId $LauncherProcessId
     if ($null -eq $launcher) { throw 'The backend launcher process ended before ownership state could be recorded.' }
-    $state = [pscustomobject]@{ launcher = $launcher; ownedProcesses = @($launcher) }
+    $state = [pscustomobject]@{ serverPort = $ServerPort; launcher = $launcher; ownedProcesses = @($launcher) }
     Save-LocalDemoProcessState -State $state
     return $state
 }
@@ -182,9 +189,13 @@ function Update-LocalDemoProcessStateTree {
 
 function Stop-LocalDemoOwnedProcess {
     [CmdletBinding()]
-    param()
+    param([Parameter(Mandatory)][ValidateRange(1, 65535)][int]$ServerPort)
     $state = Get-LocalDemoProcessState
     if ($null -eq $state) { return $false }
+    if ($null -eq $state.PSObject.Properties['serverPort']) { Remove-LocalDemoProcessState; return $false }
+    if ([int]$state.serverPort -ne $ServerPort) {
+        throw "Recorded local demo backend port $($state.serverPort) does not match requested port $ServerPort; no process was stopped."
+    }
     $owned = @($state.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ })
     if ($owned.Count -eq 0) { Remove-LocalDemoProcessState; return $false }
     foreach ($identity in @($owned | Sort-Object { [int]$_.processId } -Descending)) {
