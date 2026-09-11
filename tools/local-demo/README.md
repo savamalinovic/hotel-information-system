@@ -62,13 +62,13 @@ Za izolovanu provjeru bez telefona i na drugom portu koristite `-SkipAdb`, npr. 
 
 ## Opcionalni object-storage smoke
 
-Ako su u procesu postavljeni `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` i `AWS_S3_BUCKET`, pokrenite:
+Ako su u procesu postavljeni `EFIKAS_AWS_REGION`, `EFIKAS_AWS_ACCESS_KEY_ID`, `EFIKAS_AWS_SECRET_ACCESS_KEY` i `EFIKAS_AWS_BUCKET`, pokrenite:
 
 ```powershell
 .\Test-LocalDemoObjectStorage.ps1
 ```
 
-Bez te konfiguracije rezultat je `SKIPPED`. Nema automatske instalacije ili preuzimanja storage programa.
+Bez potpune konfiguracije rezultat je `SKIPPED`. Nema automatske instalacije ili preuzimanja storage programa. Smoke kroz javni API dodaje po jedan mali task i damage prilog; API nema endpoint za njihovo brisanje, zato ga pokrenite nad svježom izolovanom demo bazom i bucketom.
 
 ## Rješavanje problema
 

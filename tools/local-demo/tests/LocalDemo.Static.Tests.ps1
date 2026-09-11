@@ -93,11 +93,18 @@ if ($runnerSource -notmatch '\[switch\]\$ResetDatabase' -or $runnerSource -notma
 if ($runnerSource -notmatch 'not owned by this local demo runner') { throw 'Runner does not reject an unrelated occupied port.' }
 if ($runnerSource -match 'Write-(Host|Output|Error).*\$(JwtSecret|PostgresPassword|token)') { throw 'Runner could write a secret.' }
 if ($runnerSource -notmatch 'if \(\$ShowDemoPassword\) \{ Write-Host "  Demo password: \$DemoPassword" \}') { throw 'Runner demo password display is not explicitly opt-in.' }
+if ($runnerSource -match '(?m)^\s*\$\w+Args\s*=.*(PostgresPassword|JwtSecret|DemoPassword)') { throw 'Runner passes a secret through child process arguments.' }
+if ($runnerSource -notmatch 'Set-TemporaryLocalDemoEnvironment' -or $runnerSource -notmatch 'Restore-TemporaryLocalDemoEnvironment') { throw 'Runner does not restore temporary secret environment values.' }
+if ($runnerSource -notmatch "Invoke-LocalDemoScript -Name 'Test-LocalDemo.ps1'") { throw 'Runner does not run final verification.' }
+if ($runnerSource -notmatch '\$verificationArgs\.SkipAdb' -or $runnerSource -notmatch '\$verificationArgs\.DeviceSerial') { throw 'Runner does not forward final verification options.' }
 $verificationSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Test-LocalDemo.ps1')
 if ($verificationSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Verification appears to use direct database business operations.' }
 if ($verificationSource -match 'Write-(Host|Output|Error).*\$(DemoPassword|.*Token)') { throw 'Verification could write a secret.' }
 $storageSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Test-LocalDemoObjectStorage.ps1')
-if ($storageSource -notmatch 'SKIPPED: object storage is not configured') { throw 'Object-storage smoke does not report missing configuration as SKIPPED.' }
+if ($storageSource -notmatch 'SKIPPED: object storage is not completely configured') { throw 'Object-storage smoke does not report missing configuration as SKIPPED.' }
+foreach ($name in @('EFIKAS_AWS_REGION', 'EFIKAS_AWS_ACCESS_KEY_ID', 'EFIKAS_AWS_SECRET_ACCESS_KEY', 'EFIKAS_AWS_BUCKET')) { if ($storageSource -notmatch $name) { throw "Object-storage smoke does not require $name." } }
+if ($storageSource -notmatch '/tasks/' -or $storageSource -notmatch '/damages/') { throw 'Object-storage smoke does not cover task and damage attachments.' }
+if ($storageSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Object-storage smoke appears to use direct database operations.' }
 
 $scripts = Get-ChildItem -Path (Join-Path $PSScriptRoot '..') -Filter '*.ps1' -File -Recurse
 foreach ($script in $scripts) {
