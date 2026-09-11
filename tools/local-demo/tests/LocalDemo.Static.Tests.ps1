@@ -12,6 +12,7 @@ foreach ($name in @('postgres', 'template0', 'template1', 'hotel', 'efikas', 'bl
     Assert-Throws { Assert-LocalDemoDatabaseName -DatabaseName $name } "Expected unsafe database '$name' to be rejected."
 }
 if ((Assert-LocalDemoDatabaseName -DatabaseName 'bluestars_demo_verify') -ne 'bluestars_demo_verify') { throw 'Safe demo database was not accepted.' }
+if ((Assert-LocalDemoDatabaseName -DatabaseName 'bluestars_scenarios_verify') -ne 'bluestars_scenarios_verify') { throw 'Safe scenario database was not accepted.' }
 
 foreach ($url in @('https://example.com/api/v1', 'http://hotel.example/api/v1', 'http://127.0.0.1:8080/api/v2')) {
     Assert-Throws { Resolve-LocalDemoApiBaseUrl -ApiBaseUrl $url } "Expected unsafe API URL '$url' to be rejected."
@@ -59,6 +60,18 @@ if ($result.Status -ne 'already exists' -or $counters.Create -ne 0) { throw 'Exi
 $result = Invoke-LocalDemoEnsure -Lookup { [void]($counters.Lookup++); $null } -Create { [void]($counters.Create++); [pscustomobject]@{ id = 2 } }
 if ($result.Status -ne 'created' -or $counters.Create -ne 1) { throw 'Missing resource was not created once.' }
 
+$previousCulture = [Globalization.CultureInfo]::CurrentCulture
+$previousUiCulture = [Globalization.CultureInfo]::CurrentUICulture
+try {
+    [Globalization.CultureInfo]::CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo('sr-Latn-BA')
+    [Globalization.CultureInfo]::CurrentUICulture = [Globalization.CultureInfo]::GetCultureInfo('sr-Latn-BA')
+    $moneyJson = @{ amount = ConvertTo-LocalDemoMoney ([decimal]11.25) } | ConvertTo-Json -Compress
+    if ($moneyJson -ne '{"amount":"11.25"}') { throw "Invariant demo money JSON was not preserved: $moneyJson" }
+} finally {
+    [Globalization.CultureInfo]::CurrentCulture = $previousCulture
+    [Globalization.CultureInfo]::CurrentUICulture = $previousUiCulture
+}
+
 $seedSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Seed-DemoData.ps1')
 if ($seedSource -match 'Write-(Host|Output|Error).*\$DemoPassword') { throw 'Seed script could write the demo password.' }
 $scenarioSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Seed-DemoScenarios.ps1')
@@ -66,6 +79,8 @@ if ($scenarioSource -notmatch 'ReferenceDate must use ISO form yyyy-MM-dd') { th
 if ($scenarioSource -notmatch '\[DEMO:\$\{Code\}:') { throw 'Scenario seed does not form stable scenario markers.' }
 if ($scenarioSource -match '(?i)\b(double|float)\b') { throw 'Scenario seed must not use binary floating-point values.' }
 if ($scenarioSource -notmatch 'Conflicting existing state') { throw 'Scenario seed does not stop on a conflicting existing scenario.' }
+if ($scenarioSource -notmatch 'Ensure-R1Claim') { throw 'Scenario seed does not record the required R1 claim.' }
+if ($scenarioSource -notmatch 'Ensure-CompletedDemoAttendance') { throw 'Scenario seed does not make preparation attendance idempotent.' }
 if ($scenarioSource -notmatch "status -eq 'COMPLETED'.*status -eq 'CANCELLED'") { throw 'Scenario seed does not guard terminal task actions.' }
 if ($scenarioSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Scenario seed appears to use a direct database operation.' }
 if ($scenarioSource -match 'Write-(Host|Output|Error).*\$(managerToken|agentOneToken|agentTwoToken|DemoPassword)') { throw 'Scenario seed could write a secret.' }

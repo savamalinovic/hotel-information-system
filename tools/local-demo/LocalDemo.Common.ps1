@@ -42,8 +42,8 @@ function Assert-LocalDemoDatabaseName {
     if ($normalized -notmatch '^[a-z][a-z0-9_]{0,62}$') {
         throw "Database '$DatabaseName' is not a safe PostgreSQL identifier."
     }
-    if ($normalized -notmatch '(^|_)(demo|test)(_|$)') {
-        throw "Database '$DatabaseName' must contain a clear demo or test marker."
+    if ($normalized -notmatch '(^|_)(demo|test|scenario|scenarios)(_|$)') {
+        throw "Database '$DatabaseName' must contain a clear demo, test, or scenario marker."
     }
     return $normalized
 }
@@ -317,6 +317,13 @@ function Invoke-LocalDemoEnsure {
         return [pscustomobject]@{ Status = 'already exists'; Value = $existing }
     }
     return [pscustomobject]@{ Status = 'created'; Value = (& $Create) }
+}
+
+function ConvertTo-LocalDemoMoney {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][decimal]$Value)
+
+    return $Value.ToString('0.00', [Globalization.CultureInfo]::InvariantCulture)
 }
 
 function Write-LocalDemoStatus {
