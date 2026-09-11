@@ -8,11 +8,12 @@ function Assert-Throws {
     throw $Message
 }
 
-foreach ($name in @('postgres', 'template0', 'template1', 'hotel', 'efikas', 'bluestars', 'ordinary_database')) {
+foreach ($name in @('postgres', 'template0', 'template1', 'hotel', 'efikas', 'bluestars', 'ordinary_database', 'scenario', 'scenarios', 'production_scenario', 'hotel_scenarios', 'bluestars_scenarios_verify')) {
     Assert-Throws { Assert-LocalDemoDatabaseName -DatabaseName $name } "Expected unsafe database '$name' to be rejected."
 }
-if ((Assert-LocalDemoDatabaseName -DatabaseName 'bluestars_demo_verify') -ne 'bluestars_demo_verify') { throw 'Safe demo database was not accepted.' }
-if ((Assert-LocalDemoDatabaseName -DatabaseName 'bluestars_scenarios_verify') -ne 'bluestars_scenarios_verify') { throw 'Safe scenario database was not accepted.' }
+foreach ($name in @('bluestars_demo', 'bluestars_demo_verify', 'bluestars_demo_scenarios_verify', 'bluestars_test_scenarios')) {
+    if ((Assert-LocalDemoDatabaseName -DatabaseName $name) -ne $name) { throw "Safe database '$name' was not accepted." }
+}
 
 foreach ($url in @('https://example.com/api/v1', 'http://hotel.example/api/v1', 'http://127.0.0.1:8080/api/v2')) {
     Assert-Throws { Resolve-LocalDemoApiBaseUrl -ApiBaseUrl $url } "Expected unsafe API URL '$url' to be rejected."
