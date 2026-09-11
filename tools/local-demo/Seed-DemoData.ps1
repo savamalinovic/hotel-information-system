@@ -36,7 +36,7 @@ function Ensure-DemoUser {
         $changed = $true
     }
     $expectedSpecializationIds = @($Definition.specializationIds | Sort-Object)
-    $actualSpecializationIds = @($existing.specializations | ForEach-Object { [int]$_.id } | Sort-Object)
+    $actualSpecializationIds = @($existing.specializations | ForEach-Object { [int]($_.id) } | Sort-Object)
     if (@(Compare-Object -ReferenceObject $expectedSpecializationIds -DifferenceObject $actualSpecializationIds).Count -gt 0) {
         $existing = Invoke-LocalDemoApi -Method PUT -ApiBaseUrl $ApiBaseUrl -Path "/users/$($existing.id)/specializations" -Token $Token -Body @{ specializationIds = $expectedSpecializationIds }
         $changed = $true
@@ -110,7 +110,10 @@ try {
     }
     Write-LocalDemoStatus -Status 'already exists' -Resource "bootstrap manager $ManagerEmail (MANAGER)"
 
-    $specializations = @(Invoke-LocalDemoApi -Method GET -ApiBaseUrl $ApiBaseUrl -Path '/specializations' -Token $token)
+    $specializations = @()
+    foreach ($specializationResponse in @(Invoke-LocalDemoApi -Method GET -ApiBaseUrl $ApiBaseUrl -Path '/specializations' -Token $token)) {
+        $specializations += @($specializationResponse)
+    }
     $requiredCodes = @('CLEANING', 'ELECTRICAL', 'PLUMBING', 'GENERAL_MAINTENANCE', 'INSPECTION', 'APARTMENT_PREPARATION')
     $specializationIds = @{}
     foreach ($code in $requiredCodes) {
@@ -160,7 +163,7 @@ try {
     )) { [void](Ensure-DemoExpenseCategory -Definition $category -Token $token) }
 
     $profile = Invoke-LocalDemoApi -Method GET -ApiBaseUrl $ApiBaseUrl -Path '/hotel-profile' -Token $token
-    $profileDefinition = @{ name = 'BlueStars Local Demo'; legalName = 'BlueStars Local Demo Hotel'; address = 'Demo Street 10'; city = 'Banja Luka'; countryCode = 'BA'; phoneNumber = '+387 51 000 000'; email = 'demo.hotel@bluestars.local'; taxId = 'LOCAL-DEMO' }
+    $profileDefinition = @{ name = 'BlueStars Local Demo'; legalName = 'BlueStars Local Demo Hotel'; address = 'Demo Street 10'; city = 'Banja Luka'; countryCode = 'BA'; phoneNumber = '+38751000000'; email = 'demo.hotel@bluestars.local'; taxId = 'LOCAL-DEMO' }
     $profileChanged = @($profileDefinition.Keys | Where-Object { $profile.$_ -ne $profileDefinition[$_] }).Count -gt 0
     if ($profileChanged) {
         [void](Invoke-LocalDemoApi -Method PUT -ApiBaseUrl $ApiBaseUrl -Path '/hotel-profile' -Token $token -Body $profileDefinition)

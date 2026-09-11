@@ -116,7 +116,7 @@ function Get-LocalDemoProcessIdentity {
 
 function Test-LocalDemoProcessIdentity {
     param([Parameter(Mandatory)]$Identity)
-    $actual = Get-LocalDemoProcessIdentity -ProcessId ([int]$Identity.processId)
+    $actual = Get-LocalDemoProcessIdentity -ProcessId ([int]($Identity.processId))
     if ($null -eq $actual) { return $false }
     return ([datetime]$actual.startedAt).ToUniversalTime().Ticks -eq ([datetime]$Identity.startedAt).ToUniversalTime().Ticks
 }
@@ -131,8 +131,8 @@ function Get-LocalDemoProcessTree {
         $current = $pending.Dequeue()
         if ($ids.Contains($current)) { continue }
         $ids.Add($current)
-        foreach ($child in $allProcesses | Where-Object { [int]$_.ParentProcessId -eq $current }) {
-            $pending.Enqueue([int]$child.ProcessId)
+        foreach ($child in $allProcesses | Where-Object { [int]($_.ParentProcessId) -eq $current }) {
+            $pending.Enqueue([int]($child.ProcessId))
         }
     }
     return @($ids | ForEach-Object { Get-LocalDemoProcessIdentity -ProcessId $_ } | Where-Object { $null -ne $_ })
@@ -180,7 +180,7 @@ function Initialize-LocalDemoProcessState {
 
 function Update-LocalDemoProcessStateTree {
     param([Parameter(Mandatory)]$State)
-    $tree = Get-LocalDemoProcessTree -RootProcessId ([int]$State.launcher.processId)
+    $tree = Get-LocalDemoProcessTree -RootProcessId ([int]($State.launcher.processId))
     if ($tree.Count -gt 0) {
         $State.ownedProcesses = @($tree)
         Save-LocalDemoProcessState -State $State
@@ -193,13 +193,13 @@ function Stop-LocalDemoOwnedProcess {
     $state = Get-LocalDemoProcessState
     if ($null -eq $state) { return $false }
     if ($null -eq $state.PSObject.Properties['serverPort']) { Remove-LocalDemoProcessState; return $false }
-    if ([int]$state.serverPort -ne $ServerPort) {
+    if ([int]($state.serverPort) -ne $ServerPort) {
         throw "Recorded local demo backend port $($state.serverPort) does not match requested port $ServerPort; no process was stopped."
     }
     $owned = @($state.ownedProcesses | Where-Object { Test-LocalDemoProcessIdentity $_ })
     if ($owned.Count -eq 0) { Remove-LocalDemoProcessState; return $false }
-    foreach ($identity in @($owned | Sort-Object { [int]$_.processId } -Descending)) {
-        Stop-Process -Id ([int]$identity.processId) -Force -ErrorAction SilentlyContinue
+    foreach ($identity in @($owned | Sort-Object { [int]($_.processId) } -Descending)) {
+        Stop-Process -Id ([int]($identity.processId)) -Force -ErrorAction SilentlyContinue
     }
     Remove-LocalDemoProcessState
     return $true
@@ -301,7 +301,7 @@ function Get-LocalDemoPagedContent {
         $response = Invoke-LocalDemoApi -Method GET -ApiBaseUrl $ApiBaseUrl -Path "${Path}${separator}page=$page&size=100" -Token $Token
         $all += @($response.content)
         $page++
-    } while ($page -lt [int]$response.totalPages)
+    } while ($page -lt [int]($response.totalPages))
     return $all
 }
 
