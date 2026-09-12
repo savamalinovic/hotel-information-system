@@ -201,6 +201,15 @@ function Stop-LocalDemoOwnedProcess {
     foreach ($identity in @($owned | Sort-Object { [int]($_.processId) } -Descending)) {
         Stop-Process -Id ([int]($identity.processId)) -Force -ErrorAction SilentlyContinue
     }
+    $deadline = (Get-Date).AddSeconds(10)
+    do {
+        $remaining = @($owned | Where-Object { Test-LocalDemoProcessIdentity $_ })
+        if ($remaining.Count -eq 0) { break }
+        Start-Sleep -Milliseconds 200
+    } while ((Get-Date) -lt $deadline)
+    if ($remaining.Count -gt 0) {
+        throw "Recorded local demo backend processes did not stop; state was retained and no database cleanup is allowed."
+    }
     Remove-LocalDemoProcessState
     return $true
 }
