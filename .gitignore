@@ -19,4 +19,8 @@ application*.properties
 # Local development state
 .local/
 
+# Standalone MinIO for the local demo (binaries, data, state and logs)
+tools/local-demo/bin/
+tools/local-demo/.local-object-storage/
+
 efikas-firebase-service-account.json

@@ -4,7 +4,7 @@ Ovi alati pripremaju isključivo lokalnu demo bazu, pokreću backend i stvaraju 
 
 ## Preduslovi i tajne
 
-Potrebni su PowerShell 5.1+, JDK 17, PostgreSQL klijent `psql`, pokrenut lokalni PostgreSQL i `adb` za fizički Android uređaj. PostgreSQL može biti pokrenut postojećim root Compose servisom:
+Potrebni su PowerShell 5.1+, JDK 17, PostgreSQL klijent `psql` i pokrenut lokalni PostgreSQL. `adb` je potreban samo za fizički Android uređaj. Lokalni object storage koristi standalone MinIO; Docker nije potreban za MinIO. PostgreSQL može biti pokrenut postojećim root Compose servisom:
 
 ```powershell
 docker compose up -d --wait postgres
@@ -51,6 +51,42 @@ Za eksplicitni čisti reset koristite:
 
 Za izolovanu provjeru bez telefona i na drugom portu koristite `-SkipAdb`, npr. `-ServerPort 8081`. Android aplikacija ostaje vezana za 8080.
 
+## Lokalni MinIO object storage
+
+Ručno preuzmite zvanične Windows `minio.exe` i `mc.exe` binarne fajlove i stavite ih u ignorisani direktorijum `tools/local-demo/bin/`, ili ih dodajte na `PATH`. Alati ih ne preuzimaju tokom običnog starta. Mogu se navesti i eksplicitno kroz `-MinioPath` i `-McPath`. Ne stavljajte binarne fajlove, ključeve ili sadržaj bucketa u Git.
+
+Za standalone demo postavite procesne vrijednosti; AWS ključevi moraju odgovarati MinIO root korisniku jer launcher koristi samo lokalni root nalog:
+
+```powershell
+$env:BLUESTARS_MINIO_ROOT_USER = 'bluestarsdemo'
+$env:BLUESTARS_MINIO_ROOT_PASSWORD = 'use-a-local-secret-with-at-least-16-characters'
+$env:EFIKAS_AWS_REGION = 'eu-central-1'
+$env:EFIKAS_AWS_ENDPOINT = 'http://127.0.0.1:9000'
+$env:EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED = 'true'
+$env:EFIKAS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
+$env:EFIKAS_AWS_SECRET_ACCESS_KEY = $env:BLUESTARS_MINIO_ROOT_PASSWORD
+$env:EFIKAS_AWS_BUCKET = 'bluestars-demo'
+```
+
+Lozinka mora imati najmanje 16 znakova. Vrijednosti su samo u trenutnom procesu; launcher ih ne stavlja u argumente, state, log ili izlaz. MinIO se veže isključivo na `127.0.0.1`, koristi `tools/local-demo/.local-object-storage/data`, upisuje ownership state bez tajni i čeka readiness na portu 9000.
+
+Pokretanje i provjera bucketa su idempotentni:
+
+```powershell
+.\Start-LocalDemoObjectStorage.ps1
+```
+
+S3 API je `http://127.0.0.1:9000`, a konzola `http://127.0.0.1:9001`. Drugi poziv ne pokreće dupli MinIO proces niti briše postojeće objekte.
+
+Kompletan redoslijed bez automatskog ADB koraka je:
+
+```powershell
+.\Start-LocalDemoObjectStorage.ps1
+.\Start-LocalDemo.ps1 -SkipAdb
+.\Test-LocalDemoObjectStorage.ps1
+.\Set-AndroidAdbReverse.ps1 -IncludeObjectStorage
+```
+
 ## Provjera i zaustavljanje
 
 ```powershell
@@ -62,13 +98,13 @@ Za izolovanu provjeru bez telefona i na drugom portu koristite `-SkipAdb`, npr. 
 
 ## Opcionalni object-storage smoke
 
-Ako su u procesu postavljeni `EFIKAS_AWS_REGION`, `EFIKAS_AWS_ACCESS_KEY_ID`, `EFIKAS_AWS_SECRET_ACCESS_KEY` i `EFIKAS_AWS_BUCKET`, pokrenite:
+Ako su u procesu postavljene sve `EFIKAS_AWS_*` vrijednosti iz prethodne sekcije i backend je pokrenut sa istim procesnim vrijednostima, pokrenite:
 
 ```powershell
 .\Test-LocalDemoObjectStorage.ps1
 ```
 
-Bez potpune konfiguracije rezultat je `SKIPPED`. Nema automatske instalacije ili preuzimanja storage programa. Smoke kroz javni API dodaje po jedan mali task i damage prilog; API nema endpoint za njihovo brisanje, zato ga pokrenite nad svježom izolovanom demo bazom i bucketom.
+Bez potpune konfiguracije rezultat je `SKIPPED`. Smoke kroz javni API provjerava fotografiju apartmana, task prilog i damage prilog, uključujući download i podudaranje bajtova. Dodaje male objekte u bucket; task i damage prilozi nemaju javni delete endpoint, zato za čist test koristite novi izolovani bucket ili eksplicitni guarded cleanup lokalnog MinIO data direktorijuma. Apartment picture zapis ima postojeći javni delete endpoint, ali smoke ga namjerno ne poziva.
 
 ## Rješavanje problema
 
@@ -78,6 +114,9 @@ Bez potpune konfiguracije rezultat je `SKIPPED`. Nema automatske instalacije ili
 - Nedostaje JDK 17: instalirajte/odaberite JDK 17 prije pokretanja backenda.
 - Backend nije spreman: pregledajte putanje do lokalnih logova koje ispiše launcher, pa zaustavite evidentirani proces.
 - Object storage nije konfigurisan: osnovni demo je i dalje upotrebljiv; attachment smoke ostaje `SKIPPED`.
+- MinIO ili `mc` nedostaje: stavite zvanične Windows binarne fajlove u `tools/local-demo/bin/` ili proslijedite njihove eksplicitne putanje. Nema automatskog download-a.
+- Port 9000 ili 9001 je zauzet: pronađite vlasnički PID kroz `Get-NetTCPConnection -LocalPort 9000,9001 -State Listen`; ne gasite široko procese. Zaustavite samo poznati lokalni MinIO ili oslobodite port prije starta.
+- Presigned URL nije dostupan telefonu: provjerite `EFIKAS_AWS_ENDPOINT=http://127.0.0.1:9000`, path-style `true`, MinIO loopback binding i `adb reverse tcp:9000 tcp:9000`.
 
 ## Čist početak
 
@@ -106,7 +145,7 @@ Seed kreira/pronalazi: bootstrap menadžera, dva agenta, šest aktivnih operativ
 
 `Seed-DemoScenarios.ps1` se pokreće tek poslije uspješnog `Seed-DemoData.ps1`. Namijenjen je samo lokalnom demo okruženju i koristi postojeće javne `/api/v1` rute, redovnu autentifikaciju i RBAC. Ne koristi SQL za poslovne podatke niti pravi demo API rute.
 
-Kratki redoslijed za Android ručno testiranje je: (1) reset baze, (2) start backenda, (3) `Seed-DemoData.ps1`, (4) `Seed-DemoScenarios.ps1`, (5) `Set-AndroidAdbReverse.ps1`, pa (6) prijava u Android aplikaciju jednim od naloga ispod.
+Kratki redoslijed za Android ručno testiranje je: (1) start MinIO ako se testiraju objekti, (2) reset baze, (3) start backenda, (4) `Seed-DemoData.ps1`, (5) `Seed-DemoScenarios.ps1`, (6) `Set-AndroidAdbReverse.ps1 -IncludeObjectStorage` kada je storage konfigurisan, pa (7) prijava u Android aplikaciju jednim od naloga ispod.
 
 Scenariji su vezani za današnji datum lokalnog backenda. Možete ga eksplicitno navesti samo kao današnji ISO datum:
 
@@ -144,26 +183,46 @@ Sa jednim autorizovanim uređajem:
 .\Set-AndroidAdbReverse.ps1
 ```
 
+Kada je MinIO namjerno konfigurisan, eksplicitno uključite i storage port:
+
+```powershell
+.\Set-AndroidAdbReverse.ps1 -IncludeObjectStorage
+```
+
 Za više uređaja navedite serial:
 
 ```powershell
 .\Set-AndroidAdbReverse.ps1 -DeviceSerial YOUR_DEVICE_SERIAL
+.\Set-AndroidAdbReverse.ps1 -IncludeObjectStorage -DeviceSerial YOUR_DEVICE_SERIAL
 ```
 
-Skripta prikazuje `adb devices`, odbija `unauthorized`, `offline` i dvosmislene uređaje, postavlja i provjerava `adb reverse tcp:8080 tcp:8080`. Android aplikacija ima fiksni `127.0.0.1:8080` URL; preko aktivnog `adb reverse` pravila taj port vodi na port 8080 računara. Zato Android i običan demo rad uvijek koriste backend na 8080; alternativni 8081 port je samo za izolovanu provjeru i ne mijenja mobilni URL. Bez aktivnog pravila aplikacija neće vidjeti lokalni backend. Nakon toga pokrenite već instaliranu Android aplikaciju i prijavite se jednim e-mailom koje seed prikaže.
+Skripta prikazuje `adb devices`, odbija `unauthorized`, `offline` i dvosmislene uređaje. Bez dodatne opcije postavlja i provjerava postojeći `adb reverse tcp:8080 tcp:8080`; sa `-IncludeObjectStorage` postavlja i provjerava `adb reverse tcp:9000 tcp:9000`. Android aplikacija ima fiksni `127.0.0.1:8080` URL; preko reverse pravila port 8080 vodi na backend, a 9000 na MinIO S3 API računara. Bez aktivnog pravila aplikacija neće vidjeti lokalni backend ili objekte.
 
 ## Gašenje, reset i provjere
 
-Za zaustavljanje lokalnog Java backend procesa na portu 8080:
+Za zaustavljanje lokalnog Java backend procesa i standalone MinIO procesa:
 
 ```powershell
-.\Stop-DemoBackend.ps1 -Force
+.\Stop-DemoBackend.ps1 -Force -RemoveAdbReverse -RemoveObjectStorageAdbReverse
+.\Stop-LocalDemoObjectStorage.ps1 -Force
 ```
 
-Skripta za pokretanje upisuje privremeni PID/state zapis bez tajni, koji sadrži samo identitete procesa koje je sama pokrenula. Ako readiness ne uspije, launcher i njegovi zabilježeni potomci se gase i zapis se briše. Nakon uspješnog starta `Stop-DemoBackend.ps1` provjerava taj identitet prije gašenja; ne zaustavlja proizvoljne Java ili Maven procese. Za ponovni čisti demo prvo je ugasite, zatim uradite `Reset-DemoDatabase.ps1 -Reset`, pokrenite backend i seed redoslijedom iznad.
+Skripte provjeravaju PID i start-time prije zaustavljanja i ne zaustavljaju PostgreSQL, backend ili nepovezani MinIO. `Stop-LocalDemoObjectStorage.ps1 -Force` po defaultu zadržava bucket i data direktorijum. Za eksplicitni čist storage cleanup koristite samo:
+
+```powershell
+.\Stop-LocalDemoObjectStorage.ps1 -Force -CleanupData
+```
+
+Ovaj parametar ima strogi path guard i može obrisati samo `tools/local-demo/.local-object-storage/data`, zajedno sa lokalnim storage logovima; ne prihvata root, workspace ili proizvoljan direktorijum. Za ponovni čisti demo prvo zaustavite backend i storage, zatim uradite `Reset-DemoDatabase.ps1 -Reset`, pokrenite backend i seed redoslijedom iznad.
 
 Statičke provjere bez dodatnog test frameworka:
 
 ```powershell
 .\tests\LocalDemo.Static.Tests.ps1
+```
+
+Object-storage safety i lifecycle testovi:
+
+```powershell
+.\tests\LocalDemo.ObjectStorage.Tests.ps1
 ```

@@ -3,6 +3,7 @@ param(
     [switch]$Force,
     [ValidateRange(1, 65535)][int]$ServerPort = 8080,
     [switch]$RemoveAdbReverse,
+    [switch]$RemoveObjectStorageAdbReverse,
     [string]$DeviceSerial,
     [switch]$DropDatabase,
     [string]$DatabaseName = 'bluestars_demo',
@@ -28,6 +29,14 @@ try {
         & $adb.Source @args reverse --remove tcp:8080
         if ($LASTEXITCODE -ne 0) { throw 'Could not remove adb reverse tcp:8080.' }
         Write-Host 'Removed adb reverse tcp:8080.'
+    }
+    if ($RemoveObjectStorageAdbReverse) {
+        $adb = Get-Command adb -ErrorAction Stop
+        $args = @()
+        if (-not [string]::IsNullOrWhiteSpace($DeviceSerial)) { $args += @('-s', $DeviceSerial) }
+        & $adb.Source @args reverse --remove tcp:9000
+        if ($LASTEXITCODE -ne 0) { throw 'Could not remove adb reverse tcp:9000.' }
+        Write-Host 'Removed adb reverse tcp:9000.'
     }
     if ($DropDatabase) {
         Assert-LocalDemoHost -HostName $PostgresHost

@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param([string]$DeviceSerial)
+param(
+    [string]$DeviceSerial,
+    [switch]$IncludeObjectStorage
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -25,12 +28,21 @@ try {
         throw "Requested device '$DeviceSerial' is not an authorized adb device."
     }
 
-    & $adb.Source -s $DeviceSerial reverse tcp:8080 tcp:8080
-    if ($LASTEXITCODE -ne 0) { throw 'adb reverse failed.' }
+    $reversePorts = @(8080)
+    if ($IncludeObjectStorage) { $reversePorts += 9000 }
+    foreach ($port in $reversePorts) {
+        & $adb.Source -s $DeviceSerial reverse "tcp:$port" "tcp:$port"
+        if ($LASTEXITCODE -ne 0) { throw "adb reverse failed for tcp:$port." }
+    }
     $rules = & $adb.Source -s $DeviceSerial reverse --list
     if ($LASTEXITCODE -ne 0) { throw 'Could not verify adb reverse rules.' }
     if (-not ($rules -match 'tcp:8080\s+tcp:8080')) { throw 'adb reverse completed but the tcp:8080 rule is not active.' }
-    Write-Host "ADB reverse is active for ${DeviceSerial}: device tcp:8080 -> computer tcp:8080"
+    if ($IncludeObjectStorage -and -not ($rules -match 'tcp:9000\s+tcp:9000')) { throw 'adb reverse completed but the tcp:9000 rule is not active.' }
+    if ($IncludeObjectStorage) {
+        Write-Host "ADB reverse is active for ${DeviceSerial}: device tcp:8080 -> computer tcp:8080 and tcp:9000 -> computer tcp:9000"
+    } else {
+        Write-Host "ADB reverse is active for ${DeviceSerial}: device tcp:8080 -> computer tcp:8080"
+    }
 } catch {
     Write-Error $_.Exception.Message
     exit 1
