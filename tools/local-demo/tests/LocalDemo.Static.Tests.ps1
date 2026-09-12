@@ -110,7 +110,11 @@ foreach ($name in @('EFIKAS_AWS_REGION', 'EFIKAS_AWS_ACCESS_KEY_ID', 'EFIKAS_AWS
 if ($storageSource -notmatch '/tasks/' -or $storageSource -notmatch '/damages/') { throw 'Object-storage smoke does not cover task and damage attachments.' }
 if ($storageSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Object-storage smoke appears to use direct database operations.' }
 
-$scripts = Get-ChildItem -Path (Join-Path $PSScriptRoot '..') -Filter '*.ps1' -File -Recurse
+$localDemoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path.TrimEnd('\') + '\'
+$localBuildToolsRoot = (Join-Path $localDemoRoot '.local-build-tools').TrimEnd('\') + '\'
+$scripts = Get-ChildItem -Path $localDemoRoot -Filter '*.ps1' -File -Recurse | Where-Object {
+    -not $_.FullName.StartsWith($localBuildToolsRoot, [StringComparison]::OrdinalIgnoreCase)
+}
 foreach ($script in $scripts) {
     $tokens = $null; $errors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors)
