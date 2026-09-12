@@ -104,20 +104,24 @@ try {
     if ($SkipAdb) { $verificationArgs.SkipAdb = $true }
     if ($DeviceSerial) { $verificationArgs.DeviceSerial = $DeviceSerial }
     Invoke-LocalDemoScript -Name 'Test-LocalDemo.ps1' -Parameters $verificationArgs
+    if ($SkipAdb) { $adbSummary = '  ADB reverse: skipped' } else { $adbSummary = '  ADB reverse: active for tcp:8080' }
     Write-Host "`nPASS: local demo is ready"
     Write-Host "  Backend: $apiBaseUrl"
     Write-Host "  Database: $DatabaseName"
     Write-Host '  Backend readiness: ready; base seed: complete; R1-R8 scenarios: complete'
-    Write-Host (if ($SkipAdb) { '  ADB reverse: skipped' } else { '  ADB reverse: active for tcp:8080' })
+    Write-Host $adbSummary
     Write-Host "  Accounts: $ManagerEmail (MANAGER), demo.agent.one@bluestars.local (AGENT), demo.agent.two@bluestars.local (AGENT), demo.worker.cleaning@bluestars.local (OPERATIONAL_WORKER)"
     if ($ShowDemoPassword) { Write-Host "  Demo password: $DemoPassword" }
     Write-Host "  Verify: .\Test-LocalDemo.ps1 -ApiBaseUrl $apiBaseUrl"
     Write-Host "  Stop: .\Stop-DemoBackend.ps1 -Force -ServerPort $ServerPort"
 } catch {
-    Write-Error "Local demo failed: $($_.Exception.Message)"
+    $originalMessage = $_.Exception.Message
+    $cleanupMessage = $null
     if ($CleanupDatabaseOnFailure) {
-        try { & (Join-Path $PSScriptRoot 'Stop-DemoBackend.ps1') -Force -ServerPort $ServerPort -DropDatabase -DatabaseName $DatabaseName -PostgresHost $PostgresHost -PostgresPort $PostgresPort -PostgresUser $PostgresUser -PsqlPath $PsqlPath } catch { Write-Error 'CleanupDatabaseOnFailure could not remove the guarded demo database.' }
-    } elseif ($started) { [void](Stop-LocalDemoOwnedProcess -ServerPort $ServerPort) }
+        try { & (Join-Path $PSScriptRoot 'Stop-DemoBackend.ps1') -Force -ServerPort $ServerPort -DropDatabase -DatabaseName $DatabaseName -PostgresHost $PostgresHost -PostgresPort $PostgresPort -PostgresUser $PostgresUser -PsqlPath $PsqlPath } catch { $cleanupMessage = $_.Exception.Message }
+    } elseif ($started) { try { [void](Stop-LocalDemoOwnedProcess -ServerPort $ServerPort) } catch { $cleanupMessage = $_.Exception.Message } }
+    Write-Host "FAIL: local demo - $originalMessage"
+    if ($cleanupMessage) { Write-Host "FAIL: cleanup - $cleanupMessage" }
     exit 1
 } finally {
     if ($null -ne $temporaryEnvironment) { Restore-TemporaryLocalDemoEnvironment -Previous $temporaryEnvironment }

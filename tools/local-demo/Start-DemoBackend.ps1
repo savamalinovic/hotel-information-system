@@ -20,11 +20,28 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'LocalDemo.Common.ps1')
 
-function Get-JavaMajorVersion {
-    $javaVersion = (& $env:ComSpec /d /c 'java -version 2>&1' | Select-Object -First 1).ToString()
-    if ($javaVersion -notmatch 'version "17(?:\.|\")') {
-        throw "JDK 17 is required; java reported: $javaVersion"
+function Resolve-Jdk17Home {
+    $candidatePaths = @()
+    foreach ($command in @(Get-Command java.exe -CommandType Application -ErrorAction SilentlyContinue)) {
+        if ($command.PSObject.Properties['Source'] -and -not [string]::IsNullOrWhiteSpace([string]$command.Source)) { $candidatePaths += [string]$command.Source }
+        elseif ($command.PSObject.Properties['Path'] -and -not [string]::IsNullOrWhiteSpace([string]$command.Path)) { $candidatePaths += [string]$command.Path }
     }
+    $javaRoot = Join-Path $env:ProgramFiles 'Java'
+    if (Test-Path -LiteralPath $javaRoot -PathType Container) {
+        $candidatePaths += @(Get-ChildItem -LiteralPath $javaRoot -Directory | ForEach-Object {
+            $candidate = Join-Path $_.FullName 'bin\java.exe'
+            if (Test-Path -LiteralPath $candidate -PathType Leaf) { (Resolve-Path -LiteralPath $candidate).Path }
+        })
+    }
+    $candidatePaths = @($candidatePaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { if (Test-Path -LiteralPath $_ -PathType Leaf) { (Resolve-Path -LiteralPath $_).Path } } | Sort-Object -Unique)
+    foreach ($javaPath in $candidatePaths) {
+        $javaVersion = (& $env:ComSpec /d /c "`"$javaPath`" -version 2>&1" | Select-Object -First 1).ToString()
+        if ($javaVersion -match 'version "17(?:\.|\")') {
+            $binDirectory = Split-Path -Parent $javaPath
+            return Split-Path -Parent $binDirectory
+        }
+    }
+    throw 'JDK 17 is required but no java.exe candidate reported major version 17.'
 }
 
 $ready = $false
@@ -41,7 +58,7 @@ try {
     $ManagerJmbg = Get-LocalDemoValue -Value $ManagerJmbg -EnvironmentName 'BLUESTARS_DEMO_MANAGER_JMBG' -Label 'Demo manager JMBG'
     $ManagerAddress = Get-LocalDemoValue -Value $ManagerAddress -EnvironmentName 'BLUESTARS_DEMO_MANAGER_ADDRESS' -Label 'Demo manager address'
     $ManagerPhone = Get-LocalDemoValue -Value $ManagerPhone -EnvironmentName 'BLUESTARS_DEMO_MANAGER_PHONE' -Label 'Demo manager phone'
-    Get-JavaMajorVersion
+    $jdk17Home = Resolve-Jdk17Home
 
     if (Get-NetTCPConnection -LocalPort $ServerPort -State Listen -ErrorAction SilentlyContinue) {
         throw "Port $ServerPort is already in use. Stop the existing process before starting the local demo backend."
@@ -64,6 +81,8 @@ try {
         EFIKAS_BOOTSTRAP_MANAGER_ADDRESS = $ManagerAddress; EFIKAS_BOOTSTRAP_MANAGER_PHONE = $ManagerPhone
         SERVER_PORT = "$ServerPort"
         SPRING_CONFIG_ADDITIONAL_LOCATION = "file:$exampleConfig"
+        JAVA_HOME = $jdk17Home
+        Path = "$jdk17Home\bin;$env:Path"
     }
     $previousEnvironment = @{}
     foreach ($item in $environmentUpdates.GetEnumerator()) {
