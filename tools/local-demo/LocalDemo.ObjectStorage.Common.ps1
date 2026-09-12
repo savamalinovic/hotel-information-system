@@ -211,10 +211,8 @@ function Invoke-LocalDemoObjectStorageMc {
         [switch]$IgnoreFailure
     )
 
-    $builder = [UriBuilder]$Endpoint
-    $builder.UserName = [Uri]::EscapeDataString($AccessKeyId)
-    $builder.Password = [Uri]::EscapeDataString($SecretAccessKey)
-    $mcHostValue = $builder.Uri.AbsoluteUri.TrimEnd('/')
+    $endpointUri = [Uri]$Endpoint
+    $mcHostValue = '{0}://{1}:{2}@{3}' -f $endpointUri.Scheme, $AccessKeyId, $SecretAccessKey, $endpointUri.Authority
     $previous = [Environment]::GetEnvironmentVariable('MC_HOST_bluestars', 'Process')
     [Environment]::SetEnvironmentVariable('MC_HOST_bluestars', $mcHostValue, 'Process')
     try {

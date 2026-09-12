@@ -109,7 +109,11 @@ try {
         Remove-LocalDemoObjectStorageState
     }
 
-    $scriptFiles = Get-ChildItem -Path (Join-Path $PSScriptRoot '..') -Filter '*.ps1' -File -Recurse
+    $localDemoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path.TrimEnd('\') + '\'
+    $localBuildToolsRoot = (Join-Path $localDemoRoot '.local-build-tools').TrimEnd('\') + '\'
+    $scriptFiles = Get-ChildItem -Path $localDemoRoot -Filter '*.ps1' -File -Recurse | Where-Object {
+        -not $_.FullName.StartsWith($localBuildToolsRoot, [StringComparison]::OrdinalIgnoreCase)
+    }
     foreach ($script in $scriptFiles) {
         $tokens = $null
         $errors = $null

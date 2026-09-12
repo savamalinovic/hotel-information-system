@@ -63,8 +63,9 @@ try {
         [Environment]::SetEnvironmentVariable($item.Key, $item.Value, 'Process')
     }
     try {
+        $dataPathArgument = '"' + $dataPath + '"'
         $arguments = @(
-            'server', $dataPath,
+            'server', $dataPathArgument,
             '--address', "127.0.0.1:$ServerPort",
             '--console-address', "127.0.0.1:$ConsolePort"
         )
