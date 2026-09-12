@@ -20,7 +20,8 @@ $environmentNames = @(
     'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED',
     'EFIKAS_AWS_ACCESS_KEY_ID',
     'EFIKAS_AWS_SECRET_ACCESS_KEY',
-    'EFIKAS_AWS_BUCKET'
+    'EFIKAS_AWS_BUCKET',
+    'MC_HOST_bluestars'
 )
 $originalEnvironment = @{}
 foreach ($name in $environmentNames) { $originalEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
@@ -41,7 +42,7 @@ try {
         $listener.Stop()
     }
 
-    $testSecret = 'test-value-not-credential-1234'
+    $testSecret = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456'
     [Environment]::SetEnvironmentVariable('EFIKAS_AWS_REGION', 'eu-central-1', 'Process')
     [Environment]::SetEnvironmentVariable('EFIKAS_AWS_ENDPOINT', 'http://127.0.0.1:9000', 'Process')
     [Environment]::SetEnvironmentVariable('EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED', 'true', 'Process')
@@ -49,6 +50,44 @@ try {
     [Environment]::SetEnvironmentVariable('EFIKAS_AWS_SECRET_ACCESS_KEY', $testSecret, 'Process')
     $configuration = Get-LocalDemoObjectStorageConfiguration -BucketName 'bluestars-demo'
     if ($configuration.Endpoint -ne 'http://127.0.0.1:9000' -or -not $configuration.PathStyleAccessEnabled) { throw 'Local object-storage configuration was not normalized correctly.' }
+
+    Assert-LocalDemoObjectStorageCredential -Name 'allowed credential' -Value 'abc_DEF-123' -MinimumLength 3 | Out-Null
+    Assert-LocalDemoObjectStorageCredential -Name 'allowed secret' -Value ('A' * 46 + '_-') -MinimumLength 32 | Out-Null
+    Assert-Throws { Assert-LocalDemoObjectStorageCredential -Name 'short secret' -Value ('A' * 31) -MinimumLength 32 } 'Short object-storage secret was accepted.'
+    foreach ($reservedCharacter in @('@', ':', '%', '+', '/', '?', '#', ' ')) {
+        $invalidCredential = 'ValidPrefix' + $reservedCharacter + ('A' * 32)
+        try {
+            Assert-LocalDemoObjectStorageCredential -Name 'reserved credential' -Value $invalidCredential -MinimumLength 32 | Out-Null
+        } catch {
+            if ($_.Exception.Message -match [regex]::Escape($invalidCredential)) { throw 'Credential validation exposed the rejected value.' }
+            continue
+        }
+        throw 'A reserved object-storage credential character was accepted.'
+    }
+    $unicodeCredential = 'ValidPrefix' + [char]0x00E9 + ('A' * 32)
+    $unicodeRejected = $false
+    try {
+        Assert-LocalDemoObjectStorageCredential -Name 'unicode credential' -Value $unicodeCredential -MinimumLength 32 | Out-Null
+    } catch {
+        if ($_.Exception.Message -match [regex]::Escape($unicodeCredential)) { throw 'Credential validation exposed the Unicode value.' }
+        $unicodeRejected = $true
+    }
+    if (-not $unicodeRejected) { throw 'Unicode object-storage credential was accepted.' }
+
+    $powershellPath = (Get-Command powershell.exe -CommandType Application -ErrorAction Stop).Source
+    $capturePath = Join-Path $temporaryDirectory 'mc-host.txt'
+    [Environment]::SetEnvironmentVariable('MC_HOST_bluestars', 'previous-sentinel', 'Process')
+    $captureCommand = "Set-Content -LiteralPath '$capturePath' -Value `$env:MC_HOST_bluestars -Encoding UTF8; Write-Output 'stub-output'"
+    $allowedAccessKey = 'bluestars_demo'
+    $allowedSecretKey = ('A' * 46) + '_-'
+    $successCall = Invoke-LocalDemoObjectStorageMc -McPath $powershellPath -Endpoint $configuration.Endpoint -AccessKeyId $allowedAccessKey -SecretAccessKey $allowedSecretKey -Arguments @('-NoProfile', '-NonInteractive', '-Command', $captureCommand)
+    $expectedMcHost = "http://$allowedAccessKey`:$allowedSecretKey@127.0.0.1:9000"
+    if ((Get-Content -Raw -LiteralPath $capturePath).Trim() -ne $expectedMcHost) { throw 'MC_HOST_bluestars did not contain the unencoded URL-safe host.' }
+    if ((Get-Content -Raw -LiteralPath $capturePath) -match '%') { throw 'MC_HOST_bluestars encoded URL-unreserved credentials.' }
+    if (($successCall.Output -join "`n") -match [regex]::Escape($allowedAccessKey) -or ($successCall.Output -join "`n") -match [regex]::Escape($allowedSecretKey)) { throw 'Credentials reached the test stdout.' }
+    if ([Environment]::GetEnvironmentVariable('MC_HOST_bluestars', 'Process') -ne 'previous-sentinel') { throw 'MC_HOST_bluestars was not restored after success.' }
+    Assert-Throws { Invoke-LocalDemoObjectStorageMc -McPath $powershellPath -Endpoint $configuration.Endpoint -AccessKeyId $allowedAccessKey -SecretAccessKey $allowedSecretKey -Arguments @('-NoProfile', '-NonInteractive', '-Command', 'exit 7') } 'mc failure did not propagate.'
+    if ([Environment]::GetEnvironmentVariable('MC_HOST_bluestars', 'Process') -ne 'previous-sentinel') { throw 'MC_HOST_bluestars was not restored after failure.' }
 
     $calls = [System.Collections.Generic.List[string]]::new()
     $existingResult = Ensure-LocalDemoObjectStorageBucket -Configuration $configuration -McPath 'unused' -McInvoker {
@@ -129,6 +168,7 @@ try {
     $argumentBlock = [regex]::Match($startSource, '(?s)\$arguments\s*=\s*@\((.*?)\)')
     if ($argumentBlock.Value -match '(?i)(?:RootPassword|MINIO_ROOT_PASSWORD|SecretAccessKey)') { throw 'MinIO secret appears in process arguments.' }
     if ($startSource -notmatch 'MINIO_ROOT_USER' -or $startSource -notmatch 'MINIO_ROOT_PASSWORD') { throw 'MinIO launcher does not use child-process environment credentials.' }
+    if ($startSource -notmatch 'Write-Host "FAIL: Local object-storage start failed:' -or $startSource -match 'Write-Error "Local object-storage start failed:') { throw 'Storage launcher failure reporting can mask cleanup diagnostics.' }
     if ($stopSource -notmatch 'CleanupData' -or $stopSource -notmatch 'Clear-LocalDemoObjectStorageData') { throw 'Storage stop does not require explicit guarded cleanup.' }
     if ($adbSource -notmatch 'IncludeObjectStorage' -or $adbSource -notmatch 'tcp:9000') { throw 'ADB helper does not implement the object-storage reverse rule.' }
     if ($adbSource -notmatch 'DeviceSerial' -or $adbSource -notmatch 'unauthorized' -or $adbSource -notmatch 'offline') { throw 'ADB helper lost device selection safety checks.' }

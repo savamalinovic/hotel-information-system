@@ -127,6 +127,20 @@ function Assert-LocalDemoObjectStorageEndpoint {
     return 'http://127.0.0.1:9000'
 }
 
+function Assert-LocalDemoObjectStorageCredential {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Value,
+        [Parameter(Mandatory)][ValidateRange(3, 128)][int]$MinimumLength
+    )
+
+    if ($Value.Length -lt $MinimumLength -or $Value -notmatch '^[A-Za-z0-9_-]+\z') {
+        throw "$Name must contain only ASCII letters, digits, '_' or '-' and at least $MinimumLength characters; the versioned local-demo mc client requires URL-safe credentials."
+    }
+    return $Value
+}
+
 function Get-LocalDemoObjectStorageConfiguration {
     [CmdletBinding()]
     param(
@@ -154,6 +168,8 @@ function Get-LocalDemoObjectStorageConfiguration {
         throw 'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED must be true for the local MinIO workflow.'
     }
     $normalizedEndpoint = Assert-LocalDemoObjectStorageEndpoint -Endpoint $endpoint
+    Assert-LocalDemoObjectStorageCredential -Name 'EFIKAS_AWS_ACCESS_KEY_ID' -Value $accessKeyId -MinimumLength 3 | Out-Null
+    Assert-LocalDemoObjectStorageCredential -Name 'EFIKAS_AWS_SECRET_ACCESS_KEY' -Value $secretAccessKey -MinimumLength 32 | Out-Null
 
     $rootUser = $null
     $rootPassword = $null
@@ -163,8 +179,8 @@ function Get-LocalDemoObjectStorageConfiguration {
         if ([string]::IsNullOrWhiteSpace($rootUser) -or [string]::IsNullOrWhiteSpace($rootPassword)) {
             throw 'BLUESTARS_MINIO_ROOT_USER and BLUESTARS_MINIO_ROOT_PASSWORD are required for the local MinIO launcher.'
         }
-        if ($rootUser.Length -lt 3) { throw 'BLUESTARS_MINIO_ROOT_USER must contain at least 3 characters.' }
-        if ($rootPassword.Length -lt 16) { throw 'BLUESTARS_MINIO_ROOT_PASSWORD must contain at least 16 characters.' }
+        Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_MINIO_ROOT_USER' -Value $rootUser -MinimumLength 3 | Out-Null
+        Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_MINIO_ROOT_PASSWORD' -Value $rootPassword -MinimumLength 32 | Out-Null
         if ($rootUser -ne $accessKeyId -or $rootPassword -ne $secretAccessKey) {
             throw 'For the standalone local demo, EFIKAS AWS credentials must match the MinIO root credentials.'
         }
@@ -211,7 +227,9 @@ function Invoke-LocalDemoObjectStorageMc {
         [switch]$IgnoreFailure
     )
 
-    $endpointUri = [Uri]$Endpoint
+    Assert-LocalDemoObjectStorageCredential -Name 'mc access key' -Value $AccessKeyId -MinimumLength 3 | Out-Null
+    Assert-LocalDemoObjectStorageCredential -Name 'mc secret key' -Value $SecretAccessKey -MinimumLength 32 | Out-Null
+    $endpointUri = [Uri](Assert-LocalDemoObjectStorageEndpoint -Endpoint $Endpoint)
     $mcHostValue = '{0}://{1}:{2}@{3}' -f $endpointUri.Scheme, $AccessKeyId, $SecretAccessKey, $endpointUri.Authority
     $previous = [Environment]::GetEnvironmentVariable('MC_HOST_bluestars', 'Process')
     [Environment]::SetEnvironmentVariable('MC_HOST_bluestars', $mcHostValue, 'Process')

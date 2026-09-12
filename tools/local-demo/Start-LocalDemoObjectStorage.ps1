@@ -110,7 +110,7 @@ try {
             if ($null -ne (Get-LocalDemoProcessIdentity -ProcessId $process.Id)) { $cleanupMessage = 'The newly started MinIO process did not stop after startup failure.' }
         } catch { $cleanupMessage = $_.Exception.Message }
     }
-    Write-Error "Local object-storage start failed: $originalMessage"
-    if ($cleanupMessage) { Write-Error "Local object-storage cleanup failed: $cleanupMessage" }
+    Write-Host "FAIL: Local object-storage start failed: $originalMessage"
+    if ($cleanupMessage) { Write-Host "FAIL: Local object-storage cleanup failed: $cleanupMessage" }
     exit 1
 }

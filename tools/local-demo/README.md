@@ -55,11 +55,11 @@ Za izolovanu provjeru bez telefona i na drugom portu koristite `-SkipAdb`, npr. 
 
 Ručno preuzmite zvanične Windows `minio.exe` i `mc.exe` binarne fajlove i stavite ih u ignorisani direktorijum `tools/local-demo/bin/`, ili ih dodajte na `PATH`. Alati ih ne preuzimaju tokom običnog starta. Mogu se navesti i eksplicitno kroz `-MinioPath` i `-McPath`. Ne stavljajte binarne fajlove, ključeve ili sadržaj bucketa u Git.
 
-Za standalone demo postavite procesne vrijednosti; AWS ključevi moraju odgovarati MinIO root korisniku jer launcher koristi samo lokalni root nalog:
+Za standalone demo postavite procesne vrijednosti; AWS ključevi moraju odgovarati MinIO root korisniku jer launcher koristi samo lokalni root nalog. Verzija `mc` koja je podržana ovim workflowom ne dekodira `MC_HOST_*` user-info, pa i user i password moraju koristiti samo URL-unreserved ASCII skup: slova, brojevi, `_` i `-`. User mora imati najmanje 3, a password najmanje 32 znaka; posebni znakovi nisu potrebni.
 
 ```powershell
 $env:BLUESTARS_MINIO_ROOT_USER = 'bluestarsdemo'
-$env:BLUESTARS_MINIO_ROOT_PASSWORD = 'use-a-local-secret-with-at-least-16-characters'
+$env:BLUESTARS_MINIO_ROOT_PASSWORD = '<generate-a-local-url-safe-password>'
 $env:EFIKAS_AWS_REGION = 'eu-central-1'
 $env:EFIKAS_AWS_ENDPOINT = 'http://127.0.0.1:9000'
 $env:EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED = 'true'
@@ -68,7 +68,33 @@ $env:EFIKAS_AWS_SECRET_ACCESS_KEY = $env:BLUESTARS_MINIO_ROOT_PASSWORD
 $env:EFIKAS_AWS_BUCKET = 'bluestars-demo'
 ```
 
-Lozinka mora imati najmanje 16 znakova. Vrijednosti su samo u trenutnom procesu; launcher ih ne stavlja u argumente, state, log ili izlaz. MinIO se veže isključivo na `127.0.0.1`, koristi `tools/local-demo/.local-object-storage/data`, upisuje ownership state bez tajni i čeka readiness na portu 9000.
+Generišite novu lokalnu password vrijednost kriptografski sigurnim generatorom i postavite je samo u trenutnom PowerShell procesu:
+
+```powershell
+$credentialAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
+$random = [Security.Cryptography.RandomNumberGenerator]::Create()
+try {
+    $bytes = New-Object byte[] 64
+    $builder = New-Object Text.StringBuilder
+    while ($builder.Length -lt 48) {
+        $random.GetBytes($bytes)
+        foreach ($byte in $bytes) {
+            [void]$builder.Append($credentialAlphabet[$byte % $credentialAlphabet.Length])
+            if ($builder.Length -ge 48) { break }
+        }
+    }
+    $localMinioPassword = $builder.ToString()
+} finally {
+    $random.Dispose()
+}
+
+$env:BLUESTARS_MINIO_ROOT_USER = 'bluestars_demo'
+$env:BLUESTARS_MINIO_ROOT_PASSWORD = $localMinioPassword
+$env:EFIKAS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
+$env:EFIKAS_AWS_SECRET_ACCESS_KEY = $localMinioPassword
+```
+
+Vrijednosti su samo u trenutnom procesu; launcher ih ne stavlja u argumente, state, log ili izlaz. MinIO se veže isključivo na `127.0.0.1`, koristi `tools/local-demo/.local-object-storage/data`, upisuje ownership state bez tajni i čeka readiness na portu 9000.
 
 Pokretanje i provjera bucketa su idempotentni:
 
