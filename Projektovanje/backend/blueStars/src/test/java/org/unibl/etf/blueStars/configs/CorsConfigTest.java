@@ -22,7 +22,9 @@ class CorsConfigTest {
 
         assertThat(configuration.getAllowedOrigins()).containsExactly("https://manager.example.com");
         assertThat(configuration.getAllowedOrigins()).doesNotContain("*");
-        assertThat(configuration.getAllowedMethods()).containsExactly("GET", "POST", "PUT", "DELETE", "OPTIONS");
+        assertThat(configuration.checkOrigin("https://manager.example.com")).isEqualTo("https://manager.example.com");
+        assertThat(configuration.checkOrigin("https://untrusted.example.com")).isNull();
+        assertThat(configuration.getAllowedMethods()).containsExactly("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
         assertThat(configuration.getAllowedHeaders()).containsExactly("Authorization", "Content-Type", "Accept", "Origin");
         assertThat(configuration.getAllowCredentials()).isTrue();
     }
@@ -33,5 +35,6 @@ class CorsConfigTest {
                 .getCorsConfiguration(new MockHttpServletRequest());
 
         assertThat(configuration.getAllowedOrigins()).isEmpty();
+        assertThat(configuration.checkOrigin("https://manager.example.com")).isNull();
     }
 }

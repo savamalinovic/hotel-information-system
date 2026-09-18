@@ -61,7 +61,7 @@ class RbacAuthorizationTest {
     void preflightUsesConfiguredCorsOriginOnly() throws Exception {
         mockMvc.perform(options("/api/v1/apartments")
                         .header("Origin", "https://manager.example.com")
-                        .header("Access-Control-Request-Method", "GET"))
+                        .header("Access-Control-Request-Method", "PATCH"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "https://manager.example.com"))
                 .andExpect(header().string("Access-Control-Allow-Credentials", "true"));

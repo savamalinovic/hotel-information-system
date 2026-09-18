@@ -25,22 +25,20 @@ public class EmailOtpService implements OtpService {
         // 1. Generate
         String code = OtpHelper.generateRandomOtp();
 
-        // 2. Cache (Key is the email, Value is the code)
-        otpCacheService.store(to, code);
-
-        // 3. Send email
+        // 2. Send email before retaining the OTP.
         String message = "Greetings,\n\nYour OTP code is: " + code;
         emailService.sendEmail(to, message);
 
-        return "Message sent, otp: " + code;
+        // 3. Cache (Key is the email, Value is the code)
+        otpCacheService.store(to, code);
+
+        return "OTP email sent.";
     }
 
 
     @Override
     public boolean verifyOtp(String to, String code) {
         String storedCode = otpCacheService.get(to);
-        System.out.println(storedCode);
-
         // 4. Validate & Manual Delete
         if (storedCode != null && storedCode.equals(code)) {
             return true;

@@ -115,6 +115,15 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void disabledEmailUsesSanitizedServiceUnavailableEnvelope() throws Exception {
+        mockMvc.perform(get("/error-probe/email-unavailable"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("UPSTREAM_SERVICE_ERROR"))
+                .andExpect(jsonPath("$.message").value("Email delivery is not configured."))
+                .andExpect(content().string(not(containsString("access key"))));
+    }
+
+    @Test
     void unexpectedFailureIsSanitized() throws Exception {
         mockMvc.perform(get("/error-probe/unexpected"))
                 .andExpect(status().isInternalServerError())

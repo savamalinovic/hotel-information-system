@@ -1,7 +1,6 @@
 package org.unibl.etf.blueStars.services.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.unibl.etf.blueStars.services.interfaces.EmailService;
@@ -9,13 +8,17 @@ import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 
 @Service
+@ConditionalOnProperty(name = "ses.enabled", havingValue = "true")
 public class AwsEmailService implements EmailService {
     private final SesClient sesClient;
-    @Value("${email.sender}")
-    private String sender;
+    private final String sender;
 
-    public AwsEmailService(SesClient sesClient) {
+    public AwsEmailService(SesClient sesClient, @Value("${email.sender}") String sender) {
         this.sesClient = sesClient;
+        if (sender == null || sender.isBlank()) {
+            throw new IllegalStateException("Email sender must be configured when SES is enabled.");
+        }
+        this.sender = sender;
     }
 
     @Override

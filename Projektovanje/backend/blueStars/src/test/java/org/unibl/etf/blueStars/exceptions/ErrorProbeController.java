@@ -54,6 +54,11 @@ class ErrorProbeController {
         throw new MaxUploadSizeExceededException(10L * 1024 * 1024);
     }
 
+    @GetMapping("/error-probe/email-unavailable")
+    void emailUnavailable() {
+        throw new EmailServiceUnavailableException();
+    }
+
     record ProbeRequest(
             @NotBlank(message = "Name is required.") String name,
             @NotBlank(message = "Email is required.")

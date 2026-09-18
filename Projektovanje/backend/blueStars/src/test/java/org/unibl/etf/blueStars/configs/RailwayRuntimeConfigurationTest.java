@@ -8,6 +8,7 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
 import org.springframework.core.env.StandardEnvironment;
 import org.unibl.etf.blueStars.configs.properties.AwsProperties;
+import org.unibl.etf.blueStars.configs.properties.SesProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,6 +66,23 @@ class RailwayRuntimeConfigurationTest {
     @Test
     void exposesOnlyHealthActuatorEndpoint() {
         assertThat(properties.getProperty("management.endpoints.web.exposure.include")).isEqualTo("health");
+    }
+
+    @Test
+    void keepsSesDisabledAndSeparateFromR2ByDefault() {
+        StandardEnvironment environment = environmentFor(Map.of(
+                "EFIKAS_AWS_REGION", "auto",
+                "EFIKAS_AWS_ACCESS_KEY_ID", "r2-access-key",
+                "EFIKAS_AWS_SECRET_ACCESS_KEY", "r2-secret"));
+        SesProperties sesProperties = Binder.get(environment).bind("ses", Bindable.of(SesProperties.class)).get();
+
+        assertThat(sesProperties.isEnabled()).isFalse();
+        assertThat(sesProperties.getCredentials().getAccessKeyId()).isEmpty();
+        assertThat(sesProperties.getCredentials().getSecretAccessKey()).isEmpty();
+        assertThat(properties.getProperty("ses.credentials.access-key-id"))
+                .isEqualTo("${EFIKAS_SES_ACCESS_KEY_ID:}");
+        assertThat(properties.getProperty("ses.credentials.secret-access-key"))
+                .isEqualTo("${EFIKAS_SES_SECRET_ACCESS_KEY:}");
     }
 
     private Properties loadRuntimeProperties() {
