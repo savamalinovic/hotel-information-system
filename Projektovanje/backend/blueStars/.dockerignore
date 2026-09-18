@@ -1,0 +1,5 @@
+target/
+.git/
+.gitignore
+application-local.properties
+*.log

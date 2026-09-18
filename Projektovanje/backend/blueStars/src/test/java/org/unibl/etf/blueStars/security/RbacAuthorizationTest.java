@@ -9,8 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.unibl.etf.blueStars.configs.SecurityConfig;
+import org.unibl.etf.blueStars.configs.CorsConfig;
+import org.unibl.etf.blueStars.configs.properties.CorsProperties;
 import org.unibl.etf.blueStars.models.enums.UserRole;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -19,15 +22,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(RbacProbeController.class)
-@Import({SecurityConfig.class, JwtAuthFilter.class, JwtAuthenticationEntryPoint.class,
-        JwtAccessDeniedHandler.class, ApiErrorResponseWriter.class})
+@Import({SecurityConfig.class, CorsConfig.class, CorsProperties.class, JwtAuthFilter.class,
+        JwtAuthenticationEntryPoint.class, JwtAccessDeniedHandler.class, ApiErrorResponseWriter.class})
 @ActiveProfiles("rbac-probe")
+@TestPropertySource(properties = "efikas.cors.allowed-origins=https://manager.example.com")
 class RbacAuthorizationTest {
 
     @Autowired
@@ -43,6 +49,22 @@ class RbacAuthorizationTest {
     void loginIsPublic() throws Exception {
         mockMvc.perform(post("/api/v1/auth/login"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void actuatorHealthIsPublic() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void preflightUsesConfiguredCorsOriginOnly() throws Exception {
+        mockMvc.perform(options("/api/v1/apartments")
+                        .header("Origin", "https://manager.example.com")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://manager.example.com"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"));
     }
 
     @Test
