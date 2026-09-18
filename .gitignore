@@ -4,6 +4,7 @@ target/
 *.iml
 application*.properties
 !**/application.example.properties
+!**/src/main/resources/application.properties
 !**/src/test/resources/application.properties
 
 # Local secrets and credentials

@@ -20,7 +20,6 @@ public class OtpCacheService implements CacheService {
     @Override
     public void store(String key, String otp) {
         if(this.cache != null) {
-            System.out.println("STORING <KEY-VALUE> IN CACHE: " + key + "<->" + otp);
             this.cache.put(key, otp);
         }
     }

@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("rbac-probe")
 class RbacProbeController {
 
+    @GetMapping("/actuator/health")
+    ResponseEntity<Void> health() {
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/v1/auth/login")
     ResponseEntity<Void> login() {
         return ResponseEntity.ok().build();

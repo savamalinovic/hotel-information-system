@@ -204,6 +204,18 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    @ExceptionHandler(EmailServiceUnavailableException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailServiceUnavailable(
+            EmailServiceUnavailableException ex,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                ApiErrorCode.UPSTREAM_SERVICE_ERROR,
+                "Email delivery is not configured.",
+                request);
+    }
+
     @ExceptionHandler(BookPdfGenerationException.class)
     public ResponseEntity<ApiErrorResponse> handlePdfFailure(
             BookPdfGenerationException ex,
