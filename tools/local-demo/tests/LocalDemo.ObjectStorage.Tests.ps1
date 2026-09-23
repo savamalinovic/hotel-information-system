@@ -15,12 +15,12 @@ $originalState = if (Test-Path -LiteralPath $statePath) { Get-Content -Raw -Lite
 $environmentNames = @(
     'BLUESTARS_MINIO_ROOT_USER',
     'BLUESTARS_MINIO_ROOT_PASSWORD',
-    'EFIKAS_AWS_REGION',
-    'EFIKAS_AWS_ENDPOINT',
-    'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED',
-    'EFIKAS_AWS_ACCESS_KEY_ID',
-    'EFIKAS_AWS_SECRET_ACCESS_KEY',
-    'EFIKAS_AWS_BUCKET',
+    'BLUESTARS_AWS_REGION',
+    'BLUESTARS_AWS_ENDPOINT',
+    'BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED',
+    'BLUESTARS_AWS_ACCESS_KEY_ID',
+    'BLUESTARS_AWS_SECRET_ACCESS_KEY',
+    'BLUESTARS_AWS_BUCKET',
     'MC_HOST_bluestars'
 )
 $originalEnvironment = @{}
@@ -43,11 +43,11 @@ try {
     }
 
     $testSecret = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456'
-    [Environment]::SetEnvironmentVariable('EFIKAS_AWS_REGION', 'eu-central-1', 'Process')
-    [Environment]::SetEnvironmentVariable('EFIKAS_AWS_ENDPOINT', 'http://127.0.0.1:9000', 'Process')
-    [Environment]::SetEnvironmentVariable('EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED', 'true', 'Process')
-    [Environment]::SetEnvironmentVariable('EFIKAS_AWS_ACCESS_KEY_ID', 'test-user', 'Process')
-    [Environment]::SetEnvironmentVariable('EFIKAS_AWS_SECRET_ACCESS_KEY', $testSecret, 'Process')
+    [Environment]::SetEnvironmentVariable('BLUESTARS_AWS_REGION', 'eu-central-1', 'Process')
+    [Environment]::SetEnvironmentVariable('BLUESTARS_AWS_ENDPOINT', 'http://127.0.0.1:9000', 'Process')
+    [Environment]::SetEnvironmentVariable('BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED', 'true', 'Process')
+    [Environment]::SetEnvironmentVariable('BLUESTARS_AWS_ACCESS_KEY_ID', 'test-user', 'Process')
+    [Environment]::SetEnvironmentVariable('BLUESTARS_AWS_SECRET_ACCESS_KEY', $testSecret, 'Process')
     $configuration = Get-LocalDemoObjectStorageConfiguration -BucketName 'bluestars-demo'
     if ($configuration.Endpoint -ne 'http://127.0.0.1:9000' -or -not $configuration.PathStyleAccessEnabled) { throw 'Local object-storage configuration was not normalized correctly.' }
 

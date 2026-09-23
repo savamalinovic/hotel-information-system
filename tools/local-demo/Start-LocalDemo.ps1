@@ -79,13 +79,13 @@ try {
     $DatabaseName = Assert-LocalDemoDatabaseName -DatabaseName $DatabaseName
     $PostgresUser = Get-LocalDemoValue -Value $PostgresUser -EnvironmentName 'POSTGRES_USER' -Label 'PostgreSQL user'
     $PostgresPassword = Get-LocalDemoValue -Value $PostgresPassword -EnvironmentName 'POSTGRES_PASSWORD' -Label 'PostgreSQL password'
-    $JwtSecret = Get-LocalDemoValue -Value $JwtSecret -EnvironmentName 'EFIKAS_JWT_SECRET' -Label 'JWT secret'
+    $JwtSecret = Get-LocalDemoValue -Value $JwtSecret -EnvironmentName 'BLUESTARS_JWT_SECRET' -Label 'JWT secret'
     $DemoPassword = Get-LocalDemoValue -Value $DemoPassword -EnvironmentName 'BLUESTARS_DEMO_PASSWORD' -Label 'Demo password'
     $ManagerEmail = if ($ManagerEmail) { $ManagerEmail } else { Get-LocalDemoValue -Value $null -EnvironmentName 'BLUESTARS_DEMO_MANAGER_EMAIL' -Label 'Demo manager email' }
     foreach ($setting in @(@{ Name='ManagerName'; Environment='BLUESTARS_DEMO_MANAGER_NAME' }, @{ Name='ManagerSurname'; Environment='BLUESTARS_DEMO_MANAGER_SURNAME' }, @{ Name='ManagerJmbg'; Environment='BLUESTARS_DEMO_MANAGER_JMBG' }, @{ Name='ManagerAddress'; Environment='BLUESTARS_DEMO_MANAGER_ADDRESS' }, @{ Name='ManagerPhone'; Environment='BLUESTARS_DEMO_MANAGER_PHONE' })) {
         if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $setting.Name -ValueOnly))) { Set-Variable -Name $setting.Name -Value (Get-LocalDemoValue -Value $null -EnvironmentName $setting.Environment -Label $setting.Name) }
     }
-    $temporaryEnvironment = Set-TemporaryLocalDemoEnvironment -Values @{ POSTGRES_PASSWORD=$PostgresPassword; EFIKAS_JWT_SECRET=$JwtSecret; BLUESTARS_DEMO_PASSWORD=$DemoPassword }
+    $temporaryEnvironment = Set-TemporaryLocalDemoEnvironment -Values @{ POSTGRES_PASSWORD=$PostgresPassword; BLUESTARS_JWT_SECRET=$JwtSecret; BLUESTARS_DEMO_PASSWORD=$DemoPassword }
     Test-LocalPortOwnership -Port $ServerPort
     $resetArgs = @{ DatabaseName=$DatabaseName; PostgresHost=$PostgresHost; PostgresPort=$PostgresPort; PostgresUser=$PostgresUser }
     if ($PsqlPath) { $resetArgs.PsqlPath = $PsqlPath }; if ($ResetDatabase) { $resetArgs.Reset = $true }

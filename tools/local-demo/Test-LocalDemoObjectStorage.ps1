@@ -11,12 +11,12 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'LocalDemo.ObjectStorage.Common.ps1')
 
 $required = @(
-    'EFIKAS_AWS_REGION',
-    'EFIKAS_AWS_ENDPOINT',
-    'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED',
-    'EFIKAS_AWS_ACCESS_KEY_ID',
-    'EFIKAS_AWS_SECRET_ACCESS_KEY',
-    'EFIKAS_AWS_BUCKET'
+    'BLUESTARS_AWS_REGION',
+    'BLUESTARS_AWS_ENDPOINT',
+    'BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED',
+    'BLUESTARS_AWS_ACCESS_KEY_ID',
+    'BLUESTARS_AWS_SECRET_ACCESS_KEY',
+    'BLUESTARS_AWS_BUCKET'
 )
 $missing = @($required | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_, 'Process')) })
 if ($missing.Count -gt 0) {
@@ -120,7 +120,7 @@ $pictureFile = $null
 $taskFile = $null
 $damageFile = $null
 try {
-    $configuration = Get-LocalDemoObjectStorageConfiguration -BucketName (Get-LocalDemoValue -Value $null -EnvironmentName 'EFIKAS_AWS_BUCKET' -Label 'EFIKAS_AWS_BUCKET')
+    $configuration = Get-LocalDemoObjectStorageConfiguration -BucketName (Get-LocalDemoValue -Value $null -EnvironmentName 'BLUESTARS_AWS_BUCKET' -Label 'BLUESTARS_AWS_BUCKET')
     $ApiBaseUrl = Resolve-LocalDemoApiBaseUrl $ApiBaseUrl
     $DemoPassword = Get-LocalDemoValue -Value $DemoPassword -EnvironmentName 'BLUESTARS_DEMO_PASSWORD' -Label 'Demo password'
     $ManagerEmail = Get-LocalDemoValue -Value $ManagerEmail -EnvironmentName 'BLUESTARS_DEMO_MANAGER_EMAIL' -Label 'Demo manager email'

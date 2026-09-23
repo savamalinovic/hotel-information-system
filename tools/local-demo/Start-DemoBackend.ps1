@@ -50,7 +50,7 @@ try {
     $DatabaseName = Assert-LocalDemoDatabaseName -DatabaseName $DatabaseName
     $PostgresUser = Get-LocalDemoValue -Value $PostgresUser -EnvironmentName 'POSTGRES_USER' -Label 'PostgreSQL user'
     $PostgresPassword = Get-LocalDemoValue -Value $PostgresPassword -EnvironmentName 'POSTGRES_PASSWORD' -Label 'PostgreSQL password'
-    $JwtSecret = Get-LocalDemoValue -Value $JwtSecret -EnvironmentName 'EFIKAS_JWT_SECRET' -Label 'JWT secret'
+    $JwtSecret = Get-LocalDemoValue -Value $JwtSecret -EnvironmentName 'BLUESTARS_JWT_SECRET' -Label 'JWT secret'
     $DemoPassword = Get-LocalDemoValue -Value $DemoPassword -EnvironmentName 'BLUESTARS_DEMO_PASSWORD' -Label 'Demo password'
     $ManagerEmail = Get-LocalDemoValue -Value $ManagerEmail -EnvironmentName 'BLUESTARS_DEMO_MANAGER_EMAIL' -Label 'Demo manager email'
     $ManagerName = Get-LocalDemoValue -Value $ManagerName -EnvironmentName 'BLUESTARS_DEMO_MANAGER_NAME' -Label 'Demo manager name'
@@ -74,11 +74,11 @@ try {
 
     $environmentUpdates = @{
         POSTGRES_HOST = $PostgresHost; POSTGRES_PORT = "$PostgresPort"; POSTGRES_DB = $DatabaseName
-        POSTGRES_USER = $PostgresUser; POSTGRES_PASSWORD = $PostgresPassword; EFIKAS_JWT_SECRET = $JwtSecret
-        EFIKAS_BOOTSTRAP_MANAGER_ENABLED = 'true'; EFIKAS_BOOTSTRAP_MANAGER_EMAIL = $ManagerEmail
-        EFIKAS_BOOTSTRAP_MANAGER_PASSWORD = $DemoPassword; EFIKAS_BOOTSTRAP_MANAGER_NAME = $ManagerName
-        EFIKAS_BOOTSTRAP_MANAGER_SURNAME = $ManagerSurname; EFIKAS_BOOTSTRAP_MANAGER_JMBG = $ManagerJmbg
-        EFIKAS_BOOTSTRAP_MANAGER_ADDRESS = $ManagerAddress; EFIKAS_BOOTSTRAP_MANAGER_PHONE = $ManagerPhone
+        POSTGRES_USER = $PostgresUser; POSTGRES_PASSWORD = $PostgresPassword; BLUESTARS_JWT_SECRET = $JwtSecret
+        BLUESTARS_BOOTSTRAP_MANAGER_ENABLED = 'true'; BLUESTARS_BOOTSTRAP_MANAGER_EMAIL = $ManagerEmail
+        BLUESTARS_BOOTSTRAP_MANAGER_PASSWORD = $DemoPassword; BLUESTARS_BOOTSTRAP_MANAGER_NAME = $ManagerName
+        BLUESTARS_BOOTSTRAP_MANAGER_SURNAME = $ManagerSurname; BLUESTARS_BOOTSTRAP_MANAGER_JMBG = $ManagerJmbg
+        BLUESTARS_BOOTSTRAP_MANAGER_ADDRESS = $ManagerAddress; BLUESTARS_BOOTSTRAP_MANAGER_PHONE = $ManagerPhone
         SERVER_PORT = "$ServerPort"
         SPRING_CONFIG_ADDITIONAL_LOCATION = "file:$exampleConfig"
         JAVA_HOME = $jdk17Home

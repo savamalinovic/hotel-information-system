@@ -45,11 +45,11 @@ class RailwayRuntimeConfigurationTest {
     @Test
     void bindsR2SettingsAndDoesNotContainRuntimeSecrets() {
         StandardEnvironment environment = environmentFor(Map.of(
-                "EFIKAS_AWS_REGION", "auto",
-                "EFIKAS_AWS_ENDPOINT", "https://account.r2.cloudflarestorage.com",
-                "EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED", "true",
-                "EFIKAS_AWS_ACCESS_KEY_ID", "not-a-real-access-key",
-                "EFIKAS_AWS_SECRET_ACCESS_KEY", "not-a-real-secret"));
+                "BLUESTARS_AWS_REGION", "auto",
+                "BLUESTARS_AWS_ENDPOINT", "https://account.r2.cloudflarestorage.com",
+                "BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED", "true",
+                "BLUESTARS_AWS_ACCESS_KEY_ID", "not-a-real-access-key",
+                "BLUESTARS_AWS_SECRET_ACCESS_KEY", "not-a-real-secret"));
         AwsProperties awsProperties = Binder.get(environment).bind("aws", Bindable.of(AwsProperties.class)).get();
 
         assertThat(awsProperties.getRegion()).isEqualTo("auto");
@@ -57,10 +57,10 @@ class RailwayRuntimeConfigurationTest {
         assertThat(awsProperties.isPathStyleAccessEnabled()).isTrue();
         assertThat(awsProperties.getCredentials().getAccessKeyId()).isEqualTo("not-a-real-access-key");
         assertThat(awsProperties.getCredentials().getSecretAccessKey()).isEqualTo("not-a-real-secret");
-        assertThat(properties.getProperty("aws.credentials.access-key-id")).isEqualTo("${EFIKAS_AWS_ACCESS_KEY_ID}");
+        assertThat(properties.getProperty("aws.credentials.access-key-id")).isEqualTo("${BLUESTARS_AWS_ACCESS_KEY_ID}");
         assertThat(properties.getProperty("aws.credentials.secret-access-key"))
-                .isEqualTo("${EFIKAS_AWS_SECRET_ACCESS_KEY}");
-        assertThat(properties.getProperty("jwt.secret")).isEqualTo("${EFIKAS_JWT_SECRET}");
+                .isEqualTo("${BLUESTARS_AWS_SECRET_ACCESS_KEY}");
+        assertThat(properties.getProperty("jwt.secret")).isEqualTo("${BLUESTARS_JWT_SECRET}");
     }
 
     @Test
@@ -71,18 +71,18 @@ class RailwayRuntimeConfigurationTest {
     @Test
     void keepsSesDisabledAndSeparateFromR2ByDefault() {
         StandardEnvironment environment = environmentFor(Map.of(
-                "EFIKAS_AWS_REGION", "auto",
-                "EFIKAS_AWS_ACCESS_KEY_ID", "r2-access-key",
-                "EFIKAS_AWS_SECRET_ACCESS_KEY", "r2-secret"));
+                "BLUESTARS_AWS_REGION", "auto",
+                "BLUESTARS_AWS_ACCESS_KEY_ID", "r2-access-key",
+                "BLUESTARS_AWS_SECRET_ACCESS_KEY", "r2-secret"));
         SesProperties sesProperties = Binder.get(environment).bind("ses", Bindable.of(SesProperties.class)).get();
 
         assertThat(sesProperties.isEnabled()).isFalse();
         assertThat(sesProperties.getCredentials().getAccessKeyId()).isEmpty();
         assertThat(sesProperties.getCredentials().getSecretAccessKey()).isEmpty();
         assertThat(properties.getProperty("ses.credentials.access-key-id"))
-                .isEqualTo("${EFIKAS_SES_ACCESS_KEY_ID:}");
+                .isEqualTo("${BLUESTARS_SES_ACCESS_KEY_ID:}");
         assertThat(properties.getProperty("ses.credentials.secret-access-key"))
-                .isEqualTo("${EFIKAS_SES_SECRET_ACCESS_KEY:}");
+                .isEqualTo("${BLUESTARS_SES_SECRET_ACCESS_KEY:}");
     }
 
     private Properties loadRuntimeProperties() {
