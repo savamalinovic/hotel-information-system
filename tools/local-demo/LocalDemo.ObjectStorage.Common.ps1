@@ -182,7 +182,7 @@ function Get-LocalDemoObjectStorageConfiguration {
         Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_MINIO_ROOT_USER' -Value $rootUser -MinimumLength 3 | Out-Null
         Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_MINIO_ROOT_PASSWORD' -Value $rootPassword -MinimumLength 32 | Out-Null
         if ($rootUser -ne $accessKeyId -or $rootPassword -ne $secretAccessKey) {
-            throw 'For the standalone local demo, EFIKAS AWS credentials must match the MinIO root credentials.'
+            throw 'For the standalone local demo, BlueStars AWS credentials must match the MinIO root credentials.'
         }
     }
 
