@@ -106,7 +106,7 @@ if ($verificationSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b'
 if ($verificationSource -match 'Write-(Host|Output|Error).*\$(DemoPassword|.*Token)') { throw 'Verification could write a secret.' }
 $storageSource = Get-Content -Raw (Join-Path $PSScriptRoot '..\Test-LocalDemoObjectStorage.ps1')
 if ($storageSource -notmatch 'SKIPPED: object storage is not completely configured') { throw 'Object-storage smoke does not report missing configuration as SKIPPED.' }
-foreach ($name in @('EFIKAS_AWS_REGION', 'EFIKAS_AWS_ACCESS_KEY_ID', 'EFIKAS_AWS_SECRET_ACCESS_KEY', 'EFIKAS_AWS_BUCKET')) { if ($storageSource -notmatch $name) { throw "Object-storage smoke does not require $name." } }
+foreach ($name in @('BLUESTARS_AWS_REGION', 'BLUESTARS_AWS_ACCESS_KEY_ID', 'BLUESTARS_AWS_SECRET_ACCESS_KEY', 'BLUESTARS_AWS_BUCKET')) { if ($storageSource -notmatch $name) { throw "Object-storage smoke does not require $name." } }
 if ($storageSource -notmatch '/tasks/' -or $storageSource -notmatch '/damages/') { throw 'Object-storage smoke does not cover task and damage attachments.' }
 if ($storageSource -match '(?i)\b(insert|update|delete\s+from|psql|jdbc)\b') { throw 'Object-storage smoke appears to use direct database operations.' }
 

@@ -120,9 +120,9 @@ function Assert-LocalDemoObjectStorageEndpoint {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Endpoint)
 
-    try { $uri = [Uri]$Endpoint } catch { throw 'EFIKAS_AWS_ENDPOINT must be a valid URL.' }
+    try { $uri = [Uri]$Endpoint } catch { throw 'BLUESTARS_AWS_ENDPOINT must be a valid URL.' }
     if ($uri.Scheme -ne 'http' -or $uri.Host -ne '127.0.0.1' -or $uri.Port -ne 9000 -or $uri.UserInfo -or $uri.Query -or $uri.Fragment -or $uri.AbsolutePath -ne '/') {
-        throw 'EFIKAS_AWS_ENDPOINT must be exactly http://127.0.0.1:9000 without credentials, a path, a query, or a fragment.'
+        throw 'BLUESTARS_AWS_ENDPOINT must be exactly http://127.0.0.1:9000 without credentials, a path, a query, or a fragment.'
     }
     return 'http://127.0.0.1:9000'
 }
@@ -149,27 +149,27 @@ function Get-LocalDemoObjectStorageConfiguration {
     )
 
     $bucket = Assert-LocalDemoObjectStorageBucketName -BucketName $BucketName
-    $endpoint = [Environment]::GetEnvironmentVariable('EFIKAS_AWS_ENDPOINT', 'Process')
-    $region = [Environment]::GetEnvironmentVariable('EFIKAS_AWS_REGION', 'Process')
-    $accessKeyId = [Environment]::GetEnvironmentVariable('EFIKAS_AWS_ACCESS_KEY_ID', 'Process')
-    $secretAccessKey = [Environment]::GetEnvironmentVariable('EFIKAS_AWS_SECRET_ACCESS_KEY', 'Process')
-    $pathStyle = [Environment]::GetEnvironmentVariable('EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED', 'Process')
+    $endpoint = [Environment]::GetEnvironmentVariable('BLUESTARS_AWS_ENDPOINT', 'Process')
+    $region = [Environment]::GetEnvironmentVariable('BLUESTARS_AWS_REGION', 'Process')
+    $accessKeyId = [Environment]::GetEnvironmentVariable('BLUESTARS_AWS_ACCESS_KEY_ID', 'Process')
+    $secretAccessKey = [Environment]::GetEnvironmentVariable('BLUESTARS_AWS_SECRET_ACCESS_KEY', 'Process')
+    $pathStyle = [Environment]::GetEnvironmentVariable('BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED', 'Process')
     $missing = @(@(
-        @{ Name = 'EFIKAS_AWS_ENDPOINT'; Value = $endpoint }
-        @{ Name = 'EFIKAS_AWS_REGION'; Value = $region }
-        @{ Name = 'EFIKAS_AWS_ACCESS_KEY_ID'; Value = $accessKeyId }
-        @{ Name = 'EFIKAS_AWS_SECRET_ACCESS_KEY'; Value = $secretAccessKey }
-        @{ Name = 'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED'; Value = $pathStyle }
+        @{ Name = 'BLUESTARS_AWS_ENDPOINT'; Value = $endpoint }
+        @{ Name = 'BLUESTARS_AWS_REGION'; Value = $region }
+        @{ Name = 'BLUESTARS_AWS_ACCESS_KEY_ID'; Value = $accessKeyId }
+        @{ Name = 'BLUESTARS_AWS_SECRET_ACCESS_KEY'; Value = $secretAccessKey }
+        @{ Name = 'BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED'; Value = $pathStyle }
     ) | Where-Object { [string]::IsNullOrWhiteSpace($_.Value) })
     if ($missing.Count -gt 0) {
         throw "Object-storage configuration is incomplete; missing $($missing.Name -join ', ')."
     }
     if ($pathStyle -notmatch '^(?i:true)$') {
-        throw 'EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED must be true for the local MinIO workflow.'
+        throw 'BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED must be true for the local MinIO workflow.'
     }
     $normalizedEndpoint = Assert-LocalDemoObjectStorageEndpoint -Endpoint $endpoint
-    Assert-LocalDemoObjectStorageCredential -Name 'EFIKAS_AWS_ACCESS_KEY_ID' -Value $accessKeyId -MinimumLength 3 | Out-Null
-    Assert-LocalDemoObjectStorageCredential -Name 'EFIKAS_AWS_SECRET_ACCESS_KEY' -Value $secretAccessKey -MinimumLength 32 | Out-Null
+    Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_AWS_ACCESS_KEY_ID' -Value $accessKeyId -MinimumLength 3 | Out-Null
+    Assert-LocalDemoObjectStorageCredential -Name 'BLUESTARS_AWS_SECRET_ACCESS_KEY' -Value $secretAccessKey -MinimumLength 32 | Out-Null
 
     $rootUser = $null
     $rootPassword = $null

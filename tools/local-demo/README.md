@@ -15,7 +15,7 @@ U trenutnom PowerShell procesu postavite vrijednosti. Primjeri su placeholderi: 
 ```powershell
 $env:POSTGRES_USER = 'your-local-user'
 $env:POSTGRES_PASSWORD = 'your-local-postgres-password'
-$env:EFIKAS_JWT_SECRET = 'a-long-local-jwt-secret'
+$env:BLUESTARS_JWT_SECRET = 'a-long-local-jwt-secret'
 $env:BLUESTARS_DEMO_PASSWORD = 'a-demo-password-with-at-least-8-characters'
 $env:BLUESTARS_DEMO_MANAGER_EMAIL = 'demo.manager@bluestars.local'
 $env:BLUESTARS_DEMO_MANAGER_NAME = 'Demo'
@@ -41,7 +41,7 @@ U jednom PowerShell procesu, nakon postavljanja potrebnih varijabli iz prethodne
 .\Start-LocalDemo.ps1
 ```
 
-To koristi postojeći reset/create, backend launcher i oba API seedera, zatim postavlja Android `adb reverse` za port 8080. Lozinke i tokeni se ne ispisuju. Najvažnije procesne varijable su `POSTGRES_USER`, `POSTGRES_PASSWORD`, `EFIKAS_JWT_SECRET`, `BLUESTARS_DEMO_PASSWORD` i `BLUESTARS_DEMO_MANAGER_*` vrijednosti iz gornjeg primjera.
+To koristi postojeći reset/create, backend launcher i oba API seedera, zatim postavlja Android `adb reverse` za port 8080. Lozinke i tokeni se ne ispisuju. Najvažnije procesne varijable su `POSTGRES_USER`, `POSTGRES_PASSWORD`, `BLUESTARS_JWT_SECRET`, `BLUESTARS_DEMO_PASSWORD` i `BLUESTARS_DEMO_MANAGER_*` vrijednosti iz gornjeg primjera.
 
 Za eksplicitni čisti reset koristite:
 
@@ -60,12 +60,12 @@ Za standalone demo postavite procesne vrijednosti; AWS ključevi moraju odgovara
 ```powershell
 $env:BLUESTARS_MINIO_ROOT_USER = 'bluestarsdemo'
 $env:BLUESTARS_MINIO_ROOT_PASSWORD = '<generate-a-local-url-safe-password>'
-$env:EFIKAS_AWS_REGION = 'eu-central-1'
-$env:EFIKAS_AWS_ENDPOINT = 'http://127.0.0.1:9000'
-$env:EFIKAS_AWS_PATH_STYLE_ACCESS_ENABLED = 'true'
-$env:EFIKAS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
-$env:EFIKAS_AWS_SECRET_ACCESS_KEY = $env:BLUESTARS_MINIO_ROOT_PASSWORD
-$env:EFIKAS_AWS_BUCKET = 'bluestars-demo'
+$env:BLUESTARS_AWS_REGION = 'eu-central-1'
+$env:BLUESTARS_AWS_ENDPOINT = 'http://127.0.0.1:9000'
+$env:BLUESTARS_AWS_PATH_STYLE_ACCESS_ENABLED = 'true'
+$env:BLUESTARS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
+$env:BLUESTARS_AWS_SECRET_ACCESS_KEY = $env:BLUESTARS_MINIO_ROOT_PASSWORD
+$env:BLUESTARS_AWS_BUCKET = 'bluestars-demo'
 ```
 
 Generišite novu lokalnu password vrijednost kriptografski sigurnim generatorom i postavite je samo u trenutnom PowerShell procesu:
@@ -90,8 +90,8 @@ try {
 
 $env:BLUESTARS_MINIO_ROOT_USER = 'bluestars_demo'
 $env:BLUESTARS_MINIO_ROOT_PASSWORD = $localMinioPassword
-$env:EFIKAS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
-$env:EFIKAS_AWS_SECRET_ACCESS_KEY = $localMinioPassword
+$env:BLUESTARS_AWS_ACCESS_KEY_ID = $env:BLUESTARS_MINIO_ROOT_USER
+$env:BLUESTARS_AWS_SECRET_ACCESS_KEY = $localMinioPassword
 ```
 
 Vrijednosti su samo u trenutnom procesu; launcher ih ne stavlja u argumente, state, log ili izlaz. MinIO se veže isključivo na `127.0.0.1`, koristi `tools/local-demo/.local-object-storage/data`, upisuje ownership state bez tajni i čeka readiness na portu 9000.
@@ -124,7 +124,7 @@ Kompletan redoslijed bez automatskog ADB koraka je:
 
 ## Opcionalni object-storage smoke
 
-Ako su u procesu postavljene sve `EFIKAS_AWS_*` vrijednosti iz prethodne sekcije i backend je pokrenut sa istim procesnim vrijednostima, pokrenite:
+Ako su u procesu postavljene sve `BLUESTARS_AWS_*` vrijednosti iz prethodne sekcije i backend je pokrenut sa istim procesnim vrijednostima, pokrenite:
 
 ```powershell
 .\Test-LocalDemoObjectStorage.ps1
@@ -142,7 +142,7 @@ Bez potpune konfiguracije rezultat je `SKIPPED`. Smoke kroz javni API provjerava
 - Object storage nije konfigurisan: osnovni demo je i dalje upotrebljiv; attachment smoke ostaje `SKIPPED`.
 - MinIO ili `mc` nedostaje: stavite zvanične Windows binarne fajlove u `tools/local-demo/bin/` ili proslijedite njihove eksplicitne putanje. Nema automatskog download-a.
 - Port 9000 ili 9001 je zauzet: pronađite vlasnički PID kroz `Get-NetTCPConnection -LocalPort 9000,9001 -State Listen`; ne gasite široko procese. Zaustavite samo poznati lokalni MinIO ili oslobodite port prije starta.
-- Presigned URL nije dostupan telefonu: provjerite `EFIKAS_AWS_ENDPOINT=http://127.0.0.1:9000`, path-style `true`, MinIO loopback binding i `adb reverse tcp:9000 tcp:9000`.
+- Presigned URL nije dostupan telefonu: provjerite `BLUESTARS_AWS_ENDPOINT=http://127.0.0.1:9000`, path-style `true`, MinIO loopback binding i `adb reverse tcp:9000 tcp:9000`.
 
 ## Čist početak
 
