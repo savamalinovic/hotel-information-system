@@ -1,0 +1,865 @@
+{
+  "common": {
+    "finish": "Finish",
+    "leave": {
+      "startDate": "Start date",
+      "endDate": "End date",
+      "inclusiveHint": "The period includes both selected dates.",
+      "invalidPeriod": "Choose an end date that is on or after the start date."
+    },
+    "selectApartment": "Select apartment",
+    "errors": {
+      "networkErrorTitle": "Network error.",
+      "networkErrorMessage": "Please try again later.",
+      "invalidNumberError": "Enter a valid number",
+      "lengthMinError": "This field must be at least {{length}} characters long.",
+      "lengthExactError": "This field must be exactly {{length}} characters long."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you requested is unavailable.",
+    "goHome": "Go to home"
+  },
+  "routeValidation": {
+    "invalidLink": {
+      "title": "Invalid or incomplete link",
+      "description": "This link does not contain a valid identifier, so no data was loaded.",
+      "backToList": "Back to list",
+      "backToHome": "Back to home"
+    }
+  },
+  "tabs": {
+    "reservations": "Reservations",
+    "apartments": "Apartments",
+    "home": "Home",
+    "menu": "Menu"
+  },
+  "agentDashboard": {
+    "loading": "Loading today's operations...",
+    "greeting": "Good day,",
+    "refresh": "Refresh dashboard",
+    "overview": "Today's operational overview",
+    "empty": "There are no operational items for today.",
+    "unavailable": "Unavailable",
+    "retry": "Try again",
+    "metrics": {
+      "arrivals": "Arrivals",
+      "departures": "Departures",
+      "checkedIn": "Checked in",
+      "newTasks": "New tasks",
+      "blockedTasks": "Blocked tasks",
+      "notifications": "Unread alerts"
+    },
+    "agenda": {
+      "title": "Today's agenda",
+      "viewReservations": "Reservations",
+      "openReservation": "Open the reservation for {{apartment}}",
+      "empty": "There are no arrivals or departures today.",
+      "arrival": "Arrival",
+      "departure": "Departure",
+      "arrivalAndDeparture": "Arrival and departure"
+    },
+    "status": {
+      "CONFIRMED": "Confirmed",
+      "CHECKED_IN": "Checked in",
+      "CHECKED_OUT": "Checked out",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "No-show"
+    },
+    "actions": {
+      "title": "Quick actions",
+      "reservations": "Reservations",
+      "apartments": "Apartments",
+      "tasks": "Tasks",
+      "expenses": "Expenses",
+      "damages": "Damages",
+      "workforce": "Attendance and leave"
+    },
+    "error": {
+      "title": "Dashboard is unavailable",
+      "description": "We could not load today's operational data. Please try again."
+    }
+  },
+  "agentFeatures": {
+    "description": "This area will be available in a following mobile update.",
+    "backHome": "Back to home",
+    "features": {
+      "apartments": "Apartments",
+      "reservations": "Reservations",
+      "tasks": "Tasks",
+      "expenses": "Operational expenses",
+      "damages": "Damages",
+      "notifications": "Notifications"
+    }
+  },
+  "apartmentCatalog": {
+    "title": "Apartments",
+    "readOnly": "Read-only operational catalogue",
+    "searchLabel": "Search loaded apartments by name or address",
+    "searchPlaceholder": "Search loaded apartments",
+    "reset": "Reset",
+    "resetFilters": "Reset all apartment filters",
+    "typeFilter": "Apartment type",
+    "statusFilter": "Operational status",
+    "allTypes": "All types",
+    "allStatuses": "All statuses",
+    "outOfOrderFilter": "Out of service",
+    "loading": "Loading apartments",
+    "loadingMore": "Loading more apartments...",
+    "loadingTypes": "Loading apartment types...",
+    "loadingDetail": "Loading apartment details...",
+    "retry": "Try again",
+    "retryTypes": "Retry apartment types",
+    "typesError": "Apartment types are unavailable.",
+    "currency": "BAM",
+    "floor": "Floor",
+    "type": "Type",
+    "capacity": "Capacity",
+    "defaultPrice": "Default nightly rate",
+    "typeDescription": "Type description",
+    "active": "Active",
+    "activeYes": "Yes",
+    "activeNo": "No",
+    "details": "Apartment details",
+    "statuses": "Operational status",
+    "operationalStatus": "Recorded operational status",
+    "effectiveStatus": "Effective current status",
+    "statusLabel": "Status: {{status}}",
+    "openDetails": "Open details for {{name}}, status {{status}}",
+    "image": "Photo of {{name}}",
+    "imageOf": "Photo {{index}} of {{total}} for {{name}}",
+    "galleryPosition": "Photo {{current}} of {{total}}",
+    "noImages": "No photo available",
+    "unavailability": "Current and upcoming out-of-service periods",
+    "noUnavailability": "There are no current or upcoming out-of-service periods.",
+    "current": "Current",
+    "upcoming": "Upcoming",
+    "statusHistory": "Status history",
+    "noStatusHistory": "There are no recorded status changes.",
+    "partialError": "This section could not be loaded. The apartment details are still available.",
+    "invalidApartment": "This apartment link is invalid.",
+    "empty": {
+      "title": "No active apartments",
+      "description": "There are no active apartments to display."
+    },
+    "emptyFiltered": {
+      "title": "No matching apartments",
+      "description": "Try changing or resetting your filters."
+    },
+    "error": {
+      "title": "Apartments are unavailable",
+      "description": "We could not load the apartment catalogue. Please try again."
+    },
+    "detailError": {
+      "title": "Apartment details are unavailable",
+      "description": "We could not load this apartment. Please try again."
+    },
+    "status": {
+      "READY": "Ready",
+      "DIRTY": "Needs cleaning",
+      "CLEANING": "Cleaning in progress",
+      "MAINTENANCE": "Maintenance",
+      "OUT_OF_ORDER": "Out of service"
+    }
+  },
+  "reservationWorkflow": {
+    "navigation": { "detailTitle": "Reservation details", "createTitle": "New reservation" },
+    "common": { "nights": "nights", "guests": "guests", "currency": "BAM", "retry": "Try again", "loading": "Loading...", "back": "Back", "continue": "Continue" },
+    "status": { "CONFIRMED": "Confirmed", "CHECKED_IN": "Checked in", "CHECKED_OUT": "Checked out", "CANCELLED": "Cancelled", "NO_SHOW": "No-show" },
+    "filters": { "title": "Filters", "reset": "Reset", "status": "Status", "allStatuses": "All statuses", "apartment": "Apartment ID", "apartmentPlaceholder": "Enter apartment ID", "period": "Stay period", "from": "From date", "to": "To date" },
+    "list": { "title": "Reservations", "subtitle": "Browse stays, availability and calendar coverage.", "create": "Create reservation", "results": "Reservation list", "emptyTitle": "No reservations found", "emptyDescription": "Change the filters or create a reservation.", "open": "Open reservation for {{apartment}}", "claimed": "Check-in claimed" },
+    "calendar": { "title": "Reservation calendar", "hint": "Select a day to see stays that include it.", "loading": "Loading calendar coverage...", "loadMore": "Load more calendar results", "emptyDay": "There are no stays for this day.", "exclusiveHint": "Checkout is exclusive: a departing stay is not shown on its checkout date." },
+    "create": { "title": "New reservation", "subtitle": "Choose a stay, confirm availability, then save the reservation.", "steps": { "1": "Stay", "2": "Apartment", "3": "Confirm" }, "stayTitle": "Stay details", "checkIn": "Check-in", "checkOut": "Check-out", "chooseDate": "Choose date", "guestCount": "Guest count", "type": "Apartment type", "allTypes": "All types", "searchAvailability": "Find availability", "availabilityTitle": "Available apartments", "loadingAvailability": "Checking availability...", "emptyAvailabilityTitle": "No apartment is available", "emptyAvailabilityDescription": "Try a different stay period, guest count or apartment type.", "loadMore": "Load more apartments", "confirmTitle": "Confirm reservation", "defaultNightlyRate": "Default nightly rate", "overrideRate": "Custom nightly rate", "overridePlaceholder": "Leave empty to use default rate", "overrideHint": "Enter a non-negative amount with at most two decimal places only when a custom rate is agreed.", "note": "Note", "create": "Create reservation" },
+    "detail": { "reference": "Reservation #{{id}}", "stay": "Stay", "checkIn": "Check-in", "checkOut": "Check-out", "nights": "Nights", "guests": "Guests", "pricing": "Pricing", "nightlyRate": "Nightly rate", "total": "Total", "note": "Note", "noNote": "No note provided.", "execution": "Recorded activity", "createdBy": "Created by user", "createdAt": "Created at", "claimedBy": "Check-in claimed by", "checkedInBy": "Checked in by", "checkedOutBy": "Checked out by", "history": "Status history", "emptyHistory": "There are no status history entries.", "changedBy": "Changed by user {{id}}", "allowedActions": "Allowed actions", "stayHint": "Only the checkout date of a confirmed reservation can be changed.", "newCheckOut": "New checkout date", "saveStay": "Save stay", "confirmStayTitle": "Confirm stay change", "confirmStayMessage": "Set checkout date to {{date}}?", "cancel": "Cancel reservation", "noShow": "Mark no-show", "noShowUnavailable": "No-show can be recorded on or after the check-in date.", "reasonPrompt": "A reason is required and will be kept in the status history.", "reason": "Reason", "confirmStatus": "Confirm status change" },
+    "validation": { "apartment": "Apartment ID must be a positive whole number.", "period": "Enter valid dates with checkout after check-in.", "pastCheckIn": "Check-in date cannot be in the past.", "guests": "Guest count must be a positive whole number.", "chooseApartment": "Choose an available apartment first.", "nightlyRate": "Custom nightly rate must be non-negative with at most two decimal places.", "note": "Note can contain at most 256 characters.", "stayUpdate": "Enter a valid new checkout date after the current check-in date.", "reason": "Enter a reason of up to 300 characters." },
+    "errors": { "listTitle": "Reservations are unavailable", "listDescription": "We could not load reservations. Please try again.", "calendarTitle": "Calendar is unavailable", "calendarDescription": "We could not load calendar coverage. Please try again.", "availabilityTitle": "Availability is unavailable", "availabilityDescription": "We could not check apartment availability. Please try again.", "availabilityChanged": "Availability changed before the reservation was saved. Choose an apartment again.", "create": "The reservation could not be created. Please try again.", "invalidTitle": "Invalid reservation", "invalidDescription": "This reservation link is invalid.", "detailTitle": "Reservation details are unavailable", "detailDescription": "We could not load this reservation. Please try again.", "historyTitle": "Status history is unavailable", "historyDescription": "Reservation details remain available. Please try the history again.", "stay": "The stay could not be updated. It may conflict with another reservation or recorded payments.", "status": "The reservation status could not be updated.", "statusConflict": "This status change is no longer allowed. Refresh the reservation and try again." }
+  },
+  "paymentWorkflow": {
+    "navigation": { "title": "Payments" },
+    "detail": { "title": "Payments", "hint": "Review the payment summary and append-only ledger." },
+    "title": "Payments",
+    "reservation": "Reservation #{{id}} · {{apartment}}",
+    "common": { "retry": "Try again", "loading": "Loading...", "back": "Back", "cancel": "Cancel" },
+    "summary": { "title": "Payment summary", "totalDue": "Total due", "netPaid": "Net paid", "outstanding": "Outstanding balance" },
+    "status": { "UNPAID": "Unpaid", "PARTIALLY_PAID": "Partially paid", "PAID": "Paid" },
+    "actions": { "title": "Payment actions", "record": "Record payment", "correct": "Correct", "reverse": "Reverse", "readOnly": "Your role has read-only access to the payment ledger.", "reservationLocked": "New payments cannot be recorded for a cancelled or no-show reservation.", "nothingOutstanding": "There is no outstanding balance." },
+    "ledger": { "title": "Payment ledger", "hint": "Entries are recorded by the server in newest-first order and cannot be edited or deleted.", "empty": "There are no payment entries yet.", "agent": "Agent #{{id}}", "original": "Original payment #{{id}}", "reference": "Reference: {{reference}}", "reversed": "This original payment has been reversed." },
+    "type": { "PAYMENT": "Payment", "CORRECTION": "Correction", "REVERSAL": "Reversal" },
+    "forms": { "recordTitle": "Record payment", "correctionTitle": "Correct payment #{{id}}", "reversalTitle": "Reverse payment #{{id}}", "recordHint": "This adds a new immutable payment entry. The server confirms the final balance.", "correctionHint": "Enter a signed adjustment amount. A correction is append-only and requires a reason.", "reversalHint": "Reversal appends a negative entry for the remaining effect of this original payment. This cannot be undone here.", "amount": "Amount", "signedAmount": "Signed amount", "reference": "Reference (optional)", "note": "Note (optional)", "reason": "Reason" },
+    "validation": { "recordAmount": "Enter a positive amount with at most two decimal places.", "exceedsOutstanding": "The amount cannot exceed the displayed outstanding balance.", "referenceOrNote": "Reference can have at most 100 characters and note at most 300 characters.", "correctionAmount": "Enter a non-zero signed amount with at most two decimal places.", "reason": "Enter a reason of up to 300 characters." },
+    "confirm": { "recordTitle": "Confirm payment", "recordMessage": "Record a payment of {{amount}}?", "correctionTitle": "Confirm correction", "correctionMessage": "Append correction {{amount}} to original payment #{{id}}?", "reversalTitle": "Confirm reversal", "reversalMessage": "Reverse original payment #{{id}}? This appends an irreversible ledger entry." },
+    "success": { "record": "Payment recorded. The summary and ledger were refreshed.", "correction": "Correction recorded. The summary and ledger were refreshed.", "reversal": "Reversal recorded. The summary and ledger were refreshed." },
+    "errors": { "invalidReservation": "This reservation link is invalid.", "summaryUnavailable": "The payment summary is unavailable. Please try again.", "ledgerUnavailable": "The payment ledger is unavailable. Please try again.", "record": "The payment could not be recorded. Please try again.", "correction": "The correction could not be recorded. Refresh and try again.", "reversal": "The reversal could not be recorded. Refresh and try again." }
+  },
+  "checkOutWorkflow": {
+    "title": "Check-out",
+    "reference": "Reservation #{{id}}",
+    "navigation": { "checkOut": "Check-out", "viewResult": "View check-out" },
+    "detail": { "title": "Check-out", "readyHint": "Review check-out readiness, payment status, and the resulting cleaning workflow.", "readOnlyHint": "This reservation is checked out. View its read-only check-out and cleaning details." },
+    "common": { "back": "Back", "cancel": "Cancel", "retry": "Try again", "loading": "Loading...", "notAvailable": "Not available", "currency": "BAM" },
+    "actions": { "checkOut": "Check-out", "confirm": "Confirm check-out", "openPayments": "Open payments", "backToReservation": "Back to reservation", "retryCleaning": "Retry cleaning data" },
+    "errors": { "invalidTitle": "Invalid reservation", "invalidDescription": "This check-out link is invalid.", "reservationTitle": "Reservation is unavailable", "reservationDescription": "We could not load this reservation. Please try again.", "forbidden": "Only an agent can complete check-out.", "notFound": "The reservation is no longer available.", "conflict": "Check-out could not be completed because the reservation or apartment status changed. Data has been refreshed.", "unknownOutcome": "The check-out outcome is unknown. Reservation data was refreshed; try again only if it is still checked in.", "submit": "Check-out could not be completed. Please try again." },
+    "readiness": {
+      "title": "Check-out action",
+      "summaryTitle": "Readiness summary",
+      "apartment": "Apartment",
+      "primaryGuest": "Primary guest",
+      "period": "Contracted period",
+      "plannedCheckOut": "Planned check-out date",
+      "reservationStatus": "Reservation status",
+      "apartmentStatus": "Apartment status",
+      "earlyDeparture": "This is an early physical departure. The contracted period and price remain unchanged.",
+      "loadingSession": "Checking your session...",
+      "statusBlocked": "Only a checked-in reservation can be checked out.",
+      "agentRequired": "A signed-in agent is required for this action.",
+      "serverValidation": "The server performs the final authorization and status validation.",
+      "checksTitle": "Readiness checks",
+      "reservationCheck": "Reservation is checked in",
+      "agentCheck": "Signed-in agent",
+      "paymentCheck": "Payment debt is a warning and does not block check-out",
+      "ready": "Ready",
+      "notReady": "Not ready"
+    },
+    "payment": {
+      "title": "Payment status",
+      "unavailable": "Payment data is unavailable. Check-out is still subject to the server's final validation.",
+      "status": "Payment status",
+      "totalDue": "Total due",
+      "netPaid": "Net paid",
+      "outstanding": "Outstanding balance",
+      "debtWarning": "There is an outstanding balance. It is a warning only and does not block check-out.",
+      "outstandingTitle": "Outstanding payment",
+      "demoReceiptBlocked": "{{amount}} remains unpaid. A demo receipt will not be available until the reservation is fully paid."
+    },
+    "result": {
+      "success": "Check-out was completed successfully.",
+      "title": "Check-out result",
+      "reservationStatus": "Reservation status",
+      "actualDeparture": "Actual departure time",
+      "performedBy": "Performed by",
+      "apartmentStatus": "Apartment status",
+      "cleaningTask": "Cleaning task ID",
+      "cleaningPublished": "The cleaning task has been published to the appropriate worker list.",
+      "earlyDeparture": "The physical departure was before the planned date. The contracted period and price were not changed.",
+      "agent": "Agent #{{id}}"
+    },
+    "cleaning": {
+      "title": "Cleaning task",
+      "loading": "Loading cleaning task...",
+      "partialError": "Check-out succeeded, but cleaning task details are not available right now. Retry to load them.",
+      "taskId": "Task ID",
+      "titleLabel": "Title",
+      "description": "Description",
+      "specialization": "Specialization",
+      "priority": "Priority",
+      "status": "Status",
+      "apartment": "Apartment",
+      "reservation": "Reservation",
+      "assignedWorker": "Assigned worker",
+      "unassigned": "Not assigned",
+      "createdAt": "Created at",
+      "updatedAt": "Last updated",
+      "history": "Status history",
+      "historyError": "Task status history is unavailable. Retry to load it.",
+      "emptyHistory": "No task status history is available.",
+      "changedBy": "Worker #{{id}}",
+      "worker": "Worker #{{id}}"
+    },
+    "confirm": {
+      "title": "Confirm check-out",
+      "description": "Confirm the guest's actual departure. This business action cannot be undone here.",
+      "apartment": "Apartment",
+      "reservation": "Reservation",
+      "plannedCheckOut": "Planned check-out date",
+      "paymentStatus": "Payment status",
+      "outstanding": "Outstanding balance",
+      "earlyDeparture": "This is an early physical departure; the contracted period and price will remain unchanged.",
+      "apartmentDirty": "The apartment will become DIRTY.",
+      "cleaningTask": "A new cleaning task will be created automatically."
+    },
+    "reservationStatuses": { "CONFIRMED": "Confirmed", "CHECKED_IN": "Checked in", "CHECKED_OUT": "Checked out", "CANCELLED": "Cancelled", "NO_SHOW": "No-show" },
+    "apartmentStatuses": { "READY": "Ready", "DIRTY": "Dirty", "CLEANING": "Cleaning", "MAINTENANCE": "Maintenance", "OUT_OF_ORDER": "Out of order" },
+    "paymentStatuses": { "UNPAID": "Unpaid", "PARTIALLY_PAID": "Partially paid", "PAID": "Paid" },
+    "specializations": { "CLEANING": "Cleaning" },
+    "taskStatuses": { "NEW": "New", "ASSIGNED": "Assigned", "IN_PROGRESS": "In progress", "BLOCKED": "Blocked", "COMPLETED": "Completed", "CANCELLED": "Cancelled" },
+    "taskPriorities": { "LOW": "Low", "NORMAL": "Normal", "HIGH": "High", "URGENT": "Urgent" },
+    "taskStatusDescriptions": { "NEW": "Available to the cleaning list.", "ASSIGNED": "A worker has claimed the task.", "IN_PROGRESS": "Cleaning is in progress.", "BLOCKED": "Cleaning is blocked.", "COMPLETED": "Cleaning is completed and the apartment has returned to READY.", "CANCELLED": "The task was cancelled." }
+  },
+  "demoReceipt": {
+    "title": "Demo receipt",
+    "reference": "Reservation #{{id}}",
+    "label": "DEMO – NOT A FISCAL RECEIPT",
+    "navigation": { "title": "Demo receipt" },
+    "detail": { "title": "Demo receipt", "hint": "Review receipt readiness, generate the single demo receipt, or reopen the issued receipt." },
+    "common": { "back": "Back", "cancel": "Cancel", "retry": "Try again", "loading": "Loading...", "notAvailable": "Not available", "currency": "BAM" },
+    "errors": {
+      "invalidTitle": "Invalid reservation",
+      "invalidDescription": "This demo receipt link is invalid.",
+      "reservationTitle": "Reservation is unavailable",
+      "reservationDescription": "We could not load this reservation. Please try again.",
+      "metadataTitle": "Demo receipt is unavailable",
+      "metadataDescription": "We could not load the demo receipt status. Please try again.",
+      "forbiddenGenerate": "Only an agent can generate a demo receipt.",
+      "forbiddenPdf": "You do not have permission to download this PDF.",
+      "pdfNotFound": "The issued PDF is not available. Refresh the receipt status and try again.",
+      "conflict": "The receipt could not be generated because reservation readiness changed or another agent issued it. The status was refreshed.",
+      "unknownOutcome": "The result of receipt generation is unknown. Receipt status was checked; try again only when no receipt is shown.",
+      "generate": "The demo receipt could not be generated. Please try again."
+    },
+    "absent": { "title": "Demo receipt has not been issued", "description": "Return to the receipt screen to review readiness and generate it when the reservation is checked out and fully paid." },
+    "readiness": {
+      "title": "Receipt readiness",
+      "reservationStatus": "Reservation status",
+      "paymentStatus": "Payment status",
+      "totalDue": "Total due",
+      "netPaid": "Net paid",
+      "outstanding": "Outstanding balance",
+      "existingReceipt": "Demo receipt",
+      "issued": "Issued",
+      "notIssued": "Not issued",
+      "paymentUnavailable": "Payment data is unavailable. The server will still perform the final check.",
+      "agentRequired": "A signed-in agent is required to generate a demo receipt.",
+      "nextStepTitle": "What is needed first",
+      "checkOutRequired": "A reservation must be checked out before a demo receipt can be issued.",
+      "paymentRequired": "The reservation must be fully paid before a demo receipt can be issued. The outstanding balance is shown above.",
+      "ready": "The reservation is checked out and fully paid. It is ready for server validation and demo receipt generation.",
+      "checking": "Checking readiness..."
+    },
+    "reservationStatuses": { "CONFIRMED": "Confirmed", "CHECKED_IN": "Checked in", "CHECKED_OUT": "Checked out", "CANCELLED": "Cancelled", "NO_SHOW": "No-show" },
+    "paymentStatuses": { "UNPAID": "Unpaid", "PARTIALLY_PAID": "Partially paid", "PAID": "Paid" },
+    "actions": { "title": "Demo receipt action", "generate": "Generate demo receipt", "openCheckOut": "Open check-out", "openPayments": "Open payments", "serverValidation": "The server remains the final authority for authorization, readiness, idempotency, and payment-ledger locking." },
+    "success": { "generated": "Demo receipt was generated. Its immutable metadata is shown below.", "recovered": "A demo receipt was found after checking the unknown result. No second receipt was generated." },
+    "metadata": {
+      "title": "Issued receipt metadata",
+      "number": "Receipt number",
+      "issuedAt": "Issued at",
+      "issuedBy": "Issued by",
+      "agent": "Agent #{{id}}",
+      "hotel": "Hotel",
+      "address": "Address",
+      "taxId": "Tax ID",
+      "apartment": "Apartment",
+      "primaryGuest": "Primary guest",
+      "period": "Stay period",
+      "nights": "Nights",
+      "nightlyRate": "Nightly rate",
+      "totalAmount": "Total amount",
+      "vat": "VAT",
+      "currency": "Currency",
+      "fingerprint": "PDF SHA-256",
+      "toggleFingerprint": "Show or hide the full PDF SHA-256 fingerprint",
+      "snapshotHint": "These immutable values are the server snapshot from issuance, not recalculated from current reservation data."
+    },
+    "pdf": {
+      "actionsTitle": "Original PDF",
+      "actionHint": "Download the original server PDF with your authenticated session, then view, save, or share the local copy.",
+      "open": "Open original PDF",
+      "title": "Demo receipt PDF",
+      "downloading": "Downloading the authenticated PDF...",
+      "downloadErrorTitle": "PDF download failed",
+      "downloadFailed": "The PDF could not be downloaded. No invalid file was saved.",
+      "invalid-status": "The server returned an unexpected PDF response.",
+      "invalid-content-type": "The server response was not a PDF, so it was not saved.",
+      "empty-content": "The server returned an empty PDF, so it was not saved.",
+      "retryDownload": "Retry PDF download",
+      "rendering": "Rendering PDF...",
+      "pages": "{{count}} page(s)",
+      "webOpened": "The PDF is available in your browser.",
+      "rendererErrorTitle": "PDF could not be displayed",
+      "rendererErrorDescription": "The local PDF was removed. Download the original again to retry viewing it.",
+      "share": "Share or save PDF",
+      "sharing": "Opening share dialog...",
+      "shareDialogTitle": "Share demo receipt PDF",
+      "sharingUnavailable": "System sharing is not available on this device.",
+      "sharingFailed": "The system share dialog could not be opened. Try again.",
+      "webFallback": "This web build opens the authenticated PDF from a local browser blob; no token is placed in a URL.",
+      "openInBrowser": "Open PDF in browser",
+      "downloadInBrowser": "Download PDF"
+    },
+    "confirm": {
+      "title": "Generate demo receipt",
+      "description": "Review the server-readiness context before issuing the single immutable receipt.",
+      "reservation": "Reservation",
+      "apartment": "Apartment",
+      "primaryGuest": "Primary guest",
+      "period": "Stay period",
+      "total": "Total amount",
+      "demoWarning": "This creates a DEMO receipt, not a fiscal receipt.",
+      "incomeBook": "A read-only income-book entry is created automatically with the receipt.",
+      "ledgerLocked": "After issuance, payments for this reservation can no longer be recorded, corrected, or reversed."
+    }
+  },
+  "guestCheckIn": {
+    "navigation": { "guests": "Guests", "guestForm": "Guest details", "guestSearch": "Find existing guest", "checkIn": "Check-in" },
+    "detail": { "title": "Guests and check-in", "hint": "Record the guests first, then review readiness and complete check-in." },
+    "common": { "retry": "Try again", "loading": "Loading...", "cancel": "Cancel" },
+    "errors": { "invalidReservation": "This reservation link is invalid.", "guestsUnavailable": "Guests are unavailable", "guestsUnavailableDescription": "We could not load the guests for this reservation. Try again.", "guestUnavailable": "Guest details are unavailable", "updateGuest": "The guest could not be updated.", "duplicateGuest": "A guest with this identifier already exists. Search for and select the existing guest instead.", "addGuest": "The guest could not be added to this reservation.", "removeGuest": "The guest could not be removed from this reservation.", "searchUnavailable": "Guest search is unavailable", "checkInUnavailable": "Check-in data is unavailable", "claim": "The check-in claim could not be changed. Refresh and try again.", "checkIn": "Check-in could not be completed.", "checkInConflict": "Check-in is no longer allowed because the reservation state changed. Refresh and review the checklist." },
+    "guest": { "title": "Reservation guests", "reservation": "Reservation #{{id}}", "coverage": "Guest coverage", "recorded": "Recorded", "missing": "Missing", "primaryCount": "Primary guests", "locked": "Guests can only be changed by an agent while the reservation is confirmed.", "readOnly": "Your role has read-only access to guest records.", "addTitle": "Add a guest", "addNew": "Add new guest", "addExisting": "Find existing guest", "capacityReached": "The recorded guests already match the declared guest count.", "listTitle": "Recorded guests", "empty": "No guests have been recorded yet.", "incomplete": "Required check-in fields are incomplete.", "complete": "Ready for check-in", "primary": "Primary", "domestic": "Domestic", "foreign": "Foreign", "edit": "Edit", "makePrimary": "Make primary", "removeTitle": "Remove guest", "removeMessage": "Remove {{name}} from this reservation? The server will assign a new primary guest when needed.", "remove": "Remove" },
+    "form": { "editTitle": "Edit guest", "addTitle": "Add new guest", "documentHint": "No document is uploaded from this screen. Empty optional fields are sent as empty values.", "searchExisting": "Search existing guests", "identity": "Identity and contact", "citizenId": "Citizen ID", "name": "First name", "surname": "Last name", "gender": "Gender", "male": "Male", "female": "Female", "phone": "Phone number", "birth": "Birth details", "birthDate": "Birth date", "birthPlace": "Birth place", "birthCountry": "Birth country", "address": "Address", "residency": "Domestic or foreign guest", "birthMunicipality": "Birth municipality", "citizenship": "Citizenship", "passportNumber": "Passport number", "passportIssuedDate": "Passport issue date", "entryDate": "Entry date", "entryPlace": "Entry place", "permittedResidenceDate": "Permitted residence until", "visaType": "Visa type", "visaNumber": "Visa number", "reservationGuest": "Reservation guest role", "primaryYes": "Primary guest", "primaryNo": "Not primary", "save": "Save guest", "add": "Add guest" },
+    "documentHintNull": "No document is uploaded from this screen. Empty optional fields are sent as null.",
+    "validation": { "required": "Complete all required fields.", "date": "Enter dates in YYYY-MM-DD format.", "birthDate": "Birth date must be in the past.", "citizenId": "Citizen ID is required and can contain at most 30 characters.", "name": "First name is required and can contain at most 50 characters.", "surname": "Last name is required and can contain at most 50 characters.", "phone": "Phone number can contain at most 30 characters.", "birthPlace": "Birth place is required and can contain at most 50 characters.", "birthMunicipality": "Domestic guests require a birth municipality.", "birthCountry": "Birth country is required and can contain at most 50 characters.", "address": "Address is required and can contain at most 100 characters.", "citizenship": "Foreign guests require citizenship.", "passportNumber": "Foreign guests require a passport number.", "visa": "Visa fields can contain at most 30 characters.", "entryPlace": "Foreign guests require an entry place.", "passportDate": "Enter a valid passport issue date that is not in the future.", "entryDate": "Foreign guests require a valid entry date on or before check-in.", "permittedResidence": "Permitted residence date cannot be before the reservation check-in date." },
+    "search": { "title": "Find existing guest", "subtitle": "Search by name, surname or identifier before creating a duplicate guest profile.", "queryTitle": "Guest search", "query": "Search", "placeholder": "Name, surname or identifier", "searching": "Searching...", "results": "Search results", "empty": "No matching guests found.", "alreadyAdded": "Already added to this reservation", "select": "Add this guest", "loadMore": "Load more guests" },
+    "readiness": { "confirmed": "Reservation is confirmed", "stayWindow": "Today is within the check-in window", "guestCount": "Recorded guests match the declared count", "primary": "Exactly one primary guest is selected", "guestFields": "All required guest fields are complete", "apartment": "Apartment is active and READY", "ready": "Ready", "missing": "Needs attention" },
+    "claim": { "title": "Check-in claim", "none": "No agent currently holds the check-in claim.", "own": "You currently hold the check-in claim.", "other": "Check-in is claimed by user {{id}}.", "released": "The check-in claim was released.", "claimedBy": "Claim is held by {{name}}.", "unavailable": "Only agents can manage claims for a confirmed reservation.", "claim": "Claim check-in", "release": "Release claim", "takeover": "Take over claim", "historyTitle": "Claim history", "emptyHistory": "No claim actions have been recorded.", "historyUsers": "Previous: {{previous}} · Current: {{claimed}} · Performed by: {{performed}}", "actions": { "CLAIMED": "Claimed", "RELEASED": "Released", "TAKEN_OVER": "Taken over" } },
+    "claimOwnAt": "You currently hold the check-in claim since {{at}}.",
+    "claimOtherAt": "Check-in is claimed by agent #{{id}} since {{at}}.",
+    "takeoverConfirmTitle": "Take over check-in claim",
+    "takeoverConfirmMessage": "Take the check-in claim from agent #{{id}}?",
+    "primaryLocked": "Choose another guest as primary before changing this guest's primary role.",
+    "profileHint": "Saving updates the persistent guest profile. Earlier guest book snapshots remain unchanged.",
+    "claimConflict": "The claim changed in the meantime. The reservation was refreshed.",
+    "checkIn": { "title": "Check-in", "reservation": "Reservation #{{id}} · {{apartment}}", "readinessTitle": "Readiness checklist", "success": "Check-in completed", "entriesCreated": "Guest book records created: {{count}}", "loadingApartment": "Loading the apartment readiness state...", "apartmentUnavailable": "Apartment data could not be loaded. The server will make the final decision.", "guestSummary": "Guests", "openGuests": "Open guest records", "confirmTitle": "Confirm check-in", "confirmMessage": "Complete check-in for {{apartment}} from {{checkIn}} to {{checkOut}} with {{guests}} guest(s); primary guest: {{primary}}? The server will create immutable guest book records.", "confirm": "Complete check-in", "performTitle": "Complete check-in", "performHint": "All checklist items must be ready. The server performs the final atomic validation." }
+  },
+  "auth": {
+    "orSeparator": "or",
+    "errors": {
+      "invalidCredentials": "The email or password is incorrect.",
+      "network": "We could not connect to the server. Check your internet connection and try again.",
+      "timeout": "The request timed out. Please try again.",
+      "server": "A server error occurred. Please try again later."
+    },
+    "login": {
+      "title": "Sign in",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "password": "Password",
+      "loginButton": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "address": "Address",
+      "addressPlaceholder": "Street 123",
+      "toastMessages": {
+        "successTitle": "You have successfully logged in!",
+        "successMsg": "You may now use the app.",
+        "errorTitle": "Error!",
+        "errorMsg": "Check Your email and password."
+      },
+      "loadingTitle": "Logging in"
+    },
+    "register": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "password": "Password",
+      "repeatPassword": "Confirm password",
+      "registerButton": "Sign up",
+      "address": "Address",
+      "addressPlaceholder": "Street 123",
+      "phoneNumber": "Phone number",
+      "toastMessages": {
+        "successTitle": "You have successfully registered!",
+        "successMsg": "Try to sign in with Your new account.",
+        "errorTitle": "Error!",
+        "errorMsg": "Please check Your entered data."
+      },
+      "loadingTitle": "Registering"
+    },
+    "logout": {
+      "toastMessages": {
+        "successTitle": "Logged Out",
+        "successMsg": "You have successfully logged out.",
+        "pushCleanupWarning": "You are logged out, but push cleanup could not be confirmed on this device.",
+        "errorTitle": "Logout Failed",
+        "errorMsg": "Logout failed. Check your connection or try again."
+      }
+    },
+    "forgotPassword": {
+      "headerTitle": "Forgotten password",
+      "step1": {
+        "label": "Send OTP",
+        "title": "Enter your email to reset your password.",
+        "subtitle": "We will send you an OTP code to your email that you used for creating your account",
+        "sendOtpButton": "Send OTP",
+        "toastMessages": {
+          "otpSentTitle": "OTP Sent",
+          "otpSentMsg": "An OTP has been sent to your email."
+        }
+      },
+      "step2": {
+        "label": "Verify OTP",
+        "title": "Enter the OTP code sent to your email.",
+        "verifyOtpButton": "Verify OTP",
+        "didntReceiveOtp": "Didn't receive the OTP?",
+        "resendOtp": "Resend OTP"
+      },
+      "step3": {
+        "label": "Reset password",
+        "title": "Enter your new password",
+        "newPasswordLabel": "New password",
+        "confirmPasswordLabel": "Confirm password",
+        "resetPasswordButton": "Reset password"
+      },
+      "toastMessages": {
+        "successTitle": "Sucess!",
+        "successMsg": "Your password has been successfully reset.",
+        "errorTitle": "Error!",
+        "errorMsg": "An error occured. Please try again."
+      },
+      "otpVerified": "OTP verified successfully.",
+      "otpSentAgain": "OTP has been sent again.",
+      "loadingTitle": "Resetting"
+    },
+    "errors": {
+      "requiredFieldError": "This field is required",
+      "emailError": "Email has to be at least 6 characters",
+      "emailLengthError": "Email must be at least {{length}} characters long",
+      "passwordLengthError": "Password has to be at least 8 characters",
+      "jmbgLengthError": "JMBG must be exactly 13 digits long",
+      "jmbgFormatError": "JMBG must contain only numbers",
+      "passwordMismatchError": "Passwords do not match",
+      "addressLengthError": "Address must be at least {{length}} characters long",
+      "phoneNumberLengthError": "Phone number must be at least {{length}} characters long",
+      "phoneNumberFormatError": "Invalid format. Expected: 06X/123-456",
+      "sendOtpEmailError": "You must enter a correct email to send the OTP.",
+      "verifyEmailError": "Your email has to be verified.",
+      "otpNotVerified": "This OTP code is not valid.",
+      "enterValidOtpError": "Please enter a valid OTP code."
+    }
+  },
+  "session": {
+    "bootstrapping": "Loading secure session...",
+    "logout": "Log out",
+    "logoutLoading": "Logging out...",
+    "worker": {
+      "title": "Operational worker",
+      "description": "The work area will be available in a later delivery."
+    },
+    "manager": {
+      "title": "Manager access",
+      "description": "Manager work is available in the web application."
+    }
+  },
+  "dialogs": {
+    "logout": {
+      "message": "Are you sure you want to log out from this account?",
+      "cancelButton": "Cancel",
+      "confirmButton": "Confirm"
+    },
+    "report": {
+      "title": "Describe Your problem",
+      "placeholder": "Description of the problem...",
+      "cancelButton": "Cancel",
+      "sendButton": "Send"
+    },
+    "language": {
+      "title": "Language",
+      "langEn": "English",
+      "langSr": "Serbian",
+      "cancelButton": "Cancel",
+      "confirmButton": "Confirm"
+    },
+    "theme": {
+      "title": "Theme",
+      "lightTheme": "Light",
+      "darkTheme": "Dark",
+      "cancelButton": "Cancel",
+      "confirmButton": "Confirm"
+    },
+    "editDelete": {
+      "edit": "Edit Information",
+      "delete": "Delete"
+    },
+    "store": {
+      "cancel": "Cancel",
+      "add": "Add"
+    },
+    "message": {
+      "details": {
+        "message": "No ID document found for this reservation",
+        "button": "OK"
+      }
+    }
+  },
+  "dashboard": {
+    "navigation": {
+      "apartmentsTitle": "Apartments",
+      "expensesTitle": "Expenses",
+      "tasksTitle": "Tasks",
+      "damagesTitle": "Damages",
+      "damages": "Damages"
+    }
+  },
+  "menu": {
+    "stackNavigation": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "workforce": "Attendance and leave",
+      "settingsMain": "Settings",
+      "aboutApp": "About the app"
+    },
+    "title": {
+      "profile": "Profile",
+      "operations": "Operations",
+      "settings": "Settings"
+    },
+    "item": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "apartments": "Apartments",
+      "reservations": "Reservations",
+      "tasks": "Tasks",
+      "expenses": "Expenses",
+      "damages": "Damage reports",
+      "settings": "Settings",
+      "aboutApp": "About App",
+      "logout": "Log Out"
+    },
+    "mainSettings": {
+      "settings": {
+        "general": {
+          "mainTitle": "General",
+          "languageTitle": "Language",
+          "themeTitle": "Theme"
+        },
+        "feedback": {
+          "mainTitle": "Feedback",
+          "bugReportTitle": "Report an error",
+          "emptyFeedbackErrorTitle": "Error.",
+          "emptyFeedbackErrorMessage": "If you are reporting an error, please fill the appropriate field.",
+          "successfulFeedbackTitle": "Your report was registered.",
+          "successfulFeedbackMessage": "Thank you for your feedback!"
+        }
+      }
+    }
+  },
+  "calendar": {
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "dayNames": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "dayNamesShort": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+    "today": "Today"
+  },
+  "aboutApp": {
+    "title": "About App",
+    "systemName": "BlueStars",
+    "systemDesc": "Electronic hotel administration system",
+    "accordion": {
+      "functionalities": "Functionalities",
+      "compatibility": "Compatibility",
+      "appVersion": "App Version",
+      "team": "Development Team",
+      "contact": "Contact & Support",
+      "content_fiscalization": "Demo receipt (not a fiscal receipt)",
+      "content_reservations": "Reservation management",
+      "content_multiLang": "Multi-language support",
+      "content_platforms": "Available for Android and iOS",
+      "content_demoReceiptPdf": "Demo receipt available as PDF",
+      "content_versionNumber": "Version 1.0",
+      "content_releaseDate": "Release date: 01/01/2026"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "inbox": "Notification inbox",
+    "openInbox": "Open notification inbox",
+    "inboxDescription": "Your permanent inbox stays available even when push notifications are off.",
+    "filters": { "all": "All", "unread": "Unread" },
+    "unread": "Unread notification",
+    "open": "Open notification: {{title}}",
+    "loadingTitle": "Loading notifications",
+    "loading": "Loading notifications…",
+    "errorTitle": "Notifications are unavailable",
+    "error": "We could not load your notification inbox.",
+    "retry": "Try again",
+    "loadMore": "Load more",
+    "emptyTitle": "No notifications",
+    "empty": "There are no notifications in your inbox.",
+    "emptyUnread": "You have no unread notifications.",
+    "markReadRetry": "Could not mark as read. Try again",
+    "types": {
+      "taskAvailable": "Task available",
+      "damageReported": "Damage reported",
+      "leaveRequestSubmitted": "Leave request submitted",
+      "leaveRequestDecided": "Leave request decided",
+      "unknown": "Notification"
+    },
+    "push": {
+      "title": "Push notifications on this device",
+      "localState": "This is a local device preference. The server does not provide its current token setting.",
+      "stateUnknown": "No local preference has been saved for this account on this device.",
+      "updateError": "Push notification settings could not be updated.",
+      "status": {
+        "ready": "Permission is granted.",
+        "permission-undetermined": "Allow push notifications to enable them.",
+        "permission-denied": "Push permission is denied in system settings.",
+        "web": "Push registration is unavailable on web. Your inbox still works.",
+        "physical-device-required": "A physical device is required for push registration.",
+        "project-id-missing": "The EAS project identifier is unavailable."
+      }
+    }
+  },
+  "profile": {
+    "menuItems": {
+      "addStore": "Add Store"
+    },
+    "missingItems": {
+      "store": "You haven't registered a store yet."
+    },
+    "sectionTitle": "Profile information",
+    "labels": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "taxId": "Tax ID (JIB)",
+      "email": "Email",
+      "address": "Address",
+      "role": "Role"
+    },
+    "loading": "Loading profile...",
+    "retry": "Try again",
+    "error": {
+      "title": "Profile is unavailable",
+      "description": "We could not load your profile. Please try again."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "toastMessages": {
+      "fetchErrorTitle": "Loading Error",
+      "fetchErrorMessage": "Could not load profile data.",
+      "updateSuccessfulTitle": "Success!",
+      "updateSuccessfulMessage": "You have successfully updated your profile.",
+      "updateErrorTitle": "Saving Error",
+      "updateErrorMessage": "Could not save the profile.",
+      "genericError": "An error occurred.",
+      "addStoreSuccessTitle": "Store added!",
+      "addStoreSuccessMessage": "New store successfully added.",
+      "addStoreErrorTitle": "Error adding store",
+      "addStoreErrorMessage": "Not possible to add at this time.",
+      "addStoreErrorExistsTitle": "You've already registered your store once!"
+    },
+    "store": {
+      "sectionTitle": "Store information",
+      "addModalTitle": "Add Store Information",
+      "missingStore": "You have not registered your store yet.",
+      "placeholders": {
+        "name": "Name",
+        "address": "Address",
+        "activity": "Name",
+        "activityCode": "nn.nn",
+        "jib": "1234567891234"
+      },
+      "labels": {
+        "name": "Store name",
+        "address": "Store address",
+        "activity": "Activity",
+        "activityCode": "Activity code",
+        "jib": "Tax ID (JIB)"
+      },
+      "validation": {
+        "nameError": "Name is too short",
+        "addressError": "Address is too short",
+        "activityError": "Activity is required",
+        "activityCodeError": "Incorrect format of activity code",
+        "jibLengthError": "Tax ID must be 13 digits long",
+        "jibFormatError": "Tax ID must contain only digits"
+      }
+    }
+  },
+  "datePicker": {
+    "titleDateTime": "Select date and time",
+    "titleDateOnly": "Select date",
+    "chooseDate": "Choose a date",
+    "clear": "Clear date",
+    "common": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    }
+  },
+  "attachmentPicker": {
+    "title": "Attachment",
+    "limit": "You can attach an image or document up to 10 MB.",
+    "choose": "Choose attachment",
+    "replace": "Replace attachment",
+    "remove": "Remove",
+    "unknownSize": "Size is unavailable",
+    "sizeError": "Choose a file from 1 byte up to 10 MB.",
+    "pickError": "The attachment picker could not be opened.",
+    "createdWithoutAttachment": "The record was created without the attachment",
+    "retryOnDetail": "You can add the attachment again on the detail screen."
+  },
+  "workforceFeedback": {
+    "refreshStateAfterAction": "The server state is being refreshed. Check the current status before trying again."
+  },
+  "taskWorkforce": {
+    "common": { "all": "All", "clear": "Clear", "close": "Close", "errorTitle": "Something went wrong", "filters": "Filters", "loadMore": "Load more", "loading": "Loading…", "notAvailable": "Not available", "refresh": "Refresh", "retry": "Try again" },
+    "status": { "NEW": "New", "ASSIGNED": "Assigned", "IN_PROGRESS": "In progress", "BLOCKED": "Blocked", "COMPLETED": "Completed", "CANCELLED": "Cancelled" },
+    "priority": { "LOW": "Low", "NORMAL": "Normal", "HIGH": "High", "URGENT": "Urgent" },
+    "specialization": { "CLEANING": "Cleaning", "ELECTRICAL": "Electrical", "PLUMBING": "Plumbing", "GENERAL_MAINTENANCE": "General maintenance", "INSPECTION": "Inspection", "APARTMENT_PREPARATION": "Apartment preparation" },
+    "availability": { "OFF_DUTY": "Off duty", "UNAVAILABLE": "Unavailable", "ON_BREAK": "On break", "AVAILABLE": "Available", "BUSY": "Busy", "ON_LEAVE": "On leave" },
+    "leaveStatus": { "PENDING": "Pending", "APPROVED": "Approved", "REJECTED": "Rejected", "CANCELLED": "Cancelled" },
+    "availabilityDescription": { "OFF_DUTY": "You have not clocked in.", "UNAVAILABLE": "A manual unavailability period is active.", "ON_BREAK": "Your break is currently open.", "AVAILABLE": "You can claim a compatible task.", "BUSY": "You have an assigned or in-progress task.", "ON_LEAVE": "An approved leave period is active." },
+    "agent": {
+      "listTitle": "Operational tasks", "listSubtitle": "Create, monitor, and cancel work-list tasks.", "create": "New task", "createTitle": "Create task", "createHint": "The task will become available to compatible workers. The server notifies them.", "loadingTasks": "Loading tasks…", "loadError": "Tasks could not be loaded.", "emptyTitle": "No tasks yet", "emptyDescription": "Create an operational task to start a work-list flow.", "emptyFiltered": "No task matches these filters.", "openTask": "Open task {{title}}", "statusFilter": "Status", "specializationFilter": "Specialization", "apartmentFilter": "Apartment ID", "reservationFilter": "Reservation ID", "workerFilter": "Worker ID", "apartmentValue": "Apartment #{{id}}", "reservationValue": "Reservation #{{id}}", "workerValue": "Worker #{{id}}", "unclaimed": "Not claimed", "updatedAt": "Updated {{value}}",
+      "specialization": "Work list", "specializationError": "The work-list catalog is unavailable.", "apartmentOptional": "Apartment ID (optional)", "apartmentIdPlaceholder": "Apartment ID", "reservationOptional": "Reservation ID (optional)", "reservationIdPlaceholder": "Reservation ID", "lookupReservation": "Checking reservation…", "selectedApartment": "Selected: {{name}} (#{{id}})", "selectedReservation": "Reservation #{{id}} uses {{apartment}}.", "reservationApartmentAutofill": "Apartment #{{id}} will be used from the reservation.", "title": "Title", "titlePlaceholder": "Describe the task briefly", "description": "Description", "descriptionPlaceholder": "Describe the required work", "priority": "Priority", "notificationHint": "A concrete worker is never selected here; server-side notifications are sent to compatible workers.", "submit": "Create task", "createError": "The task could not be created.",
+      "validation": { "specialization": "Select a work list.", "title": "Enter a title of up to 120 characters.", "description": "Enter a description of up to 1000 characters.", "reservationApartment": "The apartment must match the selected reservation.", "cleaningApartment": "A cleaning task requires an apartment." }
+    },
+    "detail": {
+      "title": "Task details", "invalidTask": "This task identifier is invalid.", "loading": "Loading task details…", "loadError": "Task details could not be loaded.", "specialization": "Work list", "apartment": "Apartment", "reservation": "Reservation", "worker": "Assigned worker", "createdAt": "Created", "updatedAt": "Last updated", "openApartment": "Open apartment", "openReservation": "Open reservation", "agentActions": "Agent actions", "workerActions": "Worker actions", "cancelTask": "Cancel task", "cancelTitle": "Cancel task", "cancelDescription": "Enter a reason before cancelling this non-terminal task.", "confirmCancel": "Cancel task", "cancelError": "The task could not be cancelled.", "reason": "Reason", "reasonValidation": "Enter a reason of up to 300 characters."
+    },
+    "history": { "title": "Status history", "loadError": "Task history could not be loaded.", "empty": "There are no status changes yet.", "actor": "Worker #{{id}}" },
+    "attachments": { "title": "Attachments", "limit": "Files up to 10 MB are supported.", "add": "Add attachment", "empty": "There are no attachments yet.", "loadError": "Attachments could not be loaded.", "uploadError": "The attachment could not be uploaded.", "sizeError": "Choose a file smaller than 10 MB.", "workerRestriction": "Only the assigned worker can add an attachment.", "open": "Open", "refreshUrl": "Refresh link", "uploaded": "Uploaded by Worker #{{id}} · {{date}}" },
+    "selfService": { "title": "Attendance and leave", "subtitle": "Track your attendance, availability, and leave requests.", "loadingStatus": "Loading your current availability…", "statusError": "Your availability could not be loaded.", "currentStatus": "Current availability", "statusMismatch": "Availability status needs attention", "statusMismatchDescription": "This status is not available for your role. Refresh to load the latest server state.", "clockedIn": "Clocked in", "clockedOut": "Clocked out", "activeBreak": "Active break", "activeOverride": "Manual unavailability", "activeLeave": "Active leave", "attendanceActions": "Attendance", "clockIn": "Clock in", "startBreak": "Start break", "endBreak": "End break", "clockOut": "Clock out", "clockOutTitle": "Clock out?", "clockOutDescription": "Confirm that you want to close your attendance session.", "confirmClockOut": "Clock out", "attendanceActionError": "The attendance action could not be completed.", "attendanceHistory": "Attendance history", "loadingAttendance": "Loading attendance sessions…", "attendanceError": "Attendance history could not be loaded.", "attendanceEmptyTitle": "No attendance sessions", "attendanceEmptyDescription": "Your completed sessions and breaks will appear here.", "breaks": "Breaks", "noBreaks": "No breaks recorded.", "overrideTitle": "Manual unavailability", "overrideHint": "Leave the start empty to begin now and the end empty to keep it active until cleared.", "startsAt": "Starts", "endsAt": "Ends", "startsAtOptional": "Start (optional)", "endsAtOptional": "End (optional)", "chooseInstant": "Choose date and time", "reason": "Reason", "overrideReasonValidation": "Enter a reason of up to 300 characters.", "periodValidation": "The end must be after the start.", "submitOverride": "Save unavailability", "overrideError": "The unavailability period could not be saved.", "overrideHistory": "Unavailability history", "loadingOverrides": "Loading unavailability history…", "overrideLoadError": "Unavailability history could not be loaded.", "overrideEmptyTitle": "No unavailability periods", "overrideEmptyDescription": "Your manual unavailability periods will appear here.", "clearOverride": "Clear unavailability", "clearOverrideTitle": "Clear manual unavailability?", "clearOverrideDescription": "Confirm that you want to clear this manual unavailability period.", "clearOverrideError": "The unavailability period could not be cleared.", "clearedAt": "Cleared", "leaveTitle": "Leave request", "leaveHint": "The period is [start, end). Managers decide on submitted requests in their application.", "leaveReasonValidation": "Enter a reason of up to 300 characters.", "leavePeriodValidation": "Choose an end after the start.", "submitLeave": "Submit leave request", "leaveError": "The leave request could not be submitted.", "leaveHistory": "Leave history", "loadingLeave": "Loading leave history…", "leaveLoadError": "Leave history could not be loaded.", "leaveEmptyTitle": "No leave requests", "leaveEmptyDescription": "Your requests and their decisions will appear here.", "cancelLeave": "Cancel request", "cancelLeaveTitle": "Cancel leave request?", "cancelLeaveDescription": "Confirm that you want to cancel this leave request.", "cancelLeaveError": "The leave request could not be cancelled.", "decisionReason": "Decision reason", "decidedAt": "Decision time", "openOverrides": "Manage unavailability", "openLeave": "Manage leave requests", "sections": { "overview": "Status", "attendance": "Attendance", "overrides": "Unavailable", "leave": "Leave" }, "availabilityDescription": { "OFF_DUTY": "You have not clocked in.", "UNAVAILABLE": "A manual unavailability period is active.", "ON_BREAK": "A break is currently open.", "AVAILABLE": "You are currently available.", "BUSY": "Your availability is currently restricted.", "ON_LEAVE": "Approved leave is active." } },
+    "worker": {
+      "homeTitle": "My work", "homeSubtitle": "Attendance, availability, and tasks", "greeting": "Hello, {{name}}", "loadingStatus": "Loading your current availability…", "statusError": "Your availability could not be loaded.", "currentStatus": "Current availability", "clockedIn": "Clocked in", "clockedOut": "Clocked out", "activeBreak": "Active break", "activeOverride": "Manual unavailability", "activeLeave": "Active leave", "availableCount": "Available tasks", "activeCount": "Active tasks", "blockedCount": "Blocked tasks", "sections": { "overview": "Status", "available": "Available", "mine": "My tasks", "attendance": "Attendance", "overrides": "Unavailable", "leave": "Leave" }, "groups": { "active": "Active", "blocked": "Blocked", "history": "History" },
+      "availableTitle": "Available tasks", "availableHint": "You may read compatible new tasks even when unavailable. Claiming requires Available status.", "loadingTasks": "Loading tasks…", "availableError": "Available tasks could not be loaded.", "availableEmptyTitle": "No available tasks", "availableEmptyDescription": "No compatible new task is currently available.", "openTask": "Open task {{title}}", "myTitle": "My tasks", "mineError": "Your tasks could not be loaded.", "mineEmptyTitle": "No tasks here", "mineEmptyDescription": "Your assigned, blocked, and historical tasks appear here.",
+      "attendanceActions": "Attendance", "clockIn": "Clock in", "startBreak": "Start break", "endBreak": "End break", "clockOut": "Clock out", "clockOutTitle": "Clock out?", "clockOutDescription": "Confirm that you want to close your attendance session.", "confirmClockOut": "Clock out", "attendanceActionError": "The attendance action could not be completed.", "attendanceHistory": "Attendance history", "loadingAttendance": "Loading attendance sessions…", "attendanceError": "Attendance history could not be loaded.", "attendanceEmptyTitle": "No attendance sessions", "attendanceEmptyDescription": "Your completed sessions and breaks will appear here.", "breaks": "Breaks", "noBreaks": "No breaks recorded.",
+      "overrideTitle": "Manual unavailability", "overrideHint": "Leave the start empty to begin now and the end empty to keep it active until cleared.", "startsAt": "Starts", "endsAt": "Ends", "startsAtOptional": "Start (optional)", "endsAtOptional": "End (optional)", "chooseInstant": "Choose date and time", "reason": "Reason", "overrideReasonValidation": "Enter a reason of up to 300 characters.", "periodValidation": "The end must be after the start.", "submitOverride": "Save unavailability", "overrideError": "The unavailability period could not be saved.", "overrideHistory": "Unavailability history", "loadingOverrides": "Loading unavailability history…", "overrideLoadError": "Unavailability history could not be loaded.", "overrideEmptyTitle": "No unavailability periods", "overrideEmptyDescription": "Your manual unavailability periods will appear here.", "clearOverride": "Clear unavailability", "clearedAt": "Cleared",
+      "leaveTitle": "Leave request", "leaveHint": "The period is [start, end). Managers decide on submitted requests in their application.", "leaveReasonValidation": "Enter a reason of up to 300 characters.", "leavePeriodValidation": "Choose an end after the start.", "submitLeave": "Submit leave request", "leaveError": "The leave request could not be submitted.", "leaveHistory": "Leave history", "loadingLeave": "Loading leave history…", "leaveLoadError": "Leave history could not be loaded.", "leaveEmptyTitle": "No leave requests", "leaveEmptyDescription": "Your requests and their decisions will appear here.", "cancelLeave": "Cancel leave request", "decisionReason": "Decision reason", "decidedAt": "Decided at",
+      "claim": "Claim task", "claimTitle": "Claim this task?", "claimDescription": "Confirm atomic claim of this compatible task.", "confirmClaim": "Claim task", "claimUnavailable": "This task cannot be claimed while your availability is {{status}}.", "claimConflict": "The task was claimed by another worker or your availability changed. Server state was refreshed.", "start": "Start task", "block": "Block task", "resume": "Resume task", "complete": "Complete task", "actionError": "The task action could not be completed.", "cleaningHint": "Starting cleaning changes the apartment from Dirty to Cleaning; completing it changes the apartment to Ready.", "blockTitle": "Block task", "blockDescription": "Enter the reason why this task is blocked.", "confirmBlock": "Block task", "completeTitle": "Complete task?", "completeDescription": "Confirm completion. The server remains authoritative for task and apartment state.", "confirmComplete": "Complete task"
+    }
+  },
+  "expenseWorkflow": {
+    "common": { "loading": "Loading…", "errorTitle": "Something went wrong", "retry": "Try again", "cancel": "Cancel", "notAvailable": "Not available", "currency": "BAM" },
+    "list": {
+      "title": "Operational expenses", "subtitle": "Hotel expenses recorded by reception.", "create": "New expense", "period": "Period", "dateFrom": "From date", "dateTo": "To date", "category": "Category", "allCategories": "All categories", "voided": "Record status", "voidedFilter": { "active": "Not voided", "voided": "Voided", "all": "All records" }, "reset": "Reset filters", "open": "Open expense {{name}}", "loadMore": "Load more", "invalidPeriod": "Enter valid dates and make sure the start is not after the end.", "loading": "Loading expenses…", "loadError": "Expenses could not be loaded.", "emptyTitle": "No expenses", "empty": "No operational expenses have been recorded.", "emptyFiltered": "No expenses match these filters."
+    },
+    "create": {
+      "title": "Record expense", "hint": "A recorded expense cannot be edited or deleted.", "loadingCategories": "Loading active categories…", "categoriesError": "Active expense categories could not be loaded.", "category": "Category", "noCategories": "There are no active expense categories available.", "name": "Name", "namePlaceholder": "For example, laundry supplies", "description": "Description (optional)", "descriptionPlaceholder": "Add a useful note", "amount": "Amount", "date": "Expense date", "review": "Review expense", "confirmTitle": "Record this expense?", "confirmHint": "Check the details before sending. This action is recorded permanently.", "submit": "Record expense", "submitError": "The expense could not be recorded."
+    },
+    "validation": { "category": "Choose an active category.", "name": "Enter a name of up to 120 characters.", "description": "The description can contain at most 1000 characters.", "amount": "Enter an amount from 0.01 with at most 12 whole digits and 2 decimal places.", "date": "Enter a valid expense date that is not in the future." },
+    "detail": { "title": "Expense details", "invalid": "The expense identifier is invalid.", "loading": "Loading expense details…", "loadError": "Expense details could not be loaded.", "voided": "Voided", "active": "Not voided", "category": "Category", "amount": "Amount", "date": "Expense date", "author": "Recorded by", "createdAt": "Recorded at", "description": "Description", "voidedBy": "Voided by", "voidedAt": "Voided at", "voidReason": "Void reason" }
+  },
+  "damageWorkflow": {
+    "common": { "loading": "Loading…", "errorTitle": "Something went wrong", "retry": "Try again", "cancel": "Cancel", "notAvailable": "Not available", "currency": "BAM", "refresh": "Refresh" },
+    "list": { "title": "Apartment damages", "subtitle": "Choose an apartment to review its damage history.", "create": "New damage", "apartment": "Apartment", "forApartment": "Damages for {{name}}", "chooseApartment": "Choose an apartment", "chooseApartmentHint": "Select an apartment from the catalog to see its damages.", "loadMoreApartments": "Load more apartments", "open": "Open damage {{title}}", "loadMore": "Load more", "loading": "Loading damages…", "loadError": "Damages could not be loaded.", "emptyTitle": "No damages", "empty": "No damage records are available for this apartment." },
+    "create": { "title": "Report damage", "hint": "Reporting damage for apartment #{{id}}. The business record cannot be edited on mobile.", "invalidApartment": "Choose a valid apartment before reporting damage.", "titleLabel": "Title", "titlePlaceholder": "For example, damaged bedside lamp", "description": "Description", "descriptionPlaceholder": "Describe the damage and what was observed", "estimated": "Estimated amount (optional)", "confirmed": "Confirmed amount (optional)", "review": "Review damage", "confirmTitle": "Report this damage?", "submit": "Report damage", "submitError": "The damage could not be reported." },
+    "validation": { "title": "Enter a title of up to 120 characters.", "description": "Enter a description of up to 2000 characters.", "amount": "Amounts are optional, but each entered amount must be at least 0.01 with at most 12 whole digits and 2 decimal places." },
+    "detail": { "title": "Damage details", "invalid": "The damage or apartment identifier is invalid.", "loading": "Loading damage details…", "loadError": "Damage details could not be loaded or are no longer available.", "apartment": "Apartment", "estimated": "Estimated amount", "confirmed": "Confirmed amount", "author": "Reported by", "createdAt": "Reported at", "updatedBy": "Last updated by", "updatedAt": "Last updated", "description": "Description" },
+    "attachments": { "title": "Attachments", "limit": "Attach a file between 1 byte and 10 MB.", "add": "Add attachment", "sizeError": "Choose a file from 1 byte up to 10 MB.", "uploadError": "The attachment could not be uploaded.", "loadError": "Attachments could not be loaded.", "empty": "No attachments have been added.", "open": "Open", "refreshUrl": "Refresh link", "downloadError": "The link could not be opened. Refresh the link and try again.", "uploaded": "Uploaded by user #{{id}} · {{date}}" },
+    "worker": { "title": "Task apartment damages", "hint": "You can review and attach files only while this task keeps access to apartment #{{id}}.", "openFromTask": "View apartment damages", "checkingAccess": "Checking whether this task still gives access…", "accessLostTitle": "Access is no longer available", "accessLost": "This task is no longer assigned to you, no longer has an apartment, or is not assigned, in progress, or blocked. Damage data and upload actions are hidden.", "invalidTask": "The task identifier is invalid.", "noUpload": "Attachments can be added only while access through this task is still active." }
+  }
+}
