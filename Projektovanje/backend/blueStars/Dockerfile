@@ -3,7 +3,8 @@ WORKDIR /workspace
 
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN ./mvnw -B -q -DskipTests dependency:go-offline
+RUN chmod 0755 mvnw \
+    && ./mvnw -B -q -DskipTests dependency:go-offline
 
 COPY src/ src/
 RUN ./mvnw -B -DskipTests package
