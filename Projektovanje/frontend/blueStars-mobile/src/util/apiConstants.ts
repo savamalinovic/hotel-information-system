@@ -1,4 +1,10 @@
-export const API_BASE_URL = "http://127.0.0.1:8080/api/v1";
+import Constants from "expo-constants";
+
+const apiBaseUrl: unknown = Constants.expoConfig?.extra?.apiBaseUrl;
+if (typeof apiBaseUrl !== "string" || !apiBaseUrl) {
+  throw new Error("Missing build-time API configuration");
+}
+export const API_BASE_URL: string = apiBaseUrl;
 
 export const API_URLS = {
     auth: {
