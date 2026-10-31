@@ -11,7 +11,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "locale:check": "node ./scripts/check-locale-parity.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "config:check": "node --test scripts/test-api-config.js"
   },
   "dependencies": {
     "@config-plugins/react-native-blob-util": "^12.0.0",

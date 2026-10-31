@@ -48,3 +48,27 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## API i Android build
+
+API adresa se bira tokom builda i nije korisnička postavka. Podrazumijevani i EAS `production`/`preview` profil koriste produkcijski HTTPS; `development` koristi ADB loopback. Varijable profila nisu tajne i ne smiju sadržati kredencijale.
+
+Iz ovog direktorijuma, nakon `npm ci`, za lokalni Android development (PowerShell):
+
+```powershell
+adb reverse tcp:8080 tcp:8080
+$env:BLUESTARS_API_PROFILE = 'development'
+npx expo run:android
+npx expo start --dev-client
+```
+
+Backend mora slušati na portu 8080 računara. Ponovite `adb reverse` nakon ponovnog povezivanja uređaja. Za EAS development build koristite `eas build --platform android --profile development` i isti `adb reverse`.
+
+Za produkcijski Android build očistite lokalne override varijable i koristite:
+
+```powershell
+Remove-Item Env:BLUESTARS_API_PROFILE, Env:BLUESTARS_API_URL -ErrorAction SilentlyContinue
+npx eas-cli build --platform android --profile production
+```
+
+Profil se ugrađuje pri generisanju native projekta i JS bundlea. Nakon promjene profila ponovo napravite clean prebuild/build; ne koristite development konfiguraciju za release. Provjerite vrijednost prije builda komandom `npx expo config --type public` uz isti profil: `extra.apiBaseUrl` mora biti očekivani URL. Za već generisani bundle provjerite prisustvo tog javnog URL-a tekstualnom pretragom; ne ispisujte tokene, kredencijale ili kompletan sadržaj bundlea.

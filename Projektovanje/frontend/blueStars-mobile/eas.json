@@ -6,7 +6,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "BLUESTARS_API_PROFILE": "development"
+      }
     },
     "ios-simulator": {
       "extends": "development",
@@ -15,10 +18,16 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "BLUESTARS_API_PROFILE": "production"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "BLUESTARS_API_PROFILE": "production"
+      }
     }
   },
   "submit": {
