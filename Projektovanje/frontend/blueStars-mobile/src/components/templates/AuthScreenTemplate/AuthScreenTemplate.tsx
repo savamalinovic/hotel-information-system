@@ -1,6 +1,7 @@
 import { VStack } from '@/src/components/ui/vstack';
 import { useTheme } from '@/src/providers/ThemeProvider';
 import React, { useRef } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import {
     Dimensions,
     ImageBackground,
@@ -48,7 +49,8 @@ const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
   );
 
   return (
-    <SafeAreaView edges={["top", "bottom"]} style={{ flex: 1, backgroundColor: Colors.background }}>
+    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: Colors.background }}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: Colors.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
