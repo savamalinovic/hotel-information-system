@@ -15,7 +15,7 @@ export default function AuthRootLayout() {
             }, 
 		}}>
 			<Stack.Screen name="index" options={{ headerShown: false, title: t('auth.login.title')}} />
-			<Stack.Screen name="forgotPassword" options={{ headerShown: true, title: t('auth.forgotPassword.headerTitle')}} />
+			<Stack.Screen name="forgotPassword" options={{ headerShown: false, title: t('auth.forgotPassword.headerTitle')}} />
         </Stack>
     );
 }

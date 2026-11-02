@@ -516,6 +516,7 @@
     }
   },
   "session": {
+    "back": "Nazad",
     "bootstrapping": "Učitavanje sigurne sesije...",
     "logout": "Odjavi se",
     "logoutLoading": "Odjava u toku...",
@@ -525,7 +526,7 @@
     },
     "manager": {
       "title": "Menadžerski pristup",
-      "description": "Menadžerski rad je predviđen za web aplikaciju."
+      "description": "Ovaj menadžerski nalog namijenjen je web aplikaciji. Za nastavak koristite web aplikaciju."
     }
   },
   "dialogs": {

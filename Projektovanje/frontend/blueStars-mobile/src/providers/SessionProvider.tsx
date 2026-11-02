@@ -80,6 +80,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     const activeSession = sessionStore.getSession();
     let pushCleanupFailed = false;
 
+    if (activeSession?.role === "MANAGER") {
+      await clearLocalSession();
+      void pushNotificationPreference.clear(activeSession.email).catch(() => {});
+      return { pushCleanupFailed: false };
+    }
+
     if (activeSession) {
       let localToken: string | null = null;
       try {

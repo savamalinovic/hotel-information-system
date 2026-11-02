@@ -71,10 +71,10 @@ export default function ExpenseCreateScreen() {
   };
 
   if (categories.isPending) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.create.loadingCategories")} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.create.loadingCategories")} /></SafeAreaView>;
   }
   if (categories.isError) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.create.categoriesError")} actionLabel={t("expenseWorkflow.common.retry")} onAction={() => void categories.refetch()} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.create.categoriesError")} actionLabel={t("expenseWorkflow.common.retry")} onAction={() => void categories.refetch()} /></SafeAreaView>;
   }
 
   return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

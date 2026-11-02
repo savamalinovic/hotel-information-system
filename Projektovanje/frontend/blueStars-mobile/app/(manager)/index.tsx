@@ -1,5 +1,11 @@
-import { RoleLandingScreen } from "@/src/components/screens/RoleLandingScreen/RoleLandingScreen";
+import { Redirect } from "expo-router";
+import { ManagerFallbackScreen } from "@/src/components/screens/RoleLandingScreen/RoleLandingScreen";
+import { useSession } from "@/src/providers/SessionProvider";
 
 export default function ManagerHome() {
-  return <RoleLandingScreen role="MANAGER" />;
+  const { status, session } = useSession();
+  if (status !== "authenticated" || session?.role !== "MANAGER") {
+    return <Redirect href="/" />;
+  }
+  return <ManagerFallbackScreen />;
 }

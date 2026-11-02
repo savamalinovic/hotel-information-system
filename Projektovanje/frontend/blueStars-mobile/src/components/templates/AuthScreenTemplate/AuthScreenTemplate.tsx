@@ -1,127 +1,67 @@
-import { VStack } from '@/src/components/ui/vstack';
-import { useTheme } from '@/src/providers/ThemeProvider';
-import React, { useRef } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import {
-    Dimensions,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { VStack } from "@/src/components/ui/vstack";
+import { Icon } from "@/src/components/atoms/Icon/Icon";
+import { useTheme } from "@/src/providers/ThemeProvider";
+import { router, useSegments } from "expo-router";
+import React, { useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Dimensions, ImageBackground, Pressable, StyleSheet, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface AuthScreenTemplateProps {
   authForm: React.ReactNode;
   header?: React.ReactNode;
 }
 
-const AuthScreenTemplate = (props: AuthScreenTemplateProps) => {
+export default function AuthScreenTemplate({ authForm, header }: AuthScreenTemplateProps) {
   const { Colors } = useTheme();
-  const windowHeight = Dimensions.get('window').height;
-  // A bounded proportional height keeps the branding prominent without hiding the form
-  // on compact Android screens or while the keyboard is open.
-  const topImageHeight = Math.min(Math.max(windowHeight * 0.3, 190), 280);
-
-  const scrollRef = useRef<ScrollView | null>(null);
-
-  const defaultHeader = (
-    <ImageBackground
-      source={require('@/assets/images/bluestars-auth-background.png')}
-      style={{
-        width: '100%',
-        height: topImageHeight,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-      resizeMode="contain"
-    >
-      <View
-        style={{
-          ...StyleSheet.absoluteFillObject,
-          backgroundColor: 'rgba(0,0,0,0.04)',
-        }}
-      />
-    </ImageBackground>
-  );
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const segments = useSegments();
+  const initialHeight = useRef(Dimensions.get("window").height).current;
+  const imageHeight = Math.min(Math.max(initialHeight * 0.3, 190 + insets.top), 310);
+  const showBack = segments.includes("forgotPassword");
 
   return (
-    <SafeAreaView edges={["bottom"]} style={{ flex: 1, backgroundColor: Colors.background }}>
-      <StatusBar style="light" translucent backgroundColor="transparent" />
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: Colors.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <View style={[styles.root, { backgroundColor: Colors.background }]}>
+      <KeyboardAwareScrollView
+        style={styles.root}
+        contentContainerStyle={styles.content}
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={24}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <ScrollView
-          ref={scrollRef}
-          style={{ backgroundColor: Colors.background }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            backgroundColor: Colors.background,
-          }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {props.header || defaultHeader}
-
-          <View
-            className="w-full rounded-t-[30px] p-0"
-            style={{
-              marginTop: -30,
-              backgroundColor: Colors.background,
-              minHeight: windowHeight - topImageHeight + 30,
-            }}
-            pointerEvents="box-none"
-          >
-            <VStack space="lg" className="w-full pt-8 items-center">
-              <View className="w-full mt-6">
-                {props.authForm}
-              </View>
-            </VStack>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-};
-
-export default AuthScreenTemplate;
-
-
-/*
-primjer upotrebe:
-import React from 'react';
-import AuthScreenTemplate from '../../src/components/templates/AuthScreenTemplate';
-
-export default function IndexScreen() {
-  const handleLogin = (data: any) => {
-    console.log('Prijavljivanje korisnika:', data);
-  };
-
-  const handleRegister = (data: any) => {
-    console.log('Registracija korisnika:', data);
-  };
-
-  const handleForgotPassword = () => {
-    console.log('Zaboravljena lozinka');
-  };
-
-  const handleGoogleLogin = () => {
-    console.log('Google login');
-  };
-
-  return (
-    <AuthScreenTemplate
-      onLogin={handleLogin}
-      onRegister={handleRegister}
-      onForgotPassword={handleForgotPassword}
-      onGoogleLogin={handleGoogleLogin}
-    />
+        {header ?? (
+          <ImageBackground source={require("@/assets/images/bluestars-auth-background.png")}
+            resizeMode="cover" style={{ height: imageHeight, width: "100%" }}>
+            <View style={styles.imageShade} />
+            {showBack && <Pressable accessibilityRole="button" accessibilityLabel={t("session.back")}
+              onPress={() => router.back()} style={[styles.back, { top: insets.top + 8 }]}>
+              <Icon name="ArrowLeft" size={24} color="#fff" />
+            </Pressable>}
+          </ImageBackground>
+        )}
+        <View style={[styles.form, { backgroundColor: Colors.background, paddingBottom: Math.max(insets.bottom, 24) }]}>
+          <VStack space="lg" className="w-full pt-8 items-center">
+            <View className="w-full mt-6">{authForm}</View>
+          </VStack>
+        </View>
+      </KeyboardAwareScrollView>
+      <View pointerEvents="none" style={[styles.statusScrim, { height: insets.top }]} />
+    </View>
   );
 }
 
-*/
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+  content: { flexGrow: 1 },
+  imageShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.30)" },
+  statusScrim: { position: "absolute", top: 0, left: 0, right: 0, backgroundColor: "rgba(0,0,0,0.65)" },
+  form: { flexGrow: 1, marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+  back: { position: "absolute", left: 16, padding: 10, borderRadius: 24, backgroundColor: "rgba(0,0,0,0.4)" },
+});

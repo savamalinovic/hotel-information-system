@@ -21,7 +21,7 @@ export default function NotificationLifecycle() {
   const startedWithStoredSession = useRef(false);
 
   useEffect(() => {
-    currentSession.current = status === "authenticated" ? session : null;
+    currentSession.current = status === "authenticated" && session?.role !== "MANAGER" ? session : null;
     handledResponses.current.clear();
   }, [session, status]);
 

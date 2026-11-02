@@ -14,9 +14,11 @@ export default function MenuRootLayout() {
     return (
         <Stack screenOptions={{ 
             headerShown: true,
+            contentStyle: { backgroundColor: Colors.screenBackground },
+            headerShadowVisible: false,
             headerTintColor: Colors.textPrimary,
             headerStyle: {
-                backgroundColor: Colors.tabBackground, // Set your desired background color here
+                backgroundColor: Colors.tabBackground,
             },
         }} >
             <Stack.Screen name="index" options={{ title: t('tabs.menu') }} />

@@ -15,9 +15,11 @@ export default function HomeRootLayout() {
     return (
         <Stack screenOptions={{ 
             headerShown: true,
+            contentStyle: { backgroundColor: Colors.screenBackground },
+            headerShadowVisible: false,
             headerTintColor: Colors.textPrimary,
             headerStyle: {
-                backgroundColor: Colors.tabBackground, // Set your desired background color here
+                backgroundColor: Colors.tabBackground,
             },
         }} >
             <Stack.Screen name="apartments" options={{ title: t('dashboard.navigation.apartmentsTitle') }} />

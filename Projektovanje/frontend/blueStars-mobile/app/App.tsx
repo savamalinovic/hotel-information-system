@@ -5,7 +5,11 @@ import { useTheme } from "@/src/providers/ThemeProvider";
 import { ToastConfig } from "@/src/util/ToastConfig";
 import { OverlayProvider } from "@gluestack-ui/overlay";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useSegments } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
+import { useEffect } from "react";
+import { Platform } from "react-native";
 import Toast from "react-native-toast-message";
 import * as Notifications from "expo-notifications";
 import { notificationsService } from "@/src/services/notificationsService";
@@ -28,9 +32,20 @@ if (notificationsService.isNativePushPlatform()) {
 const AppNavigator = () => {
   const { status, session } = useSession();
   const isAuthenticated = status === "authenticated";
+  const { theme, Colors } = useTheme();
+  const segments = useSegments();
+  const isAuth = segments[0] === "(auth)" && status === "unauthenticated";
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      void NavigationBar.setButtonStyleAsync(theme === "dark" ? "light" : "dark").catch(() => {});
+    }
+  }, [theme]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <>
+    <StatusBar style={isAuth || theme === "dark" ? "light" : "dark"} translucent backgroundColor="transparent" />
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.screenBackground } }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
 
       <Stack.Protected guard={status === "unauthenticated"}>
@@ -56,6 +71,7 @@ const AppNavigator = () => {
 
       <Stack.Screen name="+not-found" options={{ headerShown: false }} />
     </Stack>
+    </>
   );
 };
 
