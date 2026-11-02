@@ -20,10 +20,10 @@ export default function ExpenseDetailScreen() {
     return <InvalidRouteState fallbackHref="/(home)/expenses" />;
   }
   if (expense.isPending) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.detail.loading")} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("expenseWorkflow.common.loading")} description={t("expenseWorkflow.detail.loading")} /></SafeAreaView>;
   }
   if (expense.isError || !expense.data) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.detail.loadError")} actionLabel={t("expenseWorkflow.common.retry")} onAction={() => void expense.refetch()} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("expenseWorkflow.common.errorTitle")} description={t("expenseWorkflow.detail.loadError")} actionLabel={t("expenseWorkflow.common.retry")} onAction={() => void expense.refetch()} /></SafeAreaView>;
   }
   const data = expense.data;
   const author = [data.authorName, data.authorSurname].filter(Boolean).join(" ") || `#${data.createdBy}`;

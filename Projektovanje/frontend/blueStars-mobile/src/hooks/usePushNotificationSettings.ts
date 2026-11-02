@@ -1,3 +1,4 @@
+import { isMobilePushRole } from "@/src/notifications/mobilePushPolicy";
 import { notificationsApiService } from "@/src/api/services/notificationsApiService";
 import { pushNotificationPreference, StoredPushPreference } from "@/src/notifications/pushNotificationPreference";
 import { useSession } from "@/src/providers/SessionProvider";
@@ -7,8 +8,8 @@ import { useCallback, useEffect, useState } from "react";
 
 export const usePushNotificationSettings = () => {
   const { session, status } = useSession();
-  const email = status === "authenticated" ? session?.email : undefined;
-  const sessionToken = status === "authenticated" ? session?.token : undefined;
+  const email = status === "authenticated" && isMobilePushRole(session?.role) ? session?.email : undefined;
+  const sessionToken = status === "authenticated" && isMobilePushRole(session?.role) ? session?.token : undefined;
   const [availability, setAvailability] = useState<PushAvailability>("web");
   const [preference, setPreference] = useState<StoredPushPreference | null>(null);
   const [isLoading, setIsLoading] = useState(Boolean(email));

@@ -516,6 +516,7 @@
     }
   },
   "session": {
+    "back": "Back",
     "bootstrapping": "Loading secure session...",
     "logout": "Log out",
     "logoutLoading": "Logging out...",
@@ -525,7 +526,7 @@
     },
     "manager": {
       "title": "Manager access",
-      "description": "Manager work is available in the web application."
+      "description": "This manager account is intended for the web application. Please use the web application to continue."
     }
   },
   "dialogs": {
@@ -592,6 +593,7 @@
       "settings": "Settings"
     },
     "item": {
+      "workforce": "Attendance and leave",
       "profile": "Profile",
       "notifications": "Notifications",
       "apartments": "Apartments",

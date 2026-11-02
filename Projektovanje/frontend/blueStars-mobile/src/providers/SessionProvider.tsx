@@ -24,6 +24,7 @@ import { sessionStore } from "@/src/session/sessionStore";
 import { SECURE_STORE_KEYS } from "@/src/util/secureStoreKeys";
 import { notificationsApiService } from "@/src/api/services/notificationsApiService";
 import { pushNotificationPreference } from "@/src/notifications/pushNotificationPreference";
+import { cleanupSignOut } from "@/src/session/cleanupSignOut";
 
 export type SessionStatus = "bootstrapping" | "unauthenticated" | "authenticated";
 
@@ -77,34 +78,13 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }, [queryClient]);
 
   const signOut = useCallback(async (): Promise<SignOutResult> => {
-    const activeSession = sessionStore.getSession();
-    let pushCleanupFailed = false;
-
-    if (activeSession) {
-      let localToken: string | null = null;
-      try {
-        localToken = (await pushNotificationPreference.get(activeSession.email))?.token ?? null;
-      } catch {
-        // A token that cannot be read is not known locally and must not be regenerated during logout.
-      }
-
-      if (localToken && sessionStore.getSession()?.token === activeSession.token) {
-        try {
-          await notificationsApiService.unregisterPushToken({ token: localToken });
-        } catch {
-          pushCleanupFailed = true;
-        }
-      }
-
-      try {
-        await pushNotificationPreference.clear(activeSession.email);
-      } catch {
-        // Secure storage cleanup cannot keep a user signed in.
-      }
-    }
-
-    await clearLocalSession();
-    return { pushCleanupFailed };
+    return cleanupSignOut(sessionStore.getSession(), {
+      readToken: async (email) => (await pushNotificationPreference.get(email))?.token ?? null,
+      unregister: async (token) => notificationsApiService.unregisterPushToken({ token }),
+      isCurrent: (token) => sessionStore.getSession()?.token === token,
+      clearPreference: (email) => pushNotificationPreference.clear(email),
+      clearSession: clearLocalSession,
+    });
   }, [clearLocalSession]);
 
   useEffect(() => {

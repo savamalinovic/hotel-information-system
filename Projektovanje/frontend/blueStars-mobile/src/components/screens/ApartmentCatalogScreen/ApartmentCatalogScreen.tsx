@@ -4,7 +4,8 @@ import { useApartmentCatalog, useApartmentTypes } from "@/src/hooks/useApartment
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ApartmentDetails, ApartmentOperationalStatus } from "@/src/types/types";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
+import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -25,6 +26,7 @@ const operationalStatuses: ApartmentOperationalStatus[] = ["READY", "DIRTY", "CL
 
 export default function ApartmentCatalogScreen() {
   const { Colors } = useTheme();
+  const tabBarHeight = useContext(BottomTabBarHeightContext);
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [apartmentTypeId, setApartmentTypeId] = useState<number>();
@@ -68,7 +70,7 @@ export default function ApartmentCatalogScreen() {
   };
 
   return (
-    <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
+    <SafeAreaView edges={tabBarHeight === undefined ? ["bottom"] : []} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}>
       <FlatList
         data={visibleApartments}
         keyExtractor={(apartment) => String(apartment.apartmentId)}

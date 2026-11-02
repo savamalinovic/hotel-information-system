@@ -28,7 +28,8 @@ const getDisplayDate = (date: string, language: string) => {
 };
 
 export default function DashboardScreen() {
-  const { Colors } = useTheme();
+  const { Colors, theme } = useTheme();
+  const accent = theme === "dark" ? Colors.calendarPeriod : Colors.primary;
   const { t, i18n } = useTranslation();
   const dashboardQuery = useAgentDashboard();
   const unreadNotifications = useUnreadNotificationCount();
@@ -42,7 +43,7 @@ export default function DashboardScreen() {
   if (dashboardQuery.isPending) {
     return (
       <View style={[styles.centered, { backgroundColor: Colors.screenBackground }]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={accent} />
         <Text style={[styles.stateText, { color: Colors.textPrimary }]}>
           {t("agentDashboard.loading")}
         </Text>
@@ -53,7 +54,7 @@ export default function DashboardScreen() {
   if (dashboardQuery.isError || !dashboardQuery.data) {
     return (
       <View style={[styles.centered, { backgroundColor: Colors.screenBackground }]}>
-        <Icon name="CircleAlert" size={38} color={Colors.primary} />
+        <Icon name="CircleAlert" size={38} color={accent} />
         <Text style={[styles.stateTitle, { color: Colors.textPrimary }]}>
           {t("agentDashboard.error.title")}
         </Text>
@@ -65,7 +66,7 @@ export default function DashboardScreen() {
           onPress={() => void dashboardQuery.refetch()}
           style={[styles.retryButton, { backgroundColor: Colors.primary }]}
         >
-          <Text style={[styles.retryButtonText, { color: Colors.background }]}>
+          <Text style={[styles.retryButtonText, { color: "#ffffff" }]}>
             {t("agentDashboard.retry")}
           </Text>
         </Pressable>
@@ -110,14 +111,14 @@ export default function DashboardScreen() {
         <RefreshControl
           refreshing={dashboardQuery.isRefetching}
           onRefresh={() => void Promise.all([dashboardQuery.refetch(), unreadNotifications.refetch()])}
-          tintColor={Colors.primary}
+          tintColor={accent}
         />
       }
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
-          <Text style={[styles.greeting, { color: Colors.primary }]}>{t("agentDashboard.greeting")}</Text>
+          <Text style={[styles.greeting, { color: accent }]}>{t("agentDashboard.greeting")}</Text>
           <Text style={[styles.name, { color: Colors.textPrimary }]} numberOfLines={1}>{fullName}</Text>
           <Text style={[styles.date, { color: Colors.textSecondary }]}>{getDisplayDate(data.today, i18n.language)}</Text>
         </View>
@@ -129,7 +130,7 @@ export default function DashboardScreen() {
         >
           {({ pressed }) => <>
             {pressed ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, styles.refreshButtonPressed]} /> : null}
-            <Icon name="RefreshCw" size={22} color={Colors.primary} />
+            <Icon name="RefreshCw" size={22} color={accent} />
           </>}
         </Pressable>
       </View>
@@ -138,7 +139,7 @@ export default function DashboardScreen() {
       <View style={styles.metricGrid}>
         {metrics.map((metric) => (
           <View key={metric.key} style={[styles.metricCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
-            <Icon name={metric.icon} size={20} color={Colors.primary} />
+            <Icon name={metric.icon} size={20} color={accent} />
             <Text style={[styles.metricValue, { color: Colors.textPrimary }]}>
               {metric.value ?? "—"}
             </Text>
@@ -162,7 +163,7 @@ export default function DashboardScreen() {
       </View>
       {agenda.length === 0 ? (
         <View style={[styles.emptyCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
-          <Icon name="CalendarDays" size={26} color={Colors.primary} />
+          <Icon name="CalendarDays" size={26} color={accent} />
           <Text style={[styles.emptyText, { color: Colors.textSecondary }]}>{t("agentDashboard.agenda.empty")}</Text>
         </View>
       ) : (
@@ -186,7 +187,7 @@ export default function DashboardScreen() {
             onPress={action.onPress}
             style={[styles.actionCard, { backgroundColor: Colors.background, borderColor: Colors.divider }]}
           >
-            <Icon name={action.icon} size={25} color={Colors.primary} />
+            <Icon name={action.icon} size={25} color={accent} />
             <Text style={[styles.actionLabel, { color: Colors.textPrimary }]}>{action.label}</Text>
           </Pressable>
         ))}

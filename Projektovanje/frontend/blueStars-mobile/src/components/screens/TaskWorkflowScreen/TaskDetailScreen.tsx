@@ -36,10 +36,10 @@ export default function TaskDetailScreen() {
       : <InvalidRouteState fallbackHref="/(home)/tasks" />;
   }
   if (task.isPending) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("taskWorkforce.common.loading")} description={t("taskWorkforce.detail.loading")} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="LoaderCircle" title={t("taskWorkforce.common.loading")} description={t("taskWorkforce.detail.loading")} /></SafeAreaView>;
   }
   if (task.isError || !task.data) {
-    return <SafeAreaView style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.detail.loadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={() => void task.refetch()} /></SafeAreaView>;
+    return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.detail.loadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={() => void task.refetch()} /></SafeAreaView>;
   }
 
   return <SafeAreaView edges={["bottom"]} style={[styles.screen, { backgroundColor: Colors.screenBackground }]}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

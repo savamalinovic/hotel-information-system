@@ -51,7 +51,7 @@ const MENU_SECTIONS: MenuSection[] = [
 ];
 
 export default function Menu() {
-  const { Colors } = useTheme();
+  const { Colors, theme } = useTheme();
   const { t } = useTranslation();
   const { logout } = useAuth();
   const { session } = useSession();
@@ -104,7 +104,7 @@ export default function Menu() {
           <Text
             style={[
               styles.sectionTitle,
-              { color: Colors.primary },
+              { color: theme === "dark" ? Colors.calendarPeriod : Colors.primary },
               sectionIndex > 0 && styles.sectionMargin,
             ]}
           >

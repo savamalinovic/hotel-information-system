@@ -158,6 +158,14 @@ function collectTranslationReferences(sourceFiles) {
     }
 
     function collectCalls(node) {
+      if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name)
+        && ["i18nKey", "i18nTitleKey"].includes(node.name.text)) {
+        const key = getStaticKey(node.initializer);
+        if (key !== undefined) {
+          const position = sourceFile.getLineAndCharacterOfPosition(node.initializer.getStart(sourceFile));
+          references.push({ file: path.relative(projectRoot, sourceFilePath).split(path.sep).join("/"), key, line: position.line + 1 });
+        }
+      }
       if (ts.isCallExpression(node) && isTranslationCall(node) && node.arguments.length > 0) {
         const key = getStaticKey(node.arguments[0]);
         if (key !== undefined) {
