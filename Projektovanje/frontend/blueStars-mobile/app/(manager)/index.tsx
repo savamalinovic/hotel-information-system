@@ -5,7 +5,7 @@ import { useSession } from "@/src/providers/SessionProvider";
 export default function ManagerHome() {
   const { status, session } = useSession();
   if (status !== "authenticated" || session?.role !== "MANAGER") {
-    return <Redirect href="/" />;
+    return status === "unauthenticated" ? <Redirect href="/(auth)" /> : null;
   }
   return <ManagerFallbackScreen />;
 }

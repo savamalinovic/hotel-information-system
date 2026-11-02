@@ -1,3 +1,4 @@
+import { useTheme } from "@/src/providers/ThemeProvider";
 import { Text } from "@/src/components/ui/text";
 import { MenuSectionProps } from "@/src/types/types";
 import { View } from "react-native";
@@ -6,11 +7,13 @@ import { styles } from "./index.styles";
 
 
 export default function MenuSection({ title, items }: MenuSectionProps) {
+    const { Colors, theme } = useTheme();
     return(
         <View className="mb-5">
             <Text
                 style={[
                     styles.sectionTitle,
+                    { color: theme === "dark" ? Colors.calendarPeriod : Colors.primary },
                 ]}
             >
                 {title}

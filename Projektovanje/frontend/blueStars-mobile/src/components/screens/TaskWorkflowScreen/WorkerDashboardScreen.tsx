@@ -27,7 +27,8 @@ const taskStatuses: TaskStatus[] = ["ASSIGNED", "IN_PROGRESS", "BLOCKED", "COMPL
 
 export default function WorkerDashboardScreen() {
   const { t } = useTranslation();
-  const { Colors } = useTheme();
+  const { Colors, theme } = useTheme();
+  const accent = theme === "dark" ? Colors.calendarPeriod : Colors.primary;
   const { logout, isLoggingOut } = useAuth();
   const [section, setSection] = useState<WorkerSection>("overview");
   const availability = useWorkerAvailability();
@@ -45,14 +46,14 @@ export default function WorkerDashboardScreen() {
           </View>
           <View style={styles.headerActions}>
             <Pressable accessibilityRole="button" accessibilityLabel={t("tabs.menu")} onPress={() => router.push("/(menu)")} style={[styles.notificationButton, { borderColor: Colors.divider, backgroundColor: Colors.background }]}>
-              <Icon name="Menu" size={19} color={Colors.primary} />
+              <Icon name="Menu" size={19} color={accent} />
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel={t("notifications.openInbox")} onPress={() => router.push("/(worker)/notifications")} style={[styles.notificationButton, { borderColor: Colors.divider, backgroundColor: Colors.background }]}>
-              <Icon name="Bell" size={19} color={Colors.primary} />
+              <Icon name="Bell" size={19} color={accent} />
               {unreadNotifications.data && unreadNotifications.data > 0 ? <Text style={[styles.notificationCount, { backgroundColor: Colors.primary, color: Colors.textLight }]}>{unreadNotifications.data > 99 ? "99+" : unreadNotifications.data}</Text> : null}
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel={t("session.logout")} disabled={isLoggingOut} onPress={() => void logout()} style={[styles.notificationButton, { borderColor: Colors.divider, backgroundColor: Colors.background }, isLoggingOut && styles.disabled]}>
-              <Icon name="LogOut" size={19} color={Colors.primary} />
+              <Icon name="LogOut" size={19} color={accent} />
             </Pressable>
           </View>
         </View>
@@ -97,9 +98,9 @@ function WorkerOverview({ availability, onNavigate }: { availability?: WorkerAva
 }
 
 function Metric({ label, value, onPress }: { label: string; value: number; onPress: () => void }) {
-  const { Colors } = useTheme();
+  const { Colors, theme } = useTheme();
   return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={[styles.metric, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
-    <Text style={[styles.metricValue, { color: Colors.primary }]}>{value}</Text>
+    <Text style={[styles.metricValue, { color: theme === "dark" ? Colors.calendarPeriod : Colors.primary }]}>{value}</Text>
     <Text style={[styles.metricLabel, { color: Colors.textSecondary }]}>{label}</Text>
   </Pressable>;
 }

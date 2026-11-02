@@ -1,3 +1,4 @@
+import { isMobilePushRole } from "@/src/notifications/mobilePushPolicy";
 import { notificationsApiService } from "@/src/api/services/notificationsApiService";
 import { notificationQueryKeys } from "@/src/hooks/useNotifications";
 import { canOpenWorkerTask, parseNotificationPushData } from "@/src/notifications/notificationNavigation";
@@ -21,7 +22,7 @@ export default function NotificationLifecycle() {
   const startedWithStoredSession = useRef(false);
 
   useEffect(() => {
-    currentSession.current = status === "authenticated" && session?.role !== "MANAGER" ? session : null;
+    currentSession.current = status === "authenticated" && isMobilePushRole(session?.role) ? session : null;
     handledResponses.current.clear();
   }, [session, status]);
 
@@ -71,7 +72,7 @@ export default function NotificationLifecycle() {
   }, [handleResponse]);
 
   useEffect(() => {
-    if (!notificationsService.isNativePushPlatform()) return;
+    if (!notificationsService.isNativePushPlatform() || status !== "authenticated" || !isMobilePushRole(session?.role)) return;
 
     const receivedSubscription = Notifications.addNotificationReceivedListener(() => {
       if (currentSession.current) {
@@ -87,12 +88,12 @@ export default function NotificationLifecycle() {
       receivedSubscription.remove();
       responseSubscription.remove();
     };
-  }, [invalidateInbox, queryClient]);
+  }, [invalidateInbox, queryClient, session?.role, status]);
 
   useEffect(() => {
     if (status === "bootstrapping" || initialSessionResolved.current) return;
     initialSessionResolved.current = true;
-    startedWithStoredSession.current = status === "authenticated" && Boolean(session);
+    startedWithStoredSession.current = status === "authenticated" && isMobilePushRole(session?.role);
   }, [session, status]);
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export default function NotificationLifecycle() {
       || !startedWithStoredSession.current
       || status !== "authenticated"
       || !session
+      || !isMobilePushRole(session.role)
     ) return;
 
     startedWithStoredSession.current = false;

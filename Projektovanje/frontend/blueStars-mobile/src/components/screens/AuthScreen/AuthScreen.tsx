@@ -15,7 +15,7 @@ import { LoginValidation } from "@/src/util/validationSchemas";
 
 export default function AuthScreen() {
   const { t } = useTranslation();
-  const { Colors } = useTheme();
+  const { Colors, theme } = useTheme();
   const { login, isLoggingIn } = useAuth();
   const { control, handleSubmit } = useForm<LoginValidation.FormValues>({
     resolver: zodResolver(LoginValidation.schema),
@@ -85,7 +85,7 @@ export default function AuthScreen() {
             onPress={() => router.push("/(auth)/forgotPassword")}
           >
             <Label
-              color={Colors.primary}
+              color={theme === "dark" ? Colors.calendarPeriod : Colors.primary}
               className="font-semibold text-center text-sm"
               text={t("auth.login.forgotPassword")}
             />

@@ -44,7 +44,7 @@ export const notificationsApiService = {
   },
 
   unregisterPushToken: async (request: UnregisterPushNotificationTokenRequest): Promise<void> => {
-    const response = await axiosInstance.post(API_URLS.notifications.unregisterPushToken, request);
+    const response = await axiosInstance.post(API_URLS.notifications.unregisterPushToken, request, { timeout: 5000 });
     if (response.status !== 204) {
       throw new Error(`Unexpected push-token unregister status: ${response.status}`);
     }

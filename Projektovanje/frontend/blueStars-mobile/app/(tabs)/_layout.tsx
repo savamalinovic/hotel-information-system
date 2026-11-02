@@ -8,12 +8,12 @@ import { useTranslation } from "react-i18next";
 
 export default function TabsRootLayout() {
     const { t } = useTranslation();
-    const { Colors } = useTheme();
+    const { Colors, theme } = useTheme();
     const insets = useSafeAreaInsets();
 
     return(
         <Tabs initialRouteName="index" safeAreaInsets={{ bottom: insets.bottom }} screenOptions={{
-            tabBarActiveTintColor: Colors.tabBarActiveTint,
+            tabBarActiveTintColor: theme === "dark" ? Colors.calendarPeriod : Colors.tabBarActiveTint,
             tabBarInactiveTintColor: Colors.tabBarInactiveTint,
             headerTintColor: Colors.textPrimary,
             headerStyle: {

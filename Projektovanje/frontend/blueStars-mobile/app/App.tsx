@@ -9,7 +9,8 @@ import { Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
 import { useEffect } from "react";
-import { Platform } from "react-native";
+import { Platform, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import * as Notifications from "expo-notifications";
 import { notificationsService } from "@/src/services/notificationsService";
@@ -34,7 +35,9 @@ const AppNavigator = () => {
   const isAuthenticated = status === "authenticated";
   const { theme, Colors } = useTheme();
   const segments = useSegments();
-  const isAuth = segments[0] === "(auth)" && status === "unauthenticated";
+  const insets = useSafeAreaInsets();
+  const isAuth = segments[0] === "(auth)";
+  const statusSurface = ["(tabs)", "(home)", "(menu)", "(worker)"].includes(segments[0] ?? "") ? Colors.tabBackground : Colors.screenBackground;
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -44,7 +47,7 @@ const AppNavigator = () => {
 
   return (
     <>
-    <StatusBar style={isAuth || theme === "dark" ? "light" : "dark"} translucent backgroundColor="transparent" />
+    <StatusBar style={isAuth || theme === "dark" ? "light" : "dark"} translucent backgroundColor={isAuth ? "transparent" : statusSurface} />
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.screenBackground } }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
 
@@ -71,6 +74,7 @@ const AppNavigator = () => {
 
       <Stack.Screen name="+not-found" options={{ headerShown: false }} />
     </Stack>
+    {Platform.OS === "android" && !isAuth && <View pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top, backgroundColor: statusSurface }} />}
     </>
   );
 };
