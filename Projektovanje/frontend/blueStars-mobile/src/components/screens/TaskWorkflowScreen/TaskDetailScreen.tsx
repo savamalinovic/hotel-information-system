@@ -1,5 +1,5 @@
 import * as DocumentPicker from "expo-document-picker";
-import * as WebBrowser from "expo-web-browser";
+import { AttachmentOpenButton } from "@/src/components/media/AttachmentOpenButton";
 import { useLocalSearchParams, router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -153,19 +153,14 @@ function TaskAttachmentsSection({ taskId, attachments, loading, error, canUpload
     <View style={styles.sectionHeader}><Text style={[styles.sectionTitle, { color: Colors.textPrimary }]}>{t("taskWorkforce.attachments.title")}</Text><WorkflowButton label={t("taskWorkforce.common.refresh")} onPress={onRefresh} variant="secondary" icon="RefreshCw" /></View>
     {uploadError ? <Text style={{ color: Colors.error }}>{uploadError}</Text> : null}
     {canUpload ? <><Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.attachments.limit")}</Text><WorkflowButton label={t("taskWorkforce.attachments.add")} onPress={() => void pick()} loading={upload.isPending} icon="Upload" /></> : <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.attachments.workerRestriction")}</Text>}
-    {loading ? <ActivityIndicator color={Colors.primary} /> : error ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.attachments.loadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={onRefresh} /> : attachments.length === 0 ? <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.attachments.empty")}</Text> : attachments.map((attachment) => <AttachmentItem key={attachment.id} attachment={attachment} locale={i18n.language} onExpired={onRefresh} />)}
+    {loading ? <ActivityIndicator color={Colors.primary} /> : error ? <WorkflowState icon="CircleAlert" title={t("taskWorkforce.common.errorTitle")} description={t("taskWorkforce.attachments.loadError")} actionLabel={t("taskWorkforce.common.retry")} onAction={onRefresh} /> : attachments.length === 0 ? <Text style={{ color: Colors.textSecondary }}>{t("taskWorkforce.attachments.empty")}</Text> : attachments.map((attachment) => <AttachmentItem key={attachment.id} taskId={taskId} attachment={attachment} locale={i18n.language} onExpired={onRefresh} />)}
   </WorkflowCard>;
 }
 
-function AttachmentItem({ attachment, locale, onExpired }: { attachment: TaskAttachment; locale: string; onExpired: () => void }) {
+function AttachmentItem({ taskId, attachment, locale, onExpired }: { taskId: number; attachment: TaskAttachment; locale: string; onExpired: () => void }) {
   const { t } = useTranslation();
   const { Colors } = useTheme();
-  const [opening, setOpening] = useState(false);
-  const open = async () => {
-    setOpening(true);
-    try { await WebBrowser.openBrowserAsync(attachment.downloadUrl); } catch { onExpired(); } finally { setOpening(false); }
-  };
-  return <View style={[styles.attachment, { borderTopColor: Colors.divider }]}><View style={styles.attachmentCopy}><Text style={{ color: Colors.textPrimary, fontWeight: "800" }}>{attachment.originalName}</Text><Text style={{ color: Colors.textSecondary }}>{attachment.contentType} · {formatFileSize(attachment.sizeBytes)}</Text><Text style={{ color: Colors.textSecondary, fontSize: 12 }}>{t("taskWorkforce.attachments.uploaded", { id: attachment.uploadedBy, date: formatTaskDate(attachment.uploadedAt, locale) })}</Text></View><View style={styles.attachmentActions}><WorkflowButton label={t("taskWorkforce.attachments.open")} onPress={() => void open()} variant="secondary" loading={opening} icon="ExternalLink" /><Pressable accessibilityRole="button" accessibilityLabel={t("taskWorkforce.attachments.refreshUrl")} onPress={onExpired}><Text style={{ color: Colors.primary, fontWeight: "800" }}>{t("taskWorkforce.attachments.refreshUrl")}</Text></Pressable></View></View>;
+  return <View style={[styles.attachment, { borderTopColor: Colors.divider }]}><View style={styles.attachmentCopy}><Text style={{ color: Colors.textPrimary, fontWeight: "800" }}>{attachment.originalName}</Text><Text style={{ color: Colors.textSecondary }}>{attachment.contentType} · {formatFileSize(attachment.sizeBytes)}</Text><Text style={{ color: Colors.textSecondary, fontSize: 12 }}>{t("taskWorkforce.attachments.uploaded", { id: attachment.uploadedBy, date: formatTaskDate(attachment.uploadedAt, locale) })}</Text></View><View style={styles.attachmentActions}><AttachmentOpenButton resource={{ type: "task", taskId, attachmentId: attachment.id, title: attachment.originalName }} /><Pressable accessibilityRole="button" accessibilityLabel={t("taskWorkforce.attachments.refreshUrl")} onPress={onExpired}><Text style={{ color: Colors.primary, fontWeight: "800" }}>{t("taskWorkforce.attachments.refreshUrl")}</Text></Pressable></View></View>;
 }
 
 function TaskHistorySection({ taskId, history, loading, error, locale, onRefresh }: { taskId: number; history: { id: number; toStatus: TaskStatus; actorId: number; changedAt: string; reason: string }[]; loading: boolean; error: boolean; locale: string; onRefresh: () => void }) {

@@ -25,6 +25,7 @@ import { SECURE_STORE_KEYS } from "@/src/util/secureStoreKeys";
 import { notificationsApiService } from "@/src/api/services/notificationsApiService";
 import { pushNotificationPreference } from "@/src/notifications/pushNotificationPreference";
 import { cleanupSignOut } from "@/src/session/cleanupSignOut";
+import { clearDemoReceiptPdfs } from "@/src/services/demoReceiptFileService";
 
 export type SessionStatus = "bootstrapping" | "unauthenticated" | "authenticated";
 
@@ -69,6 +70,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     queryClient.clear();
     setSession(null);
     setStatus("unauthenticated");
+    try { clearDemoReceiptPdfs(); } catch { /* Cache failure must not retain the session. */ }
 
     try {
       await secureStoreService.deleteItemAsync(SECURE_STORE_KEYS.session);
@@ -91,6 +93,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     let isMounted = true;
 
     const bootstrap = async () => {
+      try { clearDemoReceiptPdfs(); } catch { /* Remove files left by an interrupted process when possible. */ }
       let storedSession: AuthenticationResponse | null = null;
 
       try {

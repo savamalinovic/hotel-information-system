@@ -1,3 +1,4 @@
+import { MediaViewer } from "@/src/components/media/MediaViewer";
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import {
   useApartmentCatalogDetail,
@@ -78,7 +79,7 @@ export default function ApartmentCatalogDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
       <Stack.Screen options={{ title: apartment.name }} />
-      <ApartmentGallery apartmentName={apartment.name} pictures={sortApartmentPictures(apartment.pictures)} />
+      <ApartmentGallery apartmentId={apartmentId} apartmentName={apartment.name} pictures={sortApartmentPictures(apartment.pictures)} />
 
       <View style={[styles.titleSection, { backgroundColor: Colors.background, borderColor: Colors.divider }]}>
         <Text style={[styles.name, { color: Colors.textPrimary }]}>{apartment.name}</Text>
@@ -147,11 +148,13 @@ export default function ApartmentCatalogDetailScreen() {
   );
 }
 
-function ApartmentGallery({ apartmentName, pictures }: { apartmentName: string; pictures: ApartmentPicture[] }) {
+function ApartmentGallery({ apartmentId, apartmentName, pictures }: { apartmentId: number; apartmentName: string; pictures: ApartmentPicture[] }) {
   const { Colors } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewedIndex, setViewedIndex] = useState<number | null>(null);
+  const viewedPicture = viewedIndex === null ? null : pictures[viewedIndex];
 
   if (pictures.length === 0) {
     return (
@@ -164,6 +167,12 @@ function ApartmentGallery({ apartmentName, pictures }: { apartmentName: string; 
 
   return (
     <View style={styles.gallery}>
+      <MediaViewer
+        resource={viewedPicture ? { type: "apartment", apartmentId, pictureId: viewedPicture.pictureId, title: t("apartmentCatalog.imageOf", { name: apartmentName, index: (viewedIndex ?? 0) + 1, total: pictures.length }) } : null}
+        onClose={() => setViewedIndex(null)}
+        onPrevious={viewedIndex !== null && viewedIndex > 0 ? () => setViewedIndex(viewedIndex - 1) : undefined}
+        onNext={viewedIndex !== null && viewedIndex < pictures.length - 1 ? () => setViewedIndex(viewedIndex + 1) : undefined}
+      />
       <FlatList
         data={pictures}
         keyExtractor={(picture) => String(picture.pictureId)}
@@ -171,11 +180,13 @@ function ApartmentGallery({ apartmentName, pictures }: { apartmentName: string; 
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         renderItem={({ item, index }) => (
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mediaViewer.viewPhoto", { index: index + 1 })} onPress={() => setViewedIndex(index)}>
           <ApartmentImage
             uri={item.url}
             accessibilityLabel={t("apartmentCatalog.imageOf", { name: apartmentName, index: index + 1, total: pictures.length })}
             style={[styles.heroImage, { width: width - 32 }]}
           />
+          </Pressable>
         )}
         onMomentumScrollEnd={(event) => {
           const nextIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 32));
