@@ -33,4 +33,4 @@ Seeder pronalazi demo zapise po stabilnim nazivima i markerima, provjerava oček
 
 Završna provjera čita glavne brojače i statuse rezervacija, uplata, računa, zadataka, HRM primjera, troškova, šteta i nedostupnosti. Provjerava prijave demo naloga, RBAC odbijanje agenta na `/users` i odsustvo duplih demo kataloških zapisa i R1–R8 markera. Ponovljeni seed je potreban za praktičnu provjeru idempotentnosti u ciljnom okruženju.
 
-Cloudflare R2 object-storage sadržaj se ne seeduje ovdje. R2 upload/download provjerite zasebnim runtime smoke testom nakon deploya.
+Osnovni seed sada dodaje optimizovane fotografije apartmana kroz postojeći autentifikovani API i privatni Cloudflare R2. Svaki apartman dobija fotografiju, a C301 galeriju od tri slike. Ponovno pokretanje poredi SHA-256 postojećeg sadržaja prije upload-a i čuva nepovezane slike. Finalna provjera potvrđuje preuzimanje sadržaja i očekivane galerije. Zajedničke definicije, migracija prepoznatih starih naziva bez promjene ID-eva i testovi su u [`tools/demo-catalog/README.md`](../demo-catalog/README.md). Ne pokrećite seedove paralelno.

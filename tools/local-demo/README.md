@@ -165,7 +165,7 @@ Skripta odbija produkcijske/sistemske nazive, nazive bez `demo`/`test` markera i
 
 Uobičajeni demo rad koristi backend i seed na portu 8080. Seed prihvata isključivo lokalne URL-ove `http://127.0.0.1:<port>/api/v1` ili `http://localhost:<port>/api/v1`; odbija HTTPS, udaljene hostove i pogrešan API path. Port 8081 je namijenjen samo izolovanoj lokalnoj verifikaciji kada nepovezan proces već koristi 8080, npr. `Seed-DemoData.ps1 -ApiBaseUrl http://127.0.0.1:8081/api/v1`. Ispisuje `created`, `already exists`, `updated` ili `failed`; svako ponovno pokretanje najprije traži postojeće resurse, tako da ne duplira podatke. Ako je ranije deaktiviran demo apartman ili tip, javni API ga ne može reaktivirati; seed sigurno prekida i navodi taj nedostatak umjesto da napravi duplikat.
 
-Seed kreira/pronalazi: bootstrap menadžera, dva agenta, šest aktivnih operativnih radnika (po jedan za svaku postojeću specijalizaciju), tri tipa apartmana, osam apartmana, četiri aktivne kategorije troška i singleton profil hotela. Na kraju bez lozinke ispisuje e-mail i ulogu svih demo naloga te provjerava prijavu svakog od njih.
+Seed kreira/pronalazi: bootstrap menadžera, dva agenta, šest aktivnih operativnih radnika (po jedan za svaku postojeću specijalizaciju), tri tipa apartmana, osam apartmana sa fotografijama, osam aktivnih kategorija troška i singleton profil hotela. Na kraju bez lozinke ispisuje e-mail i ulogu svih demo naloga te provjerava prijavu svakog od njih.
 
 ## Poslovni demo scenariji
 
@@ -179,7 +179,7 @@ Scenariji su vezani za današnji datum lokalnog backenda. Možete ga eksplicitno
 .\Seed-DemoScenarios.ps1 -ApiBaseUrl http://127.0.0.1:8080/api/v1 -ReferenceDate 2026-09-11
 ```
 
-Skripta provjerava HTTP datum lokalnog backenda u zoni hotela prije nego što išta promijeni. Ponovno pokretanje istog dana dopunjava samo nedostajuće korake preko markera `[DEMO:<SCENARIO>:<DATE>]`. Za čisto ponavljanje drugog dana resetujte demo bazu, zatim ponovite osnovni i scenario seed. Upload priloga/object storage i stvarni mobilni push nisu dio seeda.
+Skripta provjerava HTTP datum lokalnog backenda u zoni hotela prije nego što išta promijeni. Ponovno pokretanje istog dana dopunjava samo nedostajuće korake preko markera `[DEMO:<SCENARIO>:<DATE>]`. Za čisto ponavljanje drugog dana resetujte demo bazu, zatim ponovite osnovni i scenario seed. Osnovni seed dodaje fotografije apartmana kroz konfigurisan privatni object storage. Task/damage prilozi i stvarni mobilni push nisu dio scenario seeda.
 
 | Uloga | Demo nalog |
 | --- | --- |
@@ -252,3 +252,7 @@ Object-storage safety i lifecycle testovi:
 ```powershell
 .\tests\LocalDemo.ObjectStorage.Tests.ps1
 ```
+
+## Završni katalozi i galerije
+
+Osnovni seed sada zahtijeva konfigurisan lokalni MinIO i dodaje optimizovane fotografije. Zajedničke definicije, bezbjedna migracija starih `Demo ...` naziva bez promjene ID-eva, provjera SHA-256 sadržaja i testovi opisani su u [`tools/demo-catalog/README.md`](../demo-catalog/README.md). C301 dobija tri fotografije. Ponovite seed dvaput radi provjere idempotentnosti; ne pokrećite seedove paralelno.

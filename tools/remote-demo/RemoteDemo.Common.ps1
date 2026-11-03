@@ -74,8 +74,8 @@ function Invoke-LocalDemoApi {
     $request = @{ Method=$Method; Uri="$ApiBaseUrl$Path"; Headers=$headers; ErrorAction='Stop';
                   MaximumRedirection=0; TimeoutSec=30 }
     if ($PSBoundParameters.ContainsKey('Body')) {
-        $request.ContentType = 'application/json'
-        $request.Body = $Body | ConvertTo-Json -Depth 8 -Compress
+        $request.ContentType = 'application/json; charset=utf-8'
+        $request.Body = [Text.Encoding]::UTF8.GetBytes(($Body | ConvertTo-Json -Depth 8 -Compress))
     }
     try { return Invoke-RestMethod @request }
     catch {

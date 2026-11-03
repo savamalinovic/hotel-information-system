@@ -1,0 +1,35 @@
+{
+  "description": "Original synthetic interior images prepared for the BlueStars demonstration; no real property represented.",
+  "images": [
+    {
+      "name": "double.jpg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "98cac8a5c4365b05caeede49337da4437d5d61209b9650aaf25a5df2615f84d7"
+    },
+    {
+      "name": "family-bedroom.jpg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "d55e6f4323cdaebf8840ac31955cb81dfd51e2a35acda5ff332c315f0261208c"
+    },
+    {
+      "name": "family-kitchen.jpg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "ef3205ec42cb12eebfc33c8de5ffbe2c79fd45949935820a2aa206baebe0d0cc"
+    },
+    {
+      "name": "family.jpg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "6489d0d2151ee53465321e7d648e30db1a04255bdabb3c31465b1bf14e19a9b0"
+    },
+    {
+      "name": "studio.jpg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "1272fcefca84fbe5b8bde5672753d0d6019da37c6e9eaea35429927de08e37c2"
+    }
+  ]
+}

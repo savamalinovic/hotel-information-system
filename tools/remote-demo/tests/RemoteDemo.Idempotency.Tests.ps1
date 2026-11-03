@@ -13,7 +13,7 @@ function Import-SeedFunction([string]$File, [string]$Name) {
     return $node.Extent.Text
 }
 
-Invoke-Expression (Import-SeedFunction (Join-Path $PSScriptRoot '..\Seed-DemoData.ps1') 'Ensure-DemoApartmentType')
+. (Join-Path $PSScriptRoot '..\..\demo-catalog\DemoCatalog.Common.ps1')
 Invoke-Expression (Import-SeedFunction (Join-Path $PSScriptRoot '..\Seed-DemoScenarios.ps1') 'Ensure-ScenarioReservation')
 function Get-LocalDemoPagedContent { return $script:types }
 function Get-DemoReservations { return $script:reservations }

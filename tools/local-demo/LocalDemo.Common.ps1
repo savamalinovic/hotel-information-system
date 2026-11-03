@@ -279,8 +279,8 @@ function Invoke-LocalDemoApi {
         ErrorAction = 'Stop'
     }
     if ($PSBoundParameters.ContainsKey('Body')) {
-        $request.ContentType = 'application/json'
-        $request.Body = $Body | ConvertTo-Json -Depth 8 -Compress
+        $request.ContentType = 'application/json; charset=utf-8'
+        $request.Body = [Text.Encoding]::UTF8.GetBytes(($Body | ConvertTo-Json -Depth 8 -Compress))
     }
 
     try {
