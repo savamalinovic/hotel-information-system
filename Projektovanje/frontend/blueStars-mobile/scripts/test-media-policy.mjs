@@ -16,13 +16,21 @@ test('unknown binary uploads may use a known extension; explicit active content 
   assert.equal(getMediaKind('application/zip', 'archive.zip'), 'external');
 });
 
-test('only HTTPS storage and explicit local development URLs are accepted', () => {
+test('production media requires HTTPS and rejects local HTTP by default', () => {
   const signed = 'https://storage.example.test/object?signature=temporary';
   assert.equal(requireMediaUrl(signed), signed);
-  assert.equal(requireMediaUrl('http://127.0.0.1:9000/object'), 'http://127.0.0.1:9000/object');
-  for (const unsafe of ['file:///private/file', 'javascript:alert(1)', 'http://public.example.test/file', 'https://user:password@example.test/file', 'not a URL']) {
+  for (const unsafe of ['http://127.0.0.1:9000/object', 'http://localhost:9000/object', 'file:///private/file', 'javascript:alert(1)', 'http://public.example.test/file', 'https://user:password@example.test/file', 'not a URL']) {
     assert.throws(() => requireMediaUrl(unsafe));
   }
+});
+
+test('HTTP storage is allowed only for the explicitly configured development API host', () => {
+  const developmentHost = '127.0.0.1';
+  const localStorageUrl = 'http://127.0.0.1:9000/object';
+  assert.equal(requireMediaUrl(localStorageUrl, developmentHost), localStorageUrl);
+  assert.throws(() => requireMediaUrl('http://localhost:9000/object', developmentHost));
+  assert.throws(() => requireMediaUrl('http://public.example.test/file', developmentHost));
+  assert.throws(() => requireMediaUrl('http://user:password@127.0.0.1:9000/object', developmentHost));
 });
 
 test('PDF download rejects storage error documents and oversized responses', () => {

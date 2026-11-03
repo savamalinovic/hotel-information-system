@@ -12,10 +12,10 @@ export function getMediaKind(contentType: string | null, filename: string): Medi
   return "external";
 }
 
-export function requireMediaUrl(value: string): string {
+export function requireMediaUrl(value: string, developmentHost?: string): string {
   const url = new URL(value);
-  const local = ["localhost", "127.0.0.1", "10.0.2.2"].includes(url.hostname);
-  if ((url.protocol !== "https:" && !(url.protocol === "http:" && local)) || url.username || url.password) {
+  const developmentHttp = Boolean(developmentHost) && url.protocol === "http:" && url.hostname === developmentHost;
+  if ((url.protocol !== "https:" && !developmentHttp) || url.username || url.password) {
     throw new Error("Unsupported media URL.");
   }
   return value;
