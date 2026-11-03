@@ -21,6 +21,8 @@ Downloads carry no API authorization header, do not follow redirects, are bounde
 
 Both final verification scripts assert canonical names and definitions, image checksums, and the existing R1–R8 invariants. The remote scenario seed retains the date anchored in existing scenario markers; catalog normalization never recreates historical scenarios.
 
+The API helpers encode JSON requests and decode raw JSON responses explicitly as UTF-8. This preserves Serbian catalog names in Windows PowerShell 5.1 even when the server omits a response charset. Empty responses remain supported; malformed JSON or UTF-8 uses the same sanitized API error as network failures.
+
 ## Checks
 
 From the repository root:

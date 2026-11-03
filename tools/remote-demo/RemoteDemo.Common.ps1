@@ -72,14 +72,23 @@ function Invoke-LocalDemoApi {
     $headers = @{}
     if ($Token) { $headers.Authorization = "Bearer $Token" }
     $request = @{ Method=$Method; Uri="$ApiBaseUrl$Path"; Headers=$headers; ErrorAction='Stop';
-                  MaximumRedirection=0; TimeoutSec=30 }
+                  MaximumRedirection=0; TimeoutSec=30; UseBasicParsing=$true }
     if ($PSBoundParameters.ContainsKey('Body')) {
         $request.ContentType = 'application/json; charset=utf-8'
         $request.Body = [Text.Encoding]::UTF8.GetBytes(($Body | ConvertTo-Json -Depth 8 -Compress))
     }
-    try { return Invoke-RestMethod @request }
+    try {
+        $response = Invoke-WebRequest @request
+        $stream = $response.RawContentStream
+        if ($stream.CanSeek) { $stream.Position = 0 }
+        $reader = [IO.StreamReader]::new($stream, [Text.UTF8Encoding]::new($false, $true), $true, 1024, $true)
+        try { $json = $reader.ReadToEnd() } finally { $reader.Dispose() }
+        if ([string]::IsNullOrWhiteSpace($json)) { return $null }
+        return ConvertFrom-Json -InputObject $json
+    }
     catch {
-        $status = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { 'network' }
+        $responseProperty = $_.Exception.PSObject.Properties['Response']
+        $status = if ($null -ne $responseProperty -and $null -ne $responseProperty.Value) { [int]$responseProperty.Value.StatusCode } else { 'network' }
         throw "API request $Method $Path failed (HTTP $status). Check the target and existing data."
     }
 }

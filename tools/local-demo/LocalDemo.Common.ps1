@@ -277,6 +277,7 @@ function Invoke-LocalDemoApi {
         Uri = Get-LocalDemoApiUri -ApiBaseUrl $ApiBaseUrl -Path $Path
         Headers = $headers
         ErrorAction = 'Stop'
+        UseBasicParsing = $true
     }
     if ($PSBoundParameters.ContainsKey('Body')) {
         $request.ContentType = 'application/json; charset=utf-8'
@@ -284,11 +285,18 @@ function Invoke-LocalDemoApi {
     }
 
     try {
-        return Invoke-RestMethod @request
+        $response = Invoke-WebRequest @request
+        $stream = $response.RawContentStream
+        if ($stream.CanSeek) { $stream.Position = 0 }
+        $reader = [IO.StreamReader]::new($stream, [Text.UTF8Encoding]::new($false, $true), $true, 1024, $true)
+        try { $json = $reader.ReadToEnd() } finally { $reader.Dispose() }
+        if ([string]::IsNullOrWhiteSpace($json)) { return $null }
+        return ConvertFrom-Json -InputObject $json
     } catch {
         $status = $null
-        if ($_.Exception.Response) {
-            $status = [int]$_.Exception.Response.StatusCode
+        $responseProperty = $_.Exception.PSObject.Properties['Response']
+        if ($null -ne $responseProperty -and $null -ne $responseProperty.Value) {
+            $status = [int]$responseProperty.Value.StatusCode
         }
         $suffix = if ($null -ne $status) { " (HTTP $status)" } else { '' }
         throw "API request $Method $Path failed$suffix. Review the local backend log for a safe server-side error."
