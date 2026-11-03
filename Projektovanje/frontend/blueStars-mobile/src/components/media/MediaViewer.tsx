@@ -10,6 +10,7 @@ import { useTheme } from "@/src/providers/ThemeProvider";
 import { sessionStore } from "@/src/session/sessionStore";
 import { MediaResource, resolveMedia } from "@/src/media/resolveMedia";
 import { validateMediaPdf } from "@/src/media/mediaPolicy";
+import { privatePdfRequestOptions } from "@/src/media/privatePdfRequestOptions";
 import { persistDemoReceiptPdf, releaseDemoReceiptPdf } from "@/src/services/demoReceiptFileService";
 import DemoReceiptPdfViewer from "@/src/components/screens/DemoReceiptScreen/DemoReceiptPdfViewer";
 
@@ -54,7 +55,7 @@ function Viewer({ resource, token, onClose, onPrevious, onNext }: {
         if (!isCurrent()) return;
         if (resolved.kind === "pdf") {
           // Fetch only the signed storage URL: never forward the API bearer token to R2.
-          const response = await fetch(resolved.uri, { signal: controller.signal, cache: "no-store", credentials: "omit" });
+          const response = await fetch(resolved.uri, privatePdfRequestOptions(Platform.OS, controller.signal));
           if (!response.ok || Number(response.headers.get("content-length")) > 10 * 1024 * 1024) throw new Error("Media unavailable.");
           const bytes = await response.arrayBuffer();
           validateMediaPdf(bytes);
@@ -128,7 +129,7 @@ function Viewer({ resource, token, onClose, onPrevious, onNext }: {
 
 function Action({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
   const { Colors } = useTheme();
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[styles.button, { borderColor: Colors.divider, opacity: disabled ? 0.4 : 1 }]}><Text style={{ color: Colors.primary, fontWeight: "700" }}>{label}</Text></Pressable>;
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[styles.button, { borderColor: Colors.divider, opacity: disabled ? 0.4 : 1 }]}><Text style={{ color: Colors.textPrimary, fontWeight: "700" }}>{label}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
