@@ -52,9 +52,10 @@ export const demoReceiptService = {
     return toDemoReceipt(response.data);
   },
 
-  downloadPdf: async (reservationId: number, receiptNumber: string): Promise<DemoReceiptPdf> => {
+  downloadPdf: async (reservationId: number, receiptNumber: string, signal?: AbortSignal): Promise<DemoReceiptPdf> => {
     const response = await axiosInstance.get<ArrayBuffer>(API_URLS.demoReceipts.pdf(reservationId), {
       responseType: "arraybuffer",
+      signal,
     });
     const contentType = String(response.headers["content-type"] ?? "");
 
