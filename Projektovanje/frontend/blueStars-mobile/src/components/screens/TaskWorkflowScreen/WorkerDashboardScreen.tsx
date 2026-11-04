@@ -144,6 +144,7 @@ function MyTasks() {
 
 function TaskGroups({ tasks }: { tasks: OperationalTask[] }) {
   const { t } = useTranslation();
+  const { Colors } = useTheme();
   const groups: { name: "active" | "blocked" | "history"; statuses: TaskStatus[] }[] = [
     { name: "active", statuses: ["ASSIGNED", "IN_PROGRESS"] },
     { name: "blocked", statuses: ["BLOCKED"] },
@@ -153,7 +154,7 @@ function TaskGroups({ tasks }: { tasks: OperationalTask[] }) {
   return <View style={styles.stack}>{groups.map((group) => {
     const items = tasks.filter((task) => group.statuses.includes(task.status));
     return items.length ? <View key={group.name} style={styles.stack}>
-      <Text style={styles.groupTitle}>{t(`taskWorkforce.worker.groups.${group.name}`)}</Text>
+      <Text style={[styles.groupTitle, { color: Colors.textPrimary }]}>{t(`taskWorkforce.worker.groups.${group.name}`)}</Text>
       {items.map((task) => <WorkerTaskCard key={task.taskId} task={task} />)}
     </View> : null;
   })}</View>;
