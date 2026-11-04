@@ -868,5 +868,17 @@
     "detail": { "title": "Detalji štete", "invalid": "Identifikator štete ili apartmana nije ispravan.", "loading": "Učitavanje detalja štete…", "loadError": "Nije moguće učitati detalje štete ili više nisu dostupni.", "apartment": "Apartman", "estimated": "Procijenjeni iznos", "confirmed": "Potvrđeni iznos", "author": "Prijavio", "createdAt": "Vrijeme prijave", "updatedBy": "Posljednji izmijenio", "updatedAt": "Posljednja izmjena", "description": "Opis" },
     "attachments": { "title": "Prilozi", "limit": "Dodajte fajl veličine od 1 bajta do 10 MB.", "add": "Dodaj prilog", "sizeError": "Izaberite fajl veličine od 1 bajta do 10 MB.", "uploadError": "Nije moguće poslati prilog.", "loadError": "Nije moguće učitati priloge.", "empty": "Nema dodanih priloga.", "open": "Otvori", "refreshUrl": "Osvježi link", "downloadError": "Link nije moguće otvoriti. Osvježite link i pokušajte ponovo.", "uploaded": "Dodao korisnik #{{id}} · {{date}}" },
     "worker": { "title": "Štete apartmana zadatka", "hint": "Možete pregledati i dodavati priloge samo dok vam ovaj zadatak daje pristup apartmanu #{{id}}.", "openFromTask": "Prikaži štete apartmana", "checkingAccess": "Provjera da li zadatak i dalje daje pristup…", "accessLostTitle": "Pristup više nije dostupan", "accessLost": "Zadatak vam više nije dodijeljen, nema apartman ili nije preuzet, u toku ili blokiran. Podaci o šteti i akcije priloga su skriveni.", "invalidTask": "Identifikator zadatka nije ispravan.", "noUpload": "Prilog se može dodati samo dok je pristup kroz ovaj zadatak aktivan." }
+  },
+  "mediaViewer": {
+    "open": "Otvori prilog",
+    "close": "Zatvori",
+    "loading": "Učitavanje sadržaja…",
+    "error": "Sadržaj nije moguće otvoriti. Provjerite vezu i pokušajte ponovo.",
+    "retry": "Pokušaj ponovo",
+    "unsupported": "Za ovaj tip fajla potrebna je druga aplikacija. Otvorite ga samo ako vjerujete njegovom izvoru.",
+    "openExternal": "Otvori u drugoj aplikaciji",
+    "previous": "Prethodna",
+    "next": "Sljedeća",
+    "viewPhoto": "Pogledaj fotografiju {{index}}"
   }
 }

@@ -868,5 +868,17 @@
     "detail": { "title": "Damage details", "invalid": "The damage or apartment identifier is invalid.", "loading": "Loading damage details…", "loadError": "Damage details could not be loaded or are no longer available.", "apartment": "Apartment", "estimated": "Estimated amount", "confirmed": "Confirmed amount", "author": "Reported by", "createdAt": "Reported at", "updatedBy": "Last updated by", "updatedAt": "Last updated", "description": "Description" },
     "attachments": { "title": "Attachments", "limit": "Attach a file between 1 byte and 10 MB.", "add": "Add attachment", "sizeError": "Choose a file from 1 byte up to 10 MB.", "uploadError": "The attachment could not be uploaded.", "loadError": "Attachments could not be loaded.", "empty": "No attachments have been added.", "open": "Open", "refreshUrl": "Refresh link", "downloadError": "The link could not be opened. Refresh the link and try again.", "uploaded": "Uploaded by user #{{id}} · {{date}}" },
     "worker": { "title": "Task apartment damages", "hint": "You can review and attach files only while this task keeps access to apartment #{{id}}.", "openFromTask": "View apartment damages", "checkingAccess": "Checking whether this task still gives access…", "accessLostTitle": "Access is no longer available", "accessLost": "This task is no longer assigned to you, no longer has an apartment, or is not assigned, in progress, or blocked. Damage data and upload actions are hidden.", "invalidTask": "The task identifier is invalid.", "noUpload": "Attachments can be added only while access through this task is still active." }
+  },
+  "mediaViewer": {
+    "open": "Open attachment",
+    "close": "Close",
+    "loading": "Loading media…",
+    "error": "This file could not be opened. Check your connection and try again.",
+    "retry": "Try again",
+    "unsupported": "This file type needs another application. Open it only if you trust its source.",
+    "openExternal": "Open in another app",
+    "previous": "Previous",
+    "next": "Next",
+    "viewPhoto": "View photo {{index}}"
   }
 }

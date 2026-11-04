@@ -1,3 +1,4 @@
+import { Image } from "expo-image";
 import { Icon } from "@/src/components/atoms/Icon/Icon";
 import { useTheme } from "@/src/providers/ThemeProvider";
 import { ApartmentEffectiveStatus } from "@/src/types/types";
@@ -5,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Image,
   StyleProp,
   StyleSheet,
   Text,
@@ -71,7 +71,8 @@ export function ApartmentImage({
         <Image
           accessibilityIgnoresInvertColors
           source={{ uri }}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="none"
           style={StyleSheet.absoluteFillObject}
           onLoadStart={() => setIsLoading(true)}
           onLoadEnd={() => setIsLoading(false)}

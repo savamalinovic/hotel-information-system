@@ -44,3 +44,8 @@ export const releaseDemoReceiptPdf = (uri: string | undefined) => {
     file.delete();
   }
 };
+
+export const clearDemoReceiptPdfs = () => {
+  const directory = new Directory(Paths.cache, "demo-receipts");
+  if (directory.exists) directory.delete();
+};
