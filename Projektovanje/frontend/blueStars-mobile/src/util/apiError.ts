@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios";
 import type { TFunction } from "i18next";
-import { ApiErrorResponse } from "@/src/types/types";
+import type { ApiErrorResponse } from "@/src/types/types";
 
 const isApiErrorResponse = (value: unknown): value is ApiErrorResponse => {
   if (!value || typeof value !== "object") {
