@@ -7,10 +7,12 @@ import { persistDemoReceiptPdf, releaseDemoReceiptPdf } from "@/src/services/dem
 import { getUserFacingErrorMessage } from "@/src/util/apiError";
 import { InvalidRouteState } from "@/src/components/screens/InvalidRouteState";
 import { parsePositiveId } from "@/src/util/idParams";
+import { sessionStore } from "@/src/session/sessionStore";
+import { persistCurrentSessionDownload } from "@/src/session/sessionResponsePolicy";
 import { isAxiosError } from "axios";
 import * as Sharing from "expo-sharing";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,7 +24,7 @@ export default function DemoReceiptPdfScreen() {
   const { t } = useTranslation();
   const receipt = useDemoReceipt(reservationId);
   const attemptedReceiptId = useRef<number | undefined>(undefined);
-  const downloadingRef = useRef(false);
+  const downloadScope = useMemo(() => ({ reservationId, active: true, controller: null as AbortController | null }), [reservationId]);
   const [localUri, setLocalUri] = useState<string>();
   const [pageCount, setPageCount] = useState<number>();
   const [downloadError, setDownloadError] = useState("");
@@ -37,13 +39,25 @@ export default function DemoReceiptPdfScreen() {
   }, []);
 
   useEffect(() => () => releaseDemoReceiptPdf(localUri), [localUri]);
+  useEffect(() => {
+    downloadScope.active = true;
+    return () => {
+      downloadScope.active = false;
+      downloadScope.controller?.abort();
+      downloadScope.controller = null;
+      attemptedReceiptId.current = undefined;
+    };
+  }, [downloadScope]);
 
   const downloadPdf = useCallback(async () => {
-    if (!reservationId || !receipt.data || downloadingRef.current) {
+    const token = sessionStore.getToken();
+    if (!reservationId || !receipt.data || !token || !downloadScope.active || downloadScope.controller) {
       return;
     }
 
-    downloadingRef.current = true;
+    const controller = new AbortController();
+    downloadScope.controller = controller;
+    const isCurrent = () => downloadScope.active && downloadScope.controller === controller && sessionStore.getToken() === token;
     setIsDownloading(true);
     setDownloadError("");
     setRendererError(false);
@@ -51,17 +65,23 @@ export default function DemoReceiptPdfScreen() {
     clearLocalPdf(localUri);
 
     try {
-      const pdf = await demoReceiptService.downloadPdf(reservationId, receipt.data.receiptNumber);
-      const localFile = persistDemoReceiptPdf(pdf.content, pdf.filename);
-      setLocalUri(localFile.uri);
+      const receiptNumber = receipt.data.receiptNumber;
+      const localFile = await persistCurrentSessionDownload(
+        () => demoReceiptService.downloadPdf(reservationId, receiptNumber, controller.signal),
+        { isCurrent, persist: (pdf) => persistDemoReceiptPdf(pdf.content, pdf.filename), release: releaseDemoReceiptPdf },
+      );
+      if (localFile && isCurrent()) setLocalUri(localFile.uri);
+      else if (localFile) releaseDemoReceiptPdf(localFile.uri);
     } catch (error) {
-      const fallback = getPdfDownloadErrorMessage(error, t);
-      setDownloadError(getUserFacingErrorMessage(error, fallback));
+      if (isCurrent()) {
+        const fallback = getPdfDownloadErrorMessage(error, t);
+        setDownloadError(getUserFacingErrorMessage(error, fallback));
+      }
     } finally {
-      downloadingRef.current = false;
-      setIsDownloading(false);
+      if (isCurrent()) setIsDownloading(false);
+      if (downloadScope.controller === controller) downloadScope.controller = null;
     }
-  }, [clearLocalPdf, localUri, receipt.data, reservationId, t]);
+  }, [clearLocalPdf, downloadScope, localUri, receipt.data, reservationId, t]);
 
   useEffect(() => {
     if (!receipt.data || attemptedReceiptId.current === receipt.data.demoReceiptId) {
@@ -73,14 +93,18 @@ export default function DemoReceiptPdfScreen() {
   }, [downloadPdf, receipt.data]);
 
   const sharePdf = async () => {
-    if (!localUri || isSharing) {
+    const token = sessionStore.getToken();
+    if (!localUri || isSharing || !token || !downloadScope.active) {
       return;
     }
 
     setSharingMessage("");
     setIsSharing(true);
+    const isCurrent = () => downloadScope.active && sessionStore.getToken() === token;
     try {
-      if (!await Sharing.isAvailableAsync()) {
+      const available = await Sharing.isAvailableAsync();
+      if (!isCurrent()) return;
+      if (!available) {
         setSharingMessage(t("demoReceipt.pdf.sharingUnavailable"));
         return;
       }
@@ -91,9 +115,9 @@ export default function DemoReceiptPdfScreen() {
         UTI: "com.adobe.pdf",
       });
     } catch {
-      setSharingMessage(t("demoReceipt.pdf.sharingFailed"));
+      if (isCurrent()) setSharingMessage(t("demoReceipt.pdf.sharingFailed"));
     } finally {
-      setIsSharing(false);
+      if (isCurrent()) setIsSharing(false);
     }
   };
 

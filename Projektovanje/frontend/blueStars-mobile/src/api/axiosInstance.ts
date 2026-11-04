@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { sessionStore } from "@/src/session/sessionStore";
 import { API_BASE_URL } from "@/src/util/apiConstants";
+import { shouldEndSessionForResponse } from "@/src/session/sessionResponsePolicy";
 
 type UnauthorizedHandler = () => Promise<void> | void;
 
@@ -14,8 +15,6 @@ export const setUnauthorizedHandler = (handler: UnauthorizedHandler | undefined)
 export const resetUnauthorizedHandling = () => {
   isHandlingUnauthorized = false;
 };
-
-const isLoginRequest = (url: string | undefined) => url?.endsWith("/auth/login") ?? false;
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -36,11 +35,13 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const shouldEndSession =
-      error.response?.status === 401 &&
-      !isLoginRequest(error.config?.url) &&
-      Boolean(sessionStore.getToken()) &&
-      !isHandlingUnauthorized;
+    const shouldEndSession = shouldEndSessionForResponse({
+      status: error.response?.status,
+      url: error.config?.url,
+      authorization: error.config?.headers?.get("Authorization"),
+      currentToken: sessionStore.getToken(),
+      alreadyHandling: isHandlingUnauthorized,
+    });
 
     if (shouldEndSession) {
       isHandlingUnauthorized = true;
