@@ -1,5 +1,6 @@
 
 import { settingsService } from "@/src/api/services/settingsService";
+import { selectLanguage } from "@/src/i18n";
 import { Theme, useTheme } from "@/src/providers/ThemeProvider";
 import { toastService } from "@/src/services/toastService";
 import { AppErrorDTO, MenuSectionProps } from "@/src/types/types";
@@ -20,8 +21,9 @@ export default function SettingsScreen() {
     const { toggleTheme } = useTheme();
 
     const onLanguageChange = (languageId: string) => {
-        i18n.changeLanguage(languageId);  // update app language
-        console.log("Language changed to: ", languageId);
+        void selectLanguage(languageId).then((saved) => {
+            if (!saved) toastService.warning(t('dialogs.language.title'), t('dialogs.language.saveFailed'));
+        });
     }
 
     const onThemeChange = (selectedTheme: Theme) => {
@@ -77,7 +79,7 @@ export default function SettingsScreen() {
                 visible={languageDialogVisible} 
                 onClose={() => setLanguageDialogVisible(false)} 
                 onConfirm={onLanguageChange} 
-                selectedLanguage={'sr'} 
+                selectedLanguage={i18n.resolvedLanguage ?? i18n.language}
             />
 
             <ThemeDialog 

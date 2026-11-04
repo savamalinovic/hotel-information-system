@@ -45,7 +45,7 @@ export default function TabsRootLayout() {
                 headerTitle: t('tabs.apartments'),
                 tabBarIcon: ({ color }) => <Icon name="Building2" size={28} color={color} />,
             }} />
-            <Tabs.Screen name="reservations" options={{ href: null }} />
+            <Tabs.Screen name="reservations" options={{ href: null, title: t('tabs.reservations') }} />
             <Tabs.Screen name="menu" options={{
                 title: t('tabs.menu'),
                 headerTitle: t('tabs.menu'),

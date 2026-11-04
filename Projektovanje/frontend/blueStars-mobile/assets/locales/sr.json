@@ -499,6 +499,10 @@
       "loadingTitle": "Resetovanje u toku"
     },
     "errors": {
+      "invalidCredentials": "Email ili lozinka nisu ispravni.",
+      "timeout": "Zahtjev je istekao. Pokušajte ponovo.",
+      "network": "Povezivanje nije uspjelo. Provjerite vezu i pokušajte ponovo.",
+      "server": "Servis trenutno nije dostupan. Pokušajte ponovo.",
       "requiredFieldError": "Ovo polje je obavezno",
       "emailError": "Email nije ispravnog formata",
       "emailLengthError": "Email mora biti bar {{length}} karaktera",
@@ -543,6 +547,7 @@
     },
     "language": {
       "title": "Jezik",
+      "saveFailed": "Jezik je promijenjen, ali postavka nije sačuvana. Pokušajte ponovo.",
       "langEn": "Engleski",
       "langSr": "Srpski",
       "cancelButton": "Odustani",
