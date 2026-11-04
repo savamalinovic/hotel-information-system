@@ -4,7 +4,7 @@ import { Pressable } from "@/src/components/ui/pressable";
 import { Text } from "@/src/components/ui/text";
 import { VStack } from "@/src/components/ui/vstack";
 import { useTheme } from "@/src/providers/ThemeProvider";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, View } from "react-native";
 import { SettingsDialog } from "../SettingsDialog/SettingsDialog";
@@ -24,7 +24,11 @@ export const LanguageDialog: React.FC<LanguageDialogProps> = ({
 }) => {
   const { t } = useTranslation();
   const { Colors } = useTheme();
-  const [selected, setSelected] = useState(selectedLanguage);
+  const [selected, setSelected] = useState(selectedLanguage === "en" ? "en" : "sr");
+
+  useEffect(() => {
+    if (visible) setSelected(selectedLanguage === "en" ? "en" : "sr");
+  }, [visible, selectedLanguage]);
 
   const languageOptions = [
     { id: "en", label: t("dialogs.language.langEn"), image: require("@/assets/images/language-en.jpg") },
@@ -36,7 +40,7 @@ export const LanguageDialog: React.FC<LanguageDialogProps> = ({
       visible={visible}
       title={t("dialogs.language.title")}
       onClose={onClose}
-      onConfirm={() => onConfirm(selected!)}
+      onConfirm={() => onConfirm(selected)}
     >
       <HStack style={styles.optionsContainer}>
         {languageOptions.map((opt) => (

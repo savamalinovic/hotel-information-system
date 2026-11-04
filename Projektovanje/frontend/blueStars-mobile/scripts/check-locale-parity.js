@@ -70,6 +70,7 @@ function collectTranslationReferences(sourceFiles) {
 
     const useTranslationSymbols = new Set();
     const translationFunctionSymbols = new Set();
+    const translationTypeSymbols = new Set();
     const i18nObjectSymbols = new Set();
 
     for (const statement of sourceFile.statements) {
@@ -108,6 +109,9 @@ function collectTranslationReferences(sourceFiles) {
         if (moduleName === "i18next" && importedName === "t") {
           translationFunctionSymbols.add(symbol);
         }
+        if (moduleName === "i18next" && importedName === "TFunction") {
+          translationTypeSymbols.add(symbol);
+        }
         if (moduleName === "i18next" && importedName === "i18n") {
           i18nObjectSymbols.add(symbol);
         }
@@ -123,6 +127,12 @@ function collectTranslationReferences(sourceFiles) {
     }
 
     function collectBindings(node) {
+      if (ts.isParameter(node) && ts.isIdentifier(node.name) && node.type
+        && ts.isTypeReferenceNode(node.type) && ts.isIdentifier(node.type.typeName)
+        && translationTypeSymbols.has(getSymbol(checker, node.type.typeName))) {
+        const symbol = getSymbol(checker, node.name);
+        if (symbol) translationFunctionSymbols.add(symbol);
+      }
       if (ts.isVariableDeclaration(node) && ts.isObjectBindingPattern(node.name) && node.initializer && isUseTranslationCall(node.initializer)) {
         for (const element of node.name.elements) {
           const propertyName = getImportedName(element);

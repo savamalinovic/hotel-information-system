@@ -499,6 +499,10 @@
       "loadingTitle": "Resetting"
     },
     "errors": {
+      "invalidCredentials": "The email or password is incorrect.",
+      "timeout": "The request timed out. Please try again.",
+      "network": "Unable to connect. Check your connection and try again.",
+      "server": "The service is temporarily unavailable. Please try again.",
       "requiredFieldError": "This field is required",
       "emailError": "Email has to be at least 6 characters",
       "emailLengthError": "Email must be at least {{length}} characters long",
@@ -543,6 +547,7 @@
     },
     "language": {
       "title": "Language",
+      "saveFailed": "The language changed, but the preference could not be saved. Please try again.",
       "langEn": "English",
       "langSr": "Serbian",
       "cancelButton": "Cancel",
