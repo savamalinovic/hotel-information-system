@@ -7,6 +7,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'RemoteDemo.Common.ps1')
+. (Join-Path $PSScriptRoot '..\demo-catalog\DemoCatalog.Common.ps1')
+. (Join-Path $PSScriptRoot '..\demo-catalog\DemoMedia.Common.ps1')
 
 function Find-DemoUser {
     param([string]$Email, [string]$Token)
@@ -45,63 +47,6 @@ function Ensure-DemoUser {
     return $existing
 }
 
-function Ensure-DemoApartmentType {
-    param([Parameter(Mandatory)][hashtable]$Definition, [Parameter(Mandatory)][string]$Token)
-    $types = Get-LocalDemoPagedContent -ApiBaseUrl $ApiBaseUrl -Path '/apartment-types' -Token $Token
-    $matches = @($types | Where-Object { $_.name -ieq $Definition.name })
-    if ($matches.Count -gt 1) { throw "Duplicate apartment type $($Definition.name)." }
-    $existing = $matches | Select-Object -First 1
-    if ($null -eq $existing) {
-        $created = Invoke-LocalDemoApi -Method POST -ApiBaseUrl $ApiBaseUrl -Path '/apartment-types' -Token $Token -Body $Definition
-        Write-LocalDemoStatus -Status 'created' -Resource "apartment type $($Definition.name)"
-        return $created
-    }
-    if (-not $existing.active) {
-        throw "Demo apartment type $($Definition.name) is inactive. The public API cannot reactivate a deactivated type."
-    }
-    if ($existing.capacity -ne $Definition.capacity -or [decimal]$existing.defaultNightlyRate -ne [decimal]$Definition.defaultNightlyRate -or $existing.description -ne $Definition.description) {
-        throw "Demo apartment type $($Definition.name) conflicts with the expected definition."
-    }
-    Write-LocalDemoStatus -Status 'already exists' -Resource "apartment type $($Definition.name)"
-    return $existing
-}
-
-function Ensure-DemoApartment {
-    param([Parameter(Mandatory)][hashtable]$Definition, [Parameter(Mandatory)][string]$Token)
-    $apartments = Get-LocalDemoPagedContent -ApiBaseUrl $ApiBaseUrl -Path '/apartments' -Token $Token
-    $matches = @($apartments | Where-Object { $_.name -ieq $Definition.name })
-    if ($matches.Count -gt 1) { throw "Duplicate apartment $($Definition.name)." }
-    $existing = $matches | Select-Object -First 1
-    if ($null -eq $existing) {
-        $created = Invoke-LocalDemoApi -Method POST -ApiBaseUrl $ApiBaseUrl -Path '/apartments' -Token $Token -Body $Definition
-        Write-LocalDemoStatus -Status 'created' -Resource "apartment $($Definition.name)"
-        return $created
-    }
-    if (-not $existing.active) {
-        throw "Demo apartment $($Definition.name) is inactive. The public API cannot reactivate a deactivated apartment."
-    }
-    if ($existing.type.apartmentTypeId -ne $Definition.apartmentTypeId -or $existing.address -ne $Definition.address -or $existing.floor -ne $Definition.floor) {
-        throw "Demo apartment $($Definition.name) conflicts with the expected definition."
-    }
-    Write-LocalDemoStatus -Status 'already exists' -Resource "apartment $($Definition.name)"
-    return $existing
-}
-
-function Ensure-DemoExpenseCategory {
-    param([Parameter(Mandatory)][hashtable]$Definition, [Parameter(Mandatory)][string]$Token)
-    $categories = Get-LocalDemoPagedContent -ApiBaseUrl $ApiBaseUrl -Path '/expense-categories' -Token $Token
-    $matches = @($categories | Where-Object { $_.name -ieq $Definition.name })
-    if ($matches.Count -gt 1) { throw "Duplicate expense category $($Definition.name)." }
-    $existing = $matches | Select-Object -First 1
-    if ($null -eq $existing) {
-        $created = Invoke-LocalDemoApi -Method POST -ApiBaseUrl $ApiBaseUrl -Path '/expense-categories' -Token $Token -Body $Definition
-        Write-LocalDemoStatus -Status 'created' -Resource "expense category $($Definition.name)"
-        return $created
-    }
-    if (-not $existing.active -or $existing.description -ne $Definition.description) { throw "Demo expense category $($Definition.name) conflicts with the expected definition." }
-    Write-LocalDemoStatus -Status 'already exists' -Resource "expense category $($Definition.name)"
-    return $existing
-}
 
 try {
     $ApiBaseUrl = Assert-RemoteDemoTarget -ApiBaseUrl $ApiBaseUrl -AllowedHost $AllowedHost -ConfirmHost $ConfirmHost
@@ -139,43 +84,24 @@ try {
     }
     foreach ($account in $accounts) { [void](Ensure-DemoUser -Definition $account -Token $token) }
 
-    $typeDefinitions = @(
-        @{ name = 'Demo Studio'; description = 'Local demo studio for one guest.'; capacity = 1; defaultNightlyRate = '65.00' },
-        @{ name = 'Demo Double'; description = 'Local demo double room.'; capacity = 2; defaultNightlyRate = '95.00' },
-        @{ name = 'Demo Family'; description = 'Local demo family apartment.'; capacity = 4; defaultNightlyRate = '145.00' }
-    )
-    $typeIds = @{}
-    foreach ($type in $typeDefinitions) {
-        $savedType = Ensure-DemoApartmentType -Definition $type -Token $token
-        $typeIds[$type.name] = [int]($savedType.apartmentTypeId)
-    }
-    $apartmentDefinitions = @(
-        @{ name = 'Demo A101'; address = 'Demo Street 10'; floor = 1; apartmentTypeId = $typeIds['Demo Studio'] },
-        @{ name = 'Demo A102'; address = 'Demo Street 10'; floor = 1; apartmentTypeId = $typeIds['Demo Studio'] },
-        @{ name = 'Demo B201'; address = 'Demo Street 10'; floor = 2; apartmentTypeId = $typeIds['Demo Double'] },
-        @{ name = 'Demo B202'; address = 'Demo Street 10'; floor = 2; apartmentTypeId = $typeIds['Demo Double'] },
-        @{ name = 'Demo B203'; address = 'Demo Street 10'; floor = 2; apartmentTypeId = $typeIds['Demo Double'] },
-        @{ name = 'Demo C301'; address = 'Demo Street 10'; floor = 3; apartmentTypeId = $typeIds['Demo Family'] },
-        @{ name = 'Demo C302'; address = 'Demo Street 10'; floor = 3; apartmentTypeId = $typeIds['Demo Family'] },
-        @{ name = 'Demo C303'; address = 'Demo Street 10'; floor = 3; apartmentTypeId = $typeIds['Demo Family'] }
-    )
-    foreach ($apartment in $apartmentDefinitions) { [void](Ensure-DemoApartment -Definition $apartment -Token $token) }
-
-    foreach ($category in @(
-        @{ name = 'Demo Cleaning Supplies'; description = 'Consumable supplies for local demo analytics.' },
-        @{ name = 'Demo Utilities'; description = 'Utility category for local demo analytics.' },
-        @{ name = 'Demo Maintenance'; description = 'Maintenance category for local demo analytics.' },
-        @{ name = 'Demo Laundry'; description = 'Laundry category for local demo analytics.' }
-    )) { [void](Ensure-DemoExpenseCategory -Definition $category -Token $token) }
-
+    $sources = Get-DemoSourceMedia
     $profile = Invoke-LocalDemoApi -Method GET -ApiBaseUrl $ApiBaseUrl -Path '/hotel-profile' -Token $token
-    $profileDefinition = @{ name = 'BlueStars Demo'; legalName = 'BlueStars Demo Hotel'; address = 'Demo Street 10'; city = 'Banja Luka'; countryCode = 'BA'; phoneNumber = '+38751000000'; email = 'demo.hotel@bluestars.local'; taxId = 'DEMO' }
-    $profileChanged = @($profileDefinition.Keys | Where-Object { $profile.$_ -ne $profileDefinition[$_] }).Count -gt 0
-    if ($profileChanged) {
-        if ($profile.name -ne 'BlueStars Hotel' -or $profile.legalName -or $profile.address -or $profile.email -or $profile.taxId) { throw 'Existing hotel profile conflicts with the demo profile.' }
-        [void](Invoke-LocalDemoApi -Method PUT -ApiBaseUrl $ApiBaseUrl -Path '/hotel-profile' -Token $token -Body $profileDefinition)
-        Write-LocalDemoStatus -Status 'created' -Resource 'hotel profile'
-    } else { Write-LocalDemoStatus -Status 'already exists' -Resource 'hotel profile' }
+    Assert-DemoHotelProfile $profile
+    Assert-DemoCatalogPlan -Token $token
+    $typeIds = @{}
+    foreach ($type in @(Get-DemoTypeDefinitions)) {
+        $savedType = Ensure-DemoApartmentType -Definition $type -Token $token
+        $typeIds[$type.name] = [int]$savedType.apartmentTypeId
+    }
+    $savedApartments = @()
+    foreach ($apartment in @(Get-DemoApartmentDefinitions $typeIds)) {
+        $savedApartments += Ensure-DemoApartment -Definition $apartment -Token $token
+    }
+    foreach ($category in @(Get-DemoCategoryDefinitions)) { [void](Ensure-DemoExpenseCategory -Definition $category -Token $token) }
+    foreach ($apartment in $savedApartments) { Confirm-DemoApartmentPictures -Apartment $apartment -Sources $sources -Token $token -UploadMissing }
+    foreach ($apartment in $savedApartments) { Confirm-DemoApartmentPictures -Apartment $apartment -Sources $sources -Token $token }
+
+    Ensure-DemoHotelProfile -Token $token
 
     $accountsForLogin = @($accounts)
     $accountsForLogin += @{ email = $ManagerEmail; role = 'MANAGER' }
