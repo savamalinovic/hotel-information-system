@@ -21,7 +21,10 @@ function AppLayout() {
   if (!ready) return <FullPageLoader />
   if (!session) return <Navigate to="/login" search={{ redirect: '/' }} />
 
-  const navItems: Array<{ to: '/' ; label: string }> = [{ to: '/', label: t('nav.dashboard') }]
+  const navItems: Array<{ to: '/' | '/apartments'; label: string }> = [
+    { to: '/', label: t('nav.dashboard') },
+    { to: '/apartments', label: t('nav.apartments') },
+  ]
 
   return (
     <div className="flex min-h-screen bg-gray-50">

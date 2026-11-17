@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppApartmentsIndexRouteImport } from './routes/_app/apartments/index'
+import { Route as AppApartmentsApartmentIdRouteImport } from './routes/_app/apartments/$apartmentId'
+import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments/types'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -27,27 +30,69 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppApartmentsIndexRoute = AppApartmentsIndexRouteImport.update({
+  id: '/apartments/',
+  path: '/apartments/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppApartmentsApartmentIdRoute =
+  AppApartmentsApartmentIdRouteImport.update({
+    id: '/apartments/$apartmentId',
+    path: '/apartments/$apartmentId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppApartmentsTypesRoute = AppApartmentsTypesRouteImport.update({
+  id: '/apartments/types',
+  path: '/apartments/types',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
+  '/apartments/types': typeof AppApartmentsTypesRoute
+  '/apartments/': typeof AppApartmentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AppIndexRoute
+  '/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
+  '/apartments/types': typeof AppApartmentsTypesRoute
+  '/apartments': typeof AppApartmentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
+  '/_app/apartments/types': typeof AppApartmentsTypesRoute
+  '/_app/apartments/': typeof AppApartmentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/apartments/$apartmentId'
+    | '/apartments/types'
+    | '/apartments/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/'
+  to:
+    | '/login'
+    | '/'
+    | '/apartments/$apartmentId'
+    | '/apartments/types'
+    | '/apartments'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/'
+    | '/_app/apartments/$apartmentId'
+    | '/_app/apartments/types'
+    | '/_app/apartments/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +123,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/apartments/': {
+      id: '/_app/apartments/'
+      path: '/apartments'
+      fullPath: '/apartments/'
+      preLoaderRoute: typeof AppApartmentsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/apartments/$apartmentId': {
+      id: '/_app/apartments/$apartmentId'
+      path: '/apartments/$apartmentId'
+      fullPath: '/apartments/$apartmentId'
+      preLoaderRoute: typeof AppApartmentsApartmentIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/apartments/types': {
+      id: '/_app/apartments/types'
+      path: '/apartments/types'
+      fullPath: '/apartments/types'
+      preLoaderRoute: typeof AppApartmentsTypesRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppApartmentsApartmentIdRoute: typeof AppApartmentsApartmentIdRoute
+  AppApartmentsTypesRoute: typeof AppApartmentsTypesRoute
+  AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppApartmentsApartmentIdRoute: AppApartmentsApartmentIdRoute,
+  AppApartmentsTypesRoute: AppApartmentsTypesRoute,
+  AppApartmentsIndexRoute: AppApartmentsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
