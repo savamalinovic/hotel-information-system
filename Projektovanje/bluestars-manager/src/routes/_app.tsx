@@ -21,9 +21,10 @@ function AppLayout() {
   if (!ready) return <FullPageLoader />
   if (!session) return <Navigate to="/login" search={{ redirect: '/' }} />
 
-  const navItems: Array<{ to: '/' | '/apartments'; label: string }> = [
+  const navItems: Array<{ to: '/' | '/apartments' | '/reservations'; label: string }> = [
     { to: '/', label: t('nav.dashboard') },
     { to: '/apartments', label: t('nav.apartments') },
+    { to: '/reservations', label: t('nav.reservations') },
   ]
 
   return (

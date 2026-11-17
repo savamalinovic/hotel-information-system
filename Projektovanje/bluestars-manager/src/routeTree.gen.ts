@@ -15,6 +15,9 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppApartmentsIndexRouteImport } from './routes/_app/apartments/index'
 import { Route as AppApartmentsApartmentIdRouteImport } from './routes/_app/apartments/$apartmentId'
 import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments/types'
+import { Route as AppReservationsIndexRouteImport } from './routes/_app/reservations/index'
+import { Route as AppReservationsReservationIdRouteImport } from './routes/_app/reservations/$reservationId'
+import { Route as AppReservationsNewRouteImport } from './routes/_app/reservations/new'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -46,20 +49,42 @@ const AppApartmentsTypesRoute = AppApartmentsTypesRouteImport.update({
   path: '/apartments/types',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReservationsIndexRoute = AppReservationsIndexRouteImport.update({
+  id: '/reservations/',
+  path: '/reservations/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReservationsReservationIdRoute =
+  AppReservationsReservationIdRouteImport.update({
+    id: '/reservations/$reservationId',
+    path: '/reservations/$reservationId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppReservationsNewRoute = AppReservationsNewRouteImport.update({
+  id: '/reservations/new',
+  path: '/reservations/new',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
   '/apartments/types': typeof AppApartmentsTypesRoute
+  '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
+  '/reservations/new': typeof AppReservationsNewRoute
   '/apartments/': typeof AppApartmentsIndexRoute
+  '/reservations/': typeof AppReservationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AppIndexRoute
   '/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
   '/apartments/types': typeof AppApartmentsTypesRoute
+  '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
+  '/reservations/new': typeof AppReservationsNewRoute
   '/apartments': typeof AppApartmentsIndexRoute
+  '/reservations': typeof AppReservationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,7 +93,10 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/apartments/$apartmentId': typeof AppApartmentsApartmentIdRoute
   '/_app/apartments/types': typeof AppApartmentsTypesRoute
+  '/_app/reservations/$reservationId': typeof AppReservationsReservationIdRoute
+  '/_app/reservations/new': typeof AppReservationsNewRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
+  '/_app/reservations/': typeof AppReservationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -77,14 +105,20 @@ export interface FileRouteTypes {
     | '/login'
     | '/apartments/$apartmentId'
     | '/apartments/types'
+    | '/reservations/$reservationId'
+    | '/reservations/new'
     | '/apartments/'
+    | '/reservations/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/'
     | '/apartments/$apartmentId'
     | '/apartments/types'
+    | '/reservations/$reservationId'
+    | '/reservations/new'
     | '/apartments'
+    | '/reservations'
   id:
     | '__root__'
     | '/_app'
@@ -92,7 +126,10 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/apartments/$apartmentId'
     | '/_app/apartments/types'
+    | '/_app/reservations/$reservationId'
+    | '/_app/reservations/new'
     | '/_app/apartments/'
+    | '/_app/reservations/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +181,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppApartmentsTypesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/reservations/': {
+      id: '/_app/reservations/'
+      path: '/reservations'
+      fullPath: '/reservations/'
+      preLoaderRoute: typeof AppReservationsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reservations/$reservationId': {
+      id: '/_app/reservations/$reservationId'
+      path: '/reservations/$reservationId'
+      fullPath: '/reservations/$reservationId'
+      preLoaderRoute: typeof AppReservationsReservationIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reservations/new': {
+      id: '/_app/reservations/new'
+      path: '/reservations/new'
+      fullPath: '/reservations/new'
+      preLoaderRoute: typeof AppReservationsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -151,14 +209,20 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppApartmentsApartmentIdRoute: typeof AppApartmentsApartmentIdRoute
   AppApartmentsTypesRoute: typeof AppApartmentsTypesRoute
+  AppReservationsReservationIdRoute: typeof AppReservationsReservationIdRoute
+  AppReservationsNewRoute: typeof AppReservationsNewRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
+  AppReservationsIndexRoute: typeof AppReservationsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppApartmentsApartmentIdRoute: AppApartmentsApartmentIdRoute,
   AppApartmentsTypesRoute: AppApartmentsTypesRoute,
+  AppReservationsReservationIdRoute: AppReservationsReservationIdRoute,
+  AppReservationsNewRoute: AppReservationsNewRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
+  AppReservationsIndexRoute: AppReservationsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
