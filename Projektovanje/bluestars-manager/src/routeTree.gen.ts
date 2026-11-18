@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppApartmentsIndexRouteImport } from './routes/_app/apartments/index'
 import { Route as AppApartmentsApartmentIdRouteImport } from './routes/_app/apartments/$apartmentId'
 import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments/types'
+import { Route as AppDamagesIndexRouteImport } from './routes/_app/damages/index'
 import { Route as AppEmployeesIndexRouteImport } from './routes/_app/employees/index'
 import { Route as AppEmployeesAvailabilityRouteImport } from './routes/_app/employees/availability'
 import { Route as AppEmployeesLeaveRequestsRouteImport } from './routes/_app/employees/leave-requests'
@@ -54,6 +55,11 @@ const AppApartmentsApartmentIdRoute =
 const AppApartmentsTypesRoute = AppApartmentsTypesRouteImport.update({
   id: '/apartments/types',
   path: '/apartments/types',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDamagesIndexRoute = AppDamagesIndexRouteImport.update({
+  id: '/damages/',
+  path: '/damages/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmployeesIndexRoute = AppEmployeesIndexRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments/': typeof AppApartmentsIndexRoute
+  '/damages/': typeof AppDamagesIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
   '/expenses/': typeof AppExpensesIndexRoute
   '/reservations/': typeof AppReservationsIndexRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments': typeof AppApartmentsIndexRoute
+  '/damages': typeof AppDamagesIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
   '/expenses': typeof AppExpensesIndexRoute
   '/reservations': typeof AppReservationsIndexRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/_app/reservations/new': typeof AppReservationsNewRoute
   '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
+  '/_app/damages/': typeof AppDamagesIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
   '/_app/expenses/': typeof AppExpensesIndexRoute
   '/_app/reservations/': typeof AppReservationsIndexRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments/'
+    | '/damages/'
     | '/employees/'
     | '/expenses/'
     | '/reservations/'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments'
+    | '/damages'
     | '/employees'
     | '/expenses'
     | '/reservations'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/_app/reservations/new'
     | '/_app/tasks/$taskId'
     | '/_app/apartments/'
+    | '/_app/damages/'
     | '/_app/employees/'
     | '/_app/expenses/'
     | '/_app/reservations/'
@@ -265,6 +277,13 @@ declare module '@tanstack/react-router' {
       path: '/apartments/types'
       fullPath: '/apartments/types'
       preLoaderRoute: typeof AppApartmentsTypesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/damages/': {
+      id: '/_app/damages/'
+      path: '/damages'
+      fullPath: '/damages/'
+      preLoaderRoute: typeof AppDamagesIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/employees/': {
@@ -351,6 +370,7 @@ interface AppRouteChildren {
   AppReservationsNewRoute: typeof AppReservationsNewRoute
   AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
+  AppDamagesIndexRoute: typeof AppDamagesIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
   AppExpensesIndexRoute: typeof AppExpensesIndexRoute
   AppReservationsIndexRoute: typeof AppReservationsIndexRoute
@@ -368,6 +388,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReservationsNewRoute: AppReservationsNewRoute,
   AppTasksTaskIdRoute: AppTasksTaskIdRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
+  AppDamagesIndexRoute: AppDamagesIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,
   AppExpensesIndexRoute: AppExpensesIndexRoute,
   AppReservationsIndexRoute: AppReservationsIndexRoute,

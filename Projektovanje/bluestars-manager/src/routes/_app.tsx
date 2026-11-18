@@ -22,7 +22,7 @@ function AppLayout() {
   if (!session) return <Navigate to="/login" search={{ redirect: '/' }} />
 
   const navItems: Array<{
-    to: '/' | '/apartments' | '/reservations' | '/employees' | '/tasks' | '/expenses'
+    to: '/' | '/apartments' | '/reservations' | '/employees' | '/tasks' | '/expenses' | '/damages'
     label: string
   }> = [
     { to: '/', label: t('nav.dashboard') },
@@ -31,6 +31,7 @@ function AppLayout() {
     { to: '/employees', label: t('nav.employees') },
     { to: '/tasks', label: t('nav.tasks') },
     { to: '/expenses', label: t('nav.expenses') },
+    { to: '/damages', label: t('nav.damages') },
   ]
 
   return (
