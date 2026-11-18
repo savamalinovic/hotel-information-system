@@ -80,6 +80,7 @@ const en = {
     defaultNightlyRate: 'Default nightly rate',
     description: 'Description',
     active: 'Active',
+    outOfOrder: 'Out of order',
     create: 'Create apartment',
     edit: 'Edit apartment',
     createType: 'Create type',

@@ -27,6 +27,7 @@ const searchSchema = z.object({
   status: stringParam,
   apartmentTypeId: numberParam,
   active: booleanParam,
+  outOfOrder: booleanParam,
 })
 
 export const Route = createFileRoute('/_app/apartments/')({
@@ -48,6 +49,8 @@ function ApartmentsPage() {
       status: search.status,
       apartmentTypeId: search.apartmentTypeId,
       active: search.active === 'true' ? true : search.active === 'false' ? false : undefined,
+      outOfOrder:
+        search.outOfOrder === 'true' ? true : search.outOfOrder === 'false' ? false : undefined,
     },
   })
 
@@ -159,6 +162,25 @@ function ApartmentsPage() {
             <option value="">{t('common.all')}</option>
             <option value="true">{t('common.active')}</option>
             <option value="false">{t('common.inactive')}</option>
+          </Select>
+        </FilterField>
+        <FilterField label={t('apartments.outOfOrder')}>
+          <Select
+            value={search.outOfOrder ?? ''}
+            onChange={(event) =>
+              navigate({
+                search: {
+                  ...search,
+                  outOfOrder:
+                    event.target.value === '' ? undefined : (event.target.value as 'true' | 'false'),
+                  page: 0,
+                },
+              })
+            }
+          >
+            <option value="">{t('common.all')}</option>
+            <option value="true">{t('common.yes')}</option>
+            <option value="false">{t('common.no')}</option>
           </Select>
         </FilterField>
       </div>
