@@ -68,6 +68,7 @@ function ApartmentDetailPage() {
     void queryClient.invalidateQueries({ queryKey: ['apartment', id] })
     void queryClient.invalidateQueries({ queryKey: ['apartment', id, 'status-history'] })
     void queryClient.invalidateQueries({ queryKey: ['apartment', id, 'unavailability'] })
+    void queryClient.invalidateQueries({ queryKey: ['apartments'] })
   }
 
   if (apartment.isLoading) {
@@ -247,7 +248,7 @@ function ApartmentDetailPage() {
         onClose={() => setEditing(false)}
         onSaved={() => {
           setEditing(false)
-          void apartment.refetch()
+          refresh()
         }}
       />
 
@@ -273,7 +274,7 @@ function ApartmentDetailPage() {
         onSaved={() => {
           setUnavailabilityOpen(false)
           setEditingPeriod(null)
-          void unavailability.refetch()
+          refresh()
         }}
       />
 
@@ -288,7 +289,7 @@ function ApartmentDetailPage() {
           if (!deletingPeriod) return
           void apiDelete(`/apartments/${id}/unavailability/${deletingPeriod.apartmentUnavailabilityId}`).then(() => {
             setDeletingPeriod(null)
-            void unavailability.refetch()
+            refresh()
           })
         }}
       />

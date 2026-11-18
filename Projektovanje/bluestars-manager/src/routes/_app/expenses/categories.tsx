@@ -183,6 +183,7 @@ function CategoryFormModal({
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
+      void queryClient.invalidateQueries({ queryKey: ['expenses'] })
       onSaved()
     },
   })

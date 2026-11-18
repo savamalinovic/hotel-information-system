@@ -80,6 +80,7 @@ function ReservationDetailPage() {
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['reservation', id] })
     void queryClient.invalidateQueries({ queryKey: ['reservation', id, 'status-history'] })
+    void queryClient.invalidateQueries({ queryKey: ['reservations'] })
   }
 
   if (reservation.isLoading) {

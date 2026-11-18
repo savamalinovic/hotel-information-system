@@ -50,6 +50,7 @@ function TypesPage() {
   const { t } = useTranslation()
   const navigate = Route.useNavigate()
   const search = Route.useSearch()
+  const queryClient = useQueryClient()
   const list = useList<ApartmentTypeResponse>({
     key: 'apartment-types',
     path: '/apartment-types',
@@ -161,6 +162,8 @@ function TypesPage() {
           void deleteType(deleting.apartmentTypeId).then(() => {
             setDeleting(null)
             void list.refetch()
+            void queryClient.invalidateQueries({ queryKey: ['apartments'] })
+            void queryClient.invalidateQueries({ queryKey: ['apartment'] })
           })
         }}
       />
@@ -216,6 +219,8 @@ function TypeFormModal({
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['apartment-types'] })
+      void queryClient.invalidateQueries({ queryKey: ['apartments'] })
+      void queryClient.invalidateQueries({ queryKey: ['apartment'] })
       onSaved()
     },
   })

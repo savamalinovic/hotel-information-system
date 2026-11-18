@@ -6,7 +6,10 @@ import { FullPageLoader } from '../components/ui/Spinner'
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: ({ location }) => {
-    if (getSession()?.role !== 'MANAGER') {
+    // getSession() reads localStorage, which is unavailable during SSR. Only
+    // guard on the client so a full page refresh doesn't flash the login screen.
+    // The client-side guard in AppLayout still redirects when not authenticated.
+    if (typeof window !== 'undefined' && getSession()?.role !== 'MANAGER') {
       throw redirect({ to: '/login', search: { redirect: location.href } })
     }
   },
