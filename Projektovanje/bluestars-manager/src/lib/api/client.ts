@@ -1,9 +1,16 @@
 import { ApiError } from './errors'
 import { clearSession, getSession } from '../auth/store'
 
+// Public API base URL. Resolution order:
+// 1. VITE_API_BASE_URL env var — set this for any deployed environment.
+// 2. In development: relative /api/v1, forwarded by the Vite dev proxy
+//    (see vite.config.ts) so the browser avoids CORS entirely.
+// 3. In a production build without the env var: the absolute API URL.
+const PRODUCTION_API_URL = 'https://hotel-information-system-production.up.railway.app/api/v1'
+
 const API_BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  'https://hotel-information-system-production.up.railway.app/api/v1'
+  (import.meta.env.DEV ? '/api/v1' : PRODUCTION_API_URL)
 
 export type QueryValue = string | number | boolean | undefined | null
 
@@ -16,14 +23,15 @@ export interface ApiRequestOptions {
 }
 
 function buildUrl(path: string, query?: Record<string, QueryValue>): string {
-  const url = new URL(API_BASE_URL + path)
+  const searchParams = new URLSearchParams()
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || value === '') continue
-      url.searchParams.set(key, String(value))
+      searchParams.set(key, String(value))
     }
   }
-  return url.toString()
+  const queryString = searchParams.toString()
+  return `${API_BASE_URL}${path}${queryString ? `?${queryString}` : ''}`
 }
 
 let onUnauthorized: () => void = () => {
