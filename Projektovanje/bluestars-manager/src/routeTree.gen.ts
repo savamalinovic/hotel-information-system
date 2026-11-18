@@ -21,6 +21,8 @@ import { Route as AppEmployeesLeaveRequestsRouteImport } from './routes/_app/emp
 import { Route as AppReservationsIndexRouteImport } from './routes/_app/reservations/index'
 import { Route as AppReservationsReservationIdRouteImport } from './routes/_app/reservations/$reservationId'
 import { Route as AppReservationsNewRouteImport } from './routes/_app/reservations/new'
+import { Route as AppTasksIndexRouteImport } from './routes/_app/tasks/index'
+import { Route as AppTasksTaskIdRouteImport } from './routes/_app/tasks/$taskId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -85,6 +87,16 @@ const AppReservationsNewRoute = AppReservationsNewRouteImport.update({
   path: '/reservations/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTasksIndexRoute = AppTasksIndexRouteImport.update({
+  id: '/tasks/',
+  path: '/tasks/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksTaskIdRoute = AppTasksTaskIdRouteImport.update({
+  id: '/tasks/$taskId',
+  path: '/tasks/$taskId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -95,9 +107,11 @@ export interface FileRoutesByFullPath {
   '/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
   '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/reservations/new': typeof AppReservationsNewRoute
+  '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments/': typeof AppApartmentsIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
   '/reservations/': typeof AppReservationsIndexRoute
+  '/tasks/': typeof AppTasksIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -108,9 +122,11 @@ export interface FileRoutesByTo {
   '/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
   '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/reservations/new': typeof AppReservationsNewRoute
+  '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments': typeof AppApartmentsIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
   '/reservations': typeof AppReservationsIndexRoute
+  '/tasks': typeof AppTasksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,9 +139,11 @@ export interface FileRoutesById {
   '/_app/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
   '/_app/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/_app/reservations/new': typeof AppReservationsNewRoute
+  '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
   '/_app/reservations/': typeof AppReservationsIndexRoute
+  '/_app/tasks/': typeof AppTasksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,9 +156,11 @@ export interface FileRouteTypes {
     | '/employees/leave-requests'
     | '/reservations/$reservationId'
     | '/reservations/new'
+    | '/tasks/$taskId'
     | '/apartments/'
     | '/employees/'
     | '/reservations/'
+    | '/tasks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -151,9 +171,11 @@ export interface FileRouteTypes {
     | '/employees/leave-requests'
     | '/reservations/$reservationId'
     | '/reservations/new'
+    | '/tasks/$taskId'
     | '/apartments'
     | '/employees'
     | '/reservations'
+    | '/tasks'
   id:
     | '__root__'
     | '/_app'
@@ -165,9 +187,11 @@ export interface FileRouteTypes {
     | '/_app/employees/leave-requests'
     | '/_app/reservations/$reservationId'
     | '/_app/reservations/new'
+    | '/_app/tasks/$taskId'
     | '/_app/apartments/'
     | '/_app/employees/'
     | '/_app/reservations/'
+    | '/_app/tasks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,6 +285,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReservationsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/tasks/': {
+      id: '/_app/tasks/'
+      path: '/tasks'
+      fullPath: '/tasks/'
+      preLoaderRoute: typeof AppTasksIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tasks/$taskId': {
+      id: '/_app/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/tasks/$taskId'
+      preLoaderRoute: typeof AppTasksTaskIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -272,9 +310,11 @@ interface AppRouteChildren {
   AppEmployeesLeaveRequestsRoute: typeof AppEmployeesLeaveRequestsRoute
   AppReservationsReservationIdRoute: typeof AppReservationsReservationIdRoute
   AppReservationsNewRoute: typeof AppReservationsNewRoute
+  AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
   AppReservationsIndexRoute: typeof AppReservationsIndexRoute
+  AppTasksIndexRoute: typeof AppTasksIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -285,9 +325,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppEmployeesLeaveRequestsRoute: AppEmployeesLeaveRequestsRoute,
   AppReservationsReservationIdRoute: AppReservationsReservationIdRoute,
   AppReservationsNewRoute: AppReservationsNewRoute,
+  AppTasksTaskIdRoute: AppTasksTaskIdRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,
   AppReservationsIndexRoute: AppReservationsIndexRoute,
+  AppTasksIndexRoute: AppTasksIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
