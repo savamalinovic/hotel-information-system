@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppApartmentsIndexRouteImport } from './routes/_app/apartments/index'
 import { Route as AppApartmentsApartmentIdRouteImport } from './routes/_app/apartments/$apartmentId'
 import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments/types'
+import { Route as AppBooksIndexRouteImport } from './routes/_app/books/index'
 import { Route as AppDamagesIndexRouteImport } from './routes/_app/damages/index'
 import { Route as AppEmployeesIndexRouteImport } from './routes/_app/employees/index'
 import { Route as AppEmployeesAvailabilityRouteImport } from './routes/_app/employees/availability'
@@ -55,6 +56,11 @@ const AppApartmentsApartmentIdRoute =
 const AppApartmentsTypesRoute = AppApartmentsTypesRouteImport.update({
   id: '/apartments/types',
   path: '/apartments/types',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBooksIndexRoute = AppBooksIndexRouteImport.update({
+  id: '/books/',
+  path: '/books/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDamagesIndexRoute = AppDamagesIndexRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments/': typeof AppApartmentsIndexRoute
+  '/books/': typeof AppBooksIndexRoute
   '/damages/': typeof AppDamagesIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
   '/expenses/': typeof AppExpensesIndexRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments': typeof AppApartmentsIndexRoute
+  '/books': typeof AppBooksIndexRoute
   '/damages': typeof AppDamagesIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
   '/expenses': typeof AppExpensesIndexRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/_app/reservations/new': typeof AppReservationsNewRoute
   '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
+  '/_app/books/': typeof AppBooksIndexRoute
   '/_app/damages/': typeof AppDamagesIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
   '/_app/expenses/': typeof AppExpensesIndexRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments/'
+    | '/books/'
     | '/damages/'
     | '/employees/'
     | '/expenses/'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments'
+    | '/books'
     | '/damages'
     | '/employees'
     | '/expenses'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/_app/reservations/new'
     | '/_app/tasks/$taskId'
     | '/_app/apartments/'
+    | '/_app/books/'
     | '/_app/damages/'
     | '/_app/employees/'
     | '/_app/expenses/'
@@ -277,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/apartments/types'
       fullPath: '/apartments/types'
       preLoaderRoute: typeof AppApartmentsTypesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/books/': {
+      id: '/_app/books/'
+      path: '/books'
+      fullPath: '/books/'
+      preLoaderRoute: typeof AppBooksIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/damages/': {
@@ -370,6 +389,7 @@ interface AppRouteChildren {
   AppReservationsNewRoute: typeof AppReservationsNewRoute
   AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
+  AppBooksIndexRoute: typeof AppBooksIndexRoute
   AppDamagesIndexRoute: typeof AppDamagesIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
   AppExpensesIndexRoute: typeof AppExpensesIndexRoute
@@ -388,6 +408,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReservationsNewRoute: AppReservationsNewRoute,
   AppTasksTaskIdRoute: AppTasksTaskIdRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
+  AppBooksIndexRoute: AppBooksIndexRoute,
   AppDamagesIndexRoute: AppDamagesIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,
   AppExpensesIndexRoute: AppExpensesIndexRoute,
