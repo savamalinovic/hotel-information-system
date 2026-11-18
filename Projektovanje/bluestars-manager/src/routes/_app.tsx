@@ -21,12 +21,16 @@ function AppLayout() {
   if (!ready) return <FullPageLoader />
   if (!session) return <Navigate to="/login" search={{ redirect: '/' }} />
 
-  const navItems: Array<{ to: '/' | '/apartments' | '/reservations' | '/employees' | '/tasks'; label: string }> = [
+  const navItems: Array<{
+    to: '/' | '/apartments' | '/reservations' | '/employees' | '/tasks' | '/expenses'
+    label: string
+  }> = [
     { to: '/', label: t('nav.dashboard') },
     { to: '/apartments', label: t('nav.apartments') },
     { to: '/reservations', label: t('nav.reservations') },
     { to: '/employees', label: t('nav.employees') },
     { to: '/tasks', label: t('nav.tasks') },
+    { to: '/expenses', label: t('nav.expenses') },
   ]
 
   return (

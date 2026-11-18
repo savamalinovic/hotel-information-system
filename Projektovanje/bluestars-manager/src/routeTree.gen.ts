@@ -18,6 +18,8 @@ import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments
 import { Route as AppEmployeesIndexRouteImport } from './routes/_app/employees/index'
 import { Route as AppEmployeesAvailabilityRouteImport } from './routes/_app/employees/availability'
 import { Route as AppEmployeesLeaveRequestsRouteImport } from './routes/_app/employees/leave-requests'
+import { Route as AppExpensesIndexRouteImport } from './routes/_app/expenses/index'
+import { Route as AppExpensesCategoriesRouteImport } from './routes/_app/expenses/categories'
 import { Route as AppReservationsIndexRouteImport } from './routes/_app/reservations/index'
 import { Route as AppReservationsReservationIdRouteImport } from './routes/_app/reservations/$reservationId'
 import { Route as AppReservationsNewRouteImport } from './routes/_app/reservations/new'
@@ -71,6 +73,16 @@ const AppEmployeesLeaveRequestsRoute =
     path: '/employees/leave-requests',
     getParentRoute: () => AppRoute,
   } as any)
+const AppExpensesIndexRoute = AppExpensesIndexRouteImport.update({
+  id: '/expenses/',
+  path: '/expenses/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpensesCategoriesRoute = AppExpensesCategoriesRouteImport.update({
+  id: '/expenses/categories',
+  path: '/expenses/categories',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReservationsIndexRoute = AppReservationsIndexRouteImport.update({
   id: '/reservations/',
   path: '/reservations/',
@@ -105,11 +117,13 @@ export interface FileRoutesByFullPath {
   '/apartments/types': typeof AppApartmentsTypesRoute
   '/employees/availability': typeof AppEmployeesAvailabilityRoute
   '/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
+  '/expenses/categories': typeof AppExpensesCategoriesRoute
   '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments/': typeof AppApartmentsIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
+  '/expenses/': typeof AppExpensesIndexRoute
   '/reservations/': typeof AppReservationsIndexRoute
   '/tasks/': typeof AppTasksIndexRoute
 }
@@ -120,11 +134,13 @@ export interface FileRoutesByTo {
   '/apartments/types': typeof AppApartmentsTypesRoute
   '/employees/availability': typeof AppEmployeesAvailabilityRoute
   '/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
+  '/expenses/categories': typeof AppExpensesCategoriesRoute
   '/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/reservations/new': typeof AppReservationsNewRoute
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/apartments': typeof AppApartmentsIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
+  '/expenses': typeof AppExpensesIndexRoute
   '/reservations': typeof AppReservationsIndexRoute
   '/tasks': typeof AppTasksIndexRoute
 }
@@ -137,11 +153,13 @@ export interface FileRoutesById {
   '/_app/apartments/types': typeof AppApartmentsTypesRoute
   '/_app/employees/availability': typeof AppEmployeesAvailabilityRoute
   '/_app/employees/leave-requests': typeof AppEmployeesLeaveRequestsRoute
+  '/_app/expenses/categories': typeof AppExpensesCategoriesRoute
   '/_app/reservations/$reservationId': typeof AppReservationsReservationIdRoute
   '/_app/reservations/new': typeof AppReservationsNewRoute
   '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
+  '/_app/expenses/': typeof AppExpensesIndexRoute
   '/_app/reservations/': typeof AppReservationsIndexRoute
   '/_app/tasks/': typeof AppTasksIndexRoute
 }
@@ -154,11 +172,13 @@ export interface FileRouteTypes {
     | '/apartments/types'
     | '/employees/availability'
     | '/employees/leave-requests'
+    | '/expenses/categories'
     | '/reservations/$reservationId'
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments/'
     | '/employees/'
+    | '/expenses/'
     | '/reservations/'
     | '/tasks/'
   fileRoutesByTo: FileRoutesByTo
@@ -169,11 +189,13 @@ export interface FileRouteTypes {
     | '/apartments/types'
     | '/employees/availability'
     | '/employees/leave-requests'
+    | '/expenses/categories'
     | '/reservations/$reservationId'
     | '/reservations/new'
     | '/tasks/$taskId'
     | '/apartments'
     | '/employees'
+    | '/expenses'
     | '/reservations'
     | '/tasks'
   id:
@@ -185,11 +207,13 @@ export interface FileRouteTypes {
     | '/_app/apartments/types'
     | '/_app/employees/availability'
     | '/_app/employees/leave-requests'
+    | '/_app/expenses/categories'
     | '/_app/reservations/$reservationId'
     | '/_app/reservations/new'
     | '/_app/tasks/$taskId'
     | '/_app/apartments/'
     | '/_app/employees/'
+    | '/_app/expenses/'
     | '/_app/reservations/'
     | '/_app/tasks/'
   fileRoutesById: FileRoutesById
@@ -264,6 +288,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmployeesLeaveRequestsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/expenses/': {
+      id: '/_app/expenses/'
+      path: '/expenses'
+      fullPath: '/expenses/'
+      preLoaderRoute: typeof AppExpensesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expenses/categories': {
+      id: '/_app/expenses/categories'
+      path: '/expenses/categories'
+      fullPath: '/expenses/categories'
+      preLoaderRoute: typeof AppExpensesCategoriesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/reservations/': {
       id: '/_app/reservations/'
       path: '/reservations'
@@ -308,11 +346,13 @@ interface AppRouteChildren {
   AppApartmentsTypesRoute: typeof AppApartmentsTypesRoute
   AppEmployeesAvailabilityRoute: typeof AppEmployeesAvailabilityRoute
   AppEmployeesLeaveRequestsRoute: typeof AppEmployeesLeaveRequestsRoute
+  AppExpensesCategoriesRoute: typeof AppExpensesCategoriesRoute
   AppReservationsReservationIdRoute: typeof AppReservationsReservationIdRoute
   AppReservationsNewRoute: typeof AppReservationsNewRoute
   AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
+  AppExpensesIndexRoute: typeof AppExpensesIndexRoute
   AppReservationsIndexRoute: typeof AppReservationsIndexRoute
   AppTasksIndexRoute: typeof AppTasksIndexRoute
 }
@@ -323,11 +363,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppApartmentsTypesRoute: AppApartmentsTypesRoute,
   AppEmployeesAvailabilityRoute: AppEmployeesAvailabilityRoute,
   AppEmployeesLeaveRequestsRoute: AppEmployeesLeaveRequestsRoute,
+  AppExpensesCategoriesRoute: AppExpensesCategoriesRoute,
   AppReservationsReservationIdRoute: AppReservationsReservationIdRoute,
   AppReservationsNewRoute: AppReservationsNewRoute,
   AppTasksTaskIdRoute: AppTasksTaskIdRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,
+  AppExpensesIndexRoute: AppExpensesIndexRoute,
   AppReservationsIndexRoute: AppReservationsIndexRoute,
   AppTasksIndexRoute: AppTasksIndexRoute,
 }
