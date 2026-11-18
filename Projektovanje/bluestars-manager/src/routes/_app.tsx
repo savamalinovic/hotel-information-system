@@ -33,6 +33,8 @@ function AppLayout() {
       | '/books'
       | '/analytics'
       | '/audit'
+      | '/settings'
+      | '/notifications'
     label: string
   }> = [
     { to: '/', label: t('nav.dashboard') },
@@ -45,6 +47,8 @@ function AppLayout() {
     { to: '/books', label: t('nav.books') },
     { to: '/analytics', label: t('nav.analytics') },
     { to: '/audit', label: t('nav.audit') },
+    { to: '/settings', label: t('nav.settings') },
+    { to: '/notifications', label: t('nav.notifications') },
   ]
 
   return (

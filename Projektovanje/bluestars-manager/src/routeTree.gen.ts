@@ -24,9 +24,11 @@ import { Route as AppEmployeesAvailabilityRouteImport } from './routes/_app/empl
 import { Route as AppEmployeesLeaveRequestsRouteImport } from './routes/_app/employees/leave-requests'
 import { Route as AppExpensesIndexRouteImport } from './routes/_app/expenses/index'
 import { Route as AppExpensesCategoriesRouteImport } from './routes/_app/expenses/categories'
+import { Route as AppNotificationsIndexRouteImport } from './routes/_app/notifications/index'
 import { Route as AppReservationsIndexRouteImport } from './routes/_app/reservations/index'
 import { Route as AppReservationsReservationIdRouteImport } from './routes/_app/reservations/$reservationId'
 import { Route as AppReservationsNewRouteImport } from './routes/_app/reservations/new'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppTasksIndexRouteImport } from './routes/_app/tasks/index'
 import { Route as AppTasksTaskIdRouteImport } from './routes/_app/tasks/$taskId'
 
@@ -107,6 +109,11 @@ const AppExpensesCategoriesRoute = AppExpensesCategoriesRouteImport.update({
   path: '/expenses/categories',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsIndexRoute = AppNotificationsIndexRouteImport.update({
+  id: '/notifications/',
+  path: '/notifications/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReservationsIndexRoute = AppReservationsIndexRouteImport.update({
   id: '/reservations/',
   path: '/reservations/',
@@ -121,6 +128,11 @@ const AppReservationsReservationIdRoute =
 const AppReservationsNewRoute = AppReservationsNewRouteImport.update({
   id: '/reservations/new',
   path: '/reservations/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTasksIndexRoute = AppTasksIndexRouteImport.update({
@@ -152,7 +164,9 @@ export interface FileRoutesByFullPath {
   '/damages/': typeof AppDamagesIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
   '/expenses/': typeof AppExpensesIndexRoute
+  '/notifications/': typeof AppNotificationsIndexRoute
   '/reservations/': typeof AppReservationsIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
   '/tasks/': typeof AppTasksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -173,7 +187,9 @@ export interface FileRoutesByTo {
   '/damages': typeof AppDamagesIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
   '/expenses': typeof AppExpensesIndexRoute
+  '/notifications': typeof AppNotificationsIndexRoute
   '/reservations': typeof AppReservationsIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
   '/tasks': typeof AppTasksIndexRoute
 }
 export interface FileRoutesById {
@@ -196,7 +212,9 @@ export interface FileRoutesById {
   '/_app/damages/': typeof AppDamagesIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
   '/_app/expenses/': typeof AppExpensesIndexRoute
+  '/_app/notifications/': typeof AppNotificationsIndexRoute
   '/_app/reservations/': typeof AppReservationsIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
   '/_app/tasks/': typeof AppTasksIndexRoute
 }
 export interface FileRouteTypes {
@@ -219,7 +237,9 @@ export interface FileRouteTypes {
     | '/damages/'
     | '/employees/'
     | '/expenses/'
+    | '/notifications/'
     | '/reservations/'
+    | '/settings/'
     | '/tasks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,7 +260,9 @@ export interface FileRouteTypes {
     | '/damages'
     | '/employees'
     | '/expenses'
+    | '/notifications'
     | '/reservations'
+    | '/settings'
     | '/tasks'
   id:
     | '__root__'
@@ -262,7 +284,9 @@ export interface FileRouteTypes {
     | '/_app/damages/'
     | '/_app/employees/'
     | '/_app/expenses/'
+    | '/_app/notifications/'
     | '/_app/reservations/'
+    | '/_app/settings/'
     | '/_app/tasks/'
   fileRoutesById: FileRoutesById
 }
@@ -378,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExpensesCategoriesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notifications/': {
+      id: '/_app/notifications/'
+      path: '/notifications'
+      fullPath: '/notifications/'
+      preLoaderRoute: typeof AppNotificationsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/reservations/': {
       id: '/_app/reservations/'
       path: '/reservations'
@@ -397,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/reservations/new'
       fullPath: '/reservations/new'
       preLoaderRoute: typeof AppReservationsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/tasks/': {
@@ -433,7 +471,9 @@ interface AppRouteChildren {
   AppDamagesIndexRoute: typeof AppDamagesIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
   AppExpensesIndexRoute: typeof AppExpensesIndexRoute
+  AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppReservationsIndexRoute: typeof AppReservationsIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppTasksIndexRoute: typeof AppTasksIndexRoute
 }
 
@@ -454,7 +494,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppDamagesIndexRoute: AppDamagesIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,
   AppExpensesIndexRoute: AppExpensesIndexRoute,
+  AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppReservationsIndexRoute: AppReservationsIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppTasksIndexRoute: AppTasksIndexRoute,
 }
 
