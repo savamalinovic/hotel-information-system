@@ -42,6 +42,7 @@ const en = {
     damages: 'Damages',
     books: 'Books',
     analytics: 'Analytics',
+    audit: 'Audit log',
   },
   auth: {
     signIn: 'Sign in',
@@ -316,6 +317,19 @@ const en = {
     availableWorkers: 'Available',
     busyWorkers: 'Busy',
     noData: 'No data for this period.',
+  },
+  audit: {
+    title: 'Audit log',
+    time: 'Time',
+    actor: 'Actor',
+    event: 'Event',
+    reservation: 'Reservation',
+    apartment: 'Apartment',
+    task: 'Task',
+    details: 'Details',
+    from: 'From',
+    to: 'To',
+    noEntries: 'No audit entries found.',
   },
   errors: {
     VALIDATION_FAILED: 'Please fix the highlighted fields.',

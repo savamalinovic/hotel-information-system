@@ -16,6 +16,7 @@ import { Route as AppAnalyticsIndexRouteImport } from './routes/_app/analytics/i
 import { Route as AppApartmentsIndexRouteImport } from './routes/_app/apartments/index'
 import { Route as AppApartmentsApartmentIdRouteImport } from './routes/_app/apartments/$apartmentId'
 import { Route as AppApartmentsTypesRouteImport } from './routes/_app/apartments/types'
+import { Route as AppAuditIndexRouteImport } from './routes/_app/audit/index'
 import { Route as AppBooksIndexRouteImport } from './routes/_app/books/index'
 import { Route as AppDamagesIndexRouteImport } from './routes/_app/damages/index'
 import { Route as AppEmployeesIndexRouteImport } from './routes/_app/employees/index'
@@ -62,6 +63,11 @@ const AppApartmentsApartmentIdRoute =
 const AppApartmentsTypesRoute = AppApartmentsTypesRouteImport.update({
   id: '/apartments/types',
   path: '/apartments/types',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditIndexRoute = AppAuditIndexRouteImport.update({
+  id: '/audit/',
+  path: '/audit/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBooksIndexRoute = AppBooksIndexRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/analytics/': typeof AppAnalyticsIndexRoute
   '/apartments/': typeof AppApartmentsIndexRoute
+  '/audit/': typeof AppAuditIndexRoute
   '/books/': typeof AppBooksIndexRoute
   '/damages/': typeof AppDamagesIndexRoute
   '/employees/': typeof AppEmployeesIndexRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/analytics': typeof AppAnalyticsIndexRoute
   '/apartments': typeof AppApartmentsIndexRoute
+  '/audit': typeof AppAuditIndexRoute
   '/books': typeof AppBooksIndexRoute
   '/damages': typeof AppDamagesIndexRoute
   '/employees': typeof AppEmployeesIndexRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
   '/_app/analytics/': typeof AppAnalyticsIndexRoute
   '/_app/apartments/': typeof AppApartmentsIndexRoute
+  '/_app/audit/': typeof AppAuditIndexRoute
   '/_app/books/': typeof AppBooksIndexRoute
   '/_app/damages/': typeof AppDamagesIndexRoute
   '/_app/employees/': typeof AppEmployeesIndexRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/tasks/$taskId'
     | '/analytics/'
     | '/apartments/'
+    | '/audit/'
     | '/books/'
     | '/damages/'
     | '/employees/'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/tasks/$taskId'
     | '/analytics'
     | '/apartments'
+    | '/audit'
     | '/books'
     | '/damages'
     | '/employees'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/_app/tasks/$taskId'
     | '/_app/analytics/'
     | '/_app/apartments/'
+    | '/_app/audit/'
     | '/_app/books/'
     | '/_app/damages/'
     | '/_app/employees/'
@@ -308,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/apartments/types'
       fullPath: '/apartments/types'
       preLoaderRoute: typeof AppApartmentsTypesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/audit/': {
+      id: '/_app/audit/'
+      path: '/audit'
+      fullPath: '/audit/'
+      preLoaderRoute: typeof AppAuditIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/books/': {
@@ -409,6 +428,7 @@ interface AppRouteChildren {
   AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
   AppAnalyticsIndexRoute: typeof AppAnalyticsIndexRoute
   AppApartmentsIndexRoute: typeof AppApartmentsIndexRoute
+  AppAuditIndexRoute: typeof AppAuditIndexRoute
   AppBooksIndexRoute: typeof AppBooksIndexRoute
   AppDamagesIndexRoute: typeof AppDamagesIndexRoute
   AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
@@ -429,6 +449,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTasksTaskIdRoute: AppTasksTaskIdRoute,
   AppAnalyticsIndexRoute: AppAnalyticsIndexRoute,
   AppApartmentsIndexRoute: AppApartmentsIndexRoute,
+  AppAuditIndexRoute: AppAuditIndexRoute,
   AppBooksIndexRoute: AppBooksIndexRoute,
   AppDamagesIndexRoute: AppDamagesIndexRoute,
   AppEmployeesIndexRoute: AppEmployeesIndexRoute,

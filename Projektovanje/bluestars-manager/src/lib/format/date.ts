@@ -44,3 +44,40 @@ export function daysAgoLocal(days: number): string {
   date.setDate(date.getDate() - days)
   return formatToLocalDate(date)
 }
+
+// Converts a naive local datetime 'YYYY-MM-DDTHH:mm' (wall-clock time in the
+// given IANA time zone) to an ISO 8601 Instant string. Used to translate
+// <input type="datetime-local"> values into the Instant filter the audit API
+// expects. No business arithmetic — just an input/format boundary.
+export function localDateTimeToInstant(local: string, timeZone: string = TIME_ZONE): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})$/.exec(local)
+  if (!match) return local
+  const [, year, month, day, hour, minute] = match
+  const naiveUtcMs = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute))
+  const offsetMs = timeZoneOffsetMs(naiveUtcMs, timeZone)
+  return new Date(naiveUtcMs - offsetMs).toISOString()
+}
+
+function timeZoneOffsetMs(utcMs: number, timeZone: string): number {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  })
+  const parts: Record<string, string> = {}
+  for (const part of dtf.formatToParts(new Date(utcMs))) parts[part.type] = part.value
+  const asUtcMs = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour) % 24,
+    Number(parts.minute),
+    Number(parts.second),
+  )
+  return asUtcMs - utcMs
+}
