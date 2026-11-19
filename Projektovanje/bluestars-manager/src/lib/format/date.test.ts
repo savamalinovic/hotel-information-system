@@ -1,9 +1,29 @@
-import { describe, expect, it } from 'vitest'
-import { formatDate, formatInstant, localDateTimeToInstant } from './date'
+import { afterEach, describe, expect, it } from 'vitest'
+import i18n from '../i18n'
+import { formatDate, formatInstant, formatShortDate, localDateTimeToInstant } from './date'
+
+afterEach(async () => {
+  await i18n.changeLanguage('sr')
+})
 
 describe('formatDate', () => {
   it('renders a LocalDate without shifting the day', () => {
     expect(formatDate('2026-11-17')).toContain('17')
+  })
+
+  it('uses the Serbian date format by default', () => {
+    expect(formatDate('2026-11-17')).toBe('17.11.2026.')
+  })
+
+  it('follows the active UI language', async () => {
+    await i18n.changeLanguage('en')
+    expect(formatDate('2026-11-17')).toBe('17/11/2026')
+  })
+})
+
+describe('formatShortDate', () => {
+  it('renders day and month only', () => {
+    expect(formatShortDate('2026-11-17')).toBe('17.11.')
   })
 
   it('returns the input for malformed dates', () => {

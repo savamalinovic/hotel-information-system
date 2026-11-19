@@ -1,22 +1,27 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useAuth } from '../lib/auth/AuthContext'
 import { getSession } from '../lib/auth/store'
-import { isApiError } from '../lib/api/errors'
+import { errorMessage } from '../lib/api/errorMessage'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Field } from '../components/ui/Field'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { useRestoreStoredLocale } from '../lib/i18n/preference'
 
-const loginSchema = z.object({
-  email: z.email('Enter a valid email.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
-})
+function makeLoginSchema(t: TFunction) {
+  return z.object({
+    email: z.email(t('auth.emailInvalid')),
+    password: z.string().min(8, t('auth.passwordTooShort')),
+  })
+}
 
-type LoginFormValues = z.infer<typeof loginSchema>
+type LoginFormValues = z.infer<ReturnType<typeof makeLoginSchema>>
 
 function sanitizeRedirect(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '/'
@@ -41,12 +46,24 @@ function LoginPage() {
   const navigate = useNavigate()
   const { redirect: redirectTo } = Route.useSearch()
   const [serverError, setServerError] = useState<string | null>(null)
+  useRestoreStoredLocale()
+  const loginSchema = useMemo(() => makeLoginSchema(t), [t])
 
   const {
     register,
     handleSubmit,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) })
+
+  // The language switcher sits next to this form: re-validate fields that
+  // already show an error so their messages follow a language change.
+  useEffect(() => {
+    const invalidFields = Object.keys(errors) as Array<keyof LoginFormValues>
+    if (invalidFields.length > 0) void trigger(invalidFields)
+    // Only the schema (i.e. the language) should re-run this, not every error change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loginSchema])
 
   useEffect(() => {
     if (ready && session?.role === 'MANAGER') {
@@ -59,20 +76,17 @@ function LoginPage() {
     try {
       await login(values.email, values.password)
     } catch (error) {
-      if (isApiError(error)) {
-        setServerError(
-          error.code === 'INVALID_CREDENTIALS' ? t('errors.INVALID_CREDENTIALS') : error.message,
-        )
-      } else {
-        setServerError(t('errors.UNKNOWN'))
-      }
+      setServerError(errorMessage(error, t))
     }
   })
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-gray-900">{t('common.appName')}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl font-semibold text-gray-900">{t('common.appName')}</h1>
+          <LanguageSwitcher />
+        </div>
         <p className="mt-1 text-sm text-gray-500">{t('auth.signInSubtitle')}</p>
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <Field label={t('auth.email')} htmlFor="email" error={errors.email?.message}>
@@ -80,7 +94,7 @@ function LoginPage() {
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="name@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               {...register('email')}
             />
           </Field>

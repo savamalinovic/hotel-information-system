@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiDelete, apiFetch, apiGet, apiPost, apiPut } from '../../../lib/api/client'
 import { errorMessage, errorViolations } from '../../../lib/api/errorMessage'
 import type {
@@ -104,7 +105,7 @@ function ApartmentDetailPage() {
           <h1 className="mt-1 text-2xl font-semibold text-gray-900">{data.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <StatusBadge value={data.effectiveStatus} />
+          <StatusBadge kind="apartmentStatus" value={data.effectiveStatus} />
           <Badge tone={data.active ? 'green' : 'gray'}>
             {t(data.active ? 'common.active' : 'common.inactive')}
           </Badge>
@@ -123,7 +124,7 @@ function ApartmentDetailPage() {
             <InfoRow label={t('apartments.address')} value={data.address} />
             <InfoRow label={t('apartments.floor')} value={String(data.floor)} />
             <InfoRow label={t('apartments.type')} value={data.type.name} />
-            <InfoRow label={t('apartments.status')} value={data.operationalStatus} />
+            <InfoRow label={t('apartments.status')} value={enumLabel(t, 'apartmentStatus', data.operationalStatus)} />
             <InfoRow label={t('apartments.capacity')} value={String(data.type.capacity)} />
             <InfoRow label={t('apartments.defaultNightlyRate')} value={data.type.defaultNightlyRate} money />
           </dl>
@@ -137,7 +138,7 @@ function ApartmentDetailPage() {
               {history.data.map((entry) => (
                 <li key={entry.apartmentStatusHistoryId} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <StatusBadge value={entry.status} />
+                    <StatusBadge kind="apartmentStatus" value={entry.status} />
                     {entry.reason ? <span className="text-gray-500">{entry.reason}</span> : null}
                   </span>
                   <span className="text-xs text-gray-400">{formatInstant(entry.changedAt)}</span>
@@ -382,7 +383,7 @@ function StatusFormModal({
           <Select id="status" {...form.register('status')}>
             {OPERATIONAL_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'apartmentStatus', status)}
               </option>
             ))}
           </Select>
@@ -421,8 +422,8 @@ function UnavailabilityFormModal({
   const schema = useMemo(
     () =>
       z.object({
-        startDate: z.string().min(1, t('reservations.checkInRequired')),
-        endDate: z.string().min(1, t('reservations.checkOutRequired')),
+        startDate: z.string().min(1, t('apartments.startDateRequired')),
+        endDate: z.string().min(1, t('apartments.endDateRequired')),
         reason: z.string().min(1, t('apartments.reasonRequired')),
       }),
     [t],

@@ -3,9 +3,10 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AuthProvider } from '../lib/auth/AuthContext'
 import { getQueryClient } from '../lib/queryClient'
-import { DEFAULT_LOCALE } from '../lib/i18n'
+import '../lib/i18n'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
@@ -21,8 +22,12 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: ReactNode }) {
+  // Re-renders with the active language; the stored preference itself is
+  // restored by the top-level routes (see useRestoreStoredLocale).
+  const { i18n } = useTranslation()
+
   return (
-    <html lang={DEFAULT_LOCALE}>
+    <html lang={i18n.resolvedLanguage ?? i18n.language}>
       <head>
         <HeadContent />
       </head>

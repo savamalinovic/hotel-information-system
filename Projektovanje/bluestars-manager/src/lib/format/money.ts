@@ -2,13 +2,14 @@
 // business arithmetic; this module only formats for display and validates the
 // shape before sending. No floating-point calculations are performed here.
 
+import { intlLocale } from '../i18n'
+
 const CURRENCY = 'BAM'
-const MONEY_LOCALE = 'bs-BA'
 
 export function formatMoney(value: string): string {
   const amount = Number(value)
   if (!Number.isFinite(amount)) return value
-  return new Intl.NumberFormat(MONEY_LOCALE, {
+  return new Intl.NumberFormat(intlLocale(), {
     style: 'currency',
     currency: CURRENCY,
   }).format(amount)

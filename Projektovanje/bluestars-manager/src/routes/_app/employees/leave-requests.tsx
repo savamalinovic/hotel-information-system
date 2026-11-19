@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiGet, apiPost } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { LeaveRequestResponse, ManagedUserResponse, Page } from '../../../lib/api/types'
@@ -83,7 +84,7 @@ function LeaveRequestsPage() {
         render: (row) => `${formatDate(row.startDate)} → ${formatDate(row.endDate)}`,
       },
       { key: 'reason', header: t('employees.reason'), render: (row) => row.reason },
-      { key: 'status', header: t('employees.status'), render: (row) => <StatusBadge value={row.status} /> },
+      { key: 'status', header: t('employees.status'), render: (row) => <StatusBadge kind="leaveStatus" value={row.status} /> },
       {
         key: 'actions',
         header: t('common.actions'),
@@ -145,7 +146,7 @@ function LeaveRequestsPage() {
             <option value="">{t('common.all')}</option>
             {LEAVE_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'leaveStatus', status)}
               </option>
             ))}
           </Select>

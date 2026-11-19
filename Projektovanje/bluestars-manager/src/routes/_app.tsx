@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../lib/auth/AuthContext'
 import { getSession } from '../lib/auth/store'
 import { FullPageLoader } from '../components/ui/Spinner'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { useRestoreStoredLocale } from '../lib/i18n/preference'
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: ({ location }) => {
@@ -20,6 +22,7 @@ function AppLayout() {
   const { t } = useTranslation()
   const { ready, session, logout } = useAuth()
   const navigate = useNavigate()
+  useRestoreStoredLocale()
 
   if (!ready) return <FullPageLoader />
   if (!session) return <Navigate to="/login" search={{ redirect: '/' }} />
@@ -76,6 +79,7 @@ function AppLayout() {
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
           <span className="text-sm text-gray-500">{t('common.appName')}</span>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <span className="text-sm text-gray-700">{session.email}</span>
             <button
               type="button"

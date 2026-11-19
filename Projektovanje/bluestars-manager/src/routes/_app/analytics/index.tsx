@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel, type EnumKind } from '../../../lib/i18n/enums'
 import { apiGet } from '../../../lib/api/client'
 import type {
   AnalyticsResponse,
@@ -10,7 +11,9 @@ import type {
   DailyFinancialPoint,
   WorkerCompletion,
 } from '../../../lib/api/types'
-import { daysAgoLocal, todayLocal } from '../../../lib/format/date'
+import { daysAgoLocal, formatDate, formatShortDate, todayLocal } from '../../../lib/format/date'
+import { formatMoney } from '../../../lib/format/money'
+import { formatNumber, formatPercent } from '../../../lib/format/number'
 import { stringParam } from '../../../lib/query/search'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import { Page as PageShell } from '../../../components/ui/Page'
@@ -143,12 +146,12 @@ function AnalyticsBody({ data }: { data: AnalyticsResponse }) {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <StatCard label={t('analytics.reservationCount')} value={String(reservations.reservationCount)} />
         <StatCard label={t('analytics.nights')} value={String(reservations.nights)} />
-        <StatCard label={t('analytics.occupancy')} value={`${reservations.occupancyPercentage.toFixed(1)}%`} />
+        <StatCard label={t('analytics.occupancy')} value={formatPercent(reservations.occupancyPercentage)} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card title={t('analytics.reservationsByStatus')}>
-          <DistributionList items={reservations.byStatus} />
+          <DistributionList items={reservations.byStatus} kind="reservationStatus" />
         </Card>
         <Card title={t('analytics.reservationsByType')}>
           <OccupancyTable rows={reservations.byApartmentType} />
@@ -160,16 +163,16 @@ function AnalyticsBody({ data }: { data: AnalyticsResponse }) {
         <StatCard label={t('analytics.blockedCount')} value={String(tasks.blockedCount)} />
         <StatCard
           label={t('analytics.averageCheckoutToReady')}
-          value={String(tasks.averageCheckoutToReadyMinutes)}
+          value={formatNumber(tasks.averageCheckoutToReadyMinutes)}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card title={t('analytics.tasksByStatus')}>
-          <DistributionList items={tasks.byStatus} />
+          <DistributionList items={tasks.byStatus} kind="taskStatus" />
         </Card>
         <Card title={t('analytics.tasksBySpecialization')}>
-          <DistributionList items={tasks.bySpecialization} />
+          <DistributionList items={tasks.bySpecialization} kind="specialization" />
         </Card>
       </div>
 
@@ -209,7 +212,14 @@ function MoneyList({ items }: { items: Array<{ name: string; amount: string }> }
   )
 }
 
-function DistributionList({ items }: { items: Array<{ name: string; count: number }> }) {
+function DistributionList({
+  items,
+  kind,
+}: {
+  items: Array<{ name: string; count: number }>
+  kind: EnumKind
+}) {
+  const { t } = useTranslation()
   if (items.length === 0) return <EmptyNote />
   const max = Math.max(1, ...items.map((item) => item.count))
   return (
@@ -217,7 +227,7 @@ function DistributionList({ items }: { items: Array<{ name: string; count: numbe
       {items.map((item) => (
         <li key={item.name}>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-gray-600">{item.name}</span>
+            <span className="text-gray-600">{enumLabel(t, kind, item.name)}</span>
             <span className="font-medium text-gray-900">{item.count}</span>
           </div>
           <div className="mt-1 h-1.5 rounded bg-gray-100">
@@ -245,7 +255,7 @@ function OccupancyTable({ rows }: { rows: ApartmentTypeOccupancy[] }) {
     {
       key: 'occupancy',
       header: t('analytics.occupancyShort'),
-      render: (row) => `${row.occupancyPercentage.toFixed(1)}%`,
+      render: (row) => formatPercent(row.occupancyPercentage),
     },
   ]
   if (rows.length === 0) return <EmptyNote />
@@ -279,7 +289,7 @@ function DailyTrendChart({ points }: { points: DailyFinancialPoint[] }) {
         <div
           key={point.date}
           className="flex min-w-8 flex-1 flex-col items-center gap-1"
-          title={`${point.date} · ${point.revenue} / ${point.operationalExpenses}`}
+          title={`${formatDate(point.date)} · ${formatMoney(point.revenue)} / ${formatMoney(point.operationalExpenses)}`}
         >
           <div className="flex h-28 w-full items-end justify-center gap-0.5">
             <div
@@ -291,7 +301,7 @@ function DailyTrendChart({ points }: { points: DailyFinancialPoint[] }) {
               style={{ height: `${(Number(point.operationalExpenses) / max) * 100}%` }}
             />
           </div>
-          <span className="text-[10px] text-gray-500">{point.date.slice(5)}</span>
+          <span className="text-[10px] text-gray-500">{formatShortDate(point.date)}</span>
         </div>
       ))}
     </div>

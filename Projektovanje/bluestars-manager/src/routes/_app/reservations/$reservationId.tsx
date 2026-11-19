@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiGet, apiPatch } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type {
@@ -118,7 +119,7 @@ function ReservationDetailPage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <StatusBadge value={data.status} />
+          <StatusBadge kind="reservationStatus" value={data.status} />
           <Button variant="secondary" onClick={() => setStayOpen(true)}>
             {t('reservations.editStay')}
           </Button>
@@ -147,7 +148,7 @@ function ReservationDetailPage() {
                   <span>
                     {item.guest.name} {item.guest.surname}
                   </span>
-                  {item.primaryGuest ? <Badge tone="blue">Primary</Badge> : null}
+                  {item.primaryGuest ? <Badge tone="blue">{t('reservations.primaryGuest')}</Badge> : null}
                 </li>
               ))}
             </ul>
@@ -173,7 +174,7 @@ function ReservationDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">{t('reservations.status')}</span>
-                <StatusBadge value={paymentSummary.data.status} />
+                <StatusBadge kind="paymentStatus" value={paymentSummary.data.status} />
               </div>
             </div>
           ) : (
@@ -190,7 +191,7 @@ function ReservationDetailPage() {
                 <li key={payment.paymentId} className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-medium text-gray-800">
-                      {payment.type} · <Money value={payment.amount} />
+                      {enumLabel(t, 'paymentType', payment.type)} · <Money value={payment.amount} />
                     </div>
                     <div className="text-xs text-gray-400">{formatInstant(payment.recordedAt)}</div>
                   </div>
@@ -208,7 +209,7 @@ function ReservationDetailPage() {
               {statusHistory.data.map((entry) => (
                 <li key={entry.reservationStatusHistoryId} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <StatusBadge value={entry.status} />
+                    <StatusBadge kind="reservationStatus" value={entry.status} />
                     {entry.reason ? <span className="text-gray-500">{entry.reason}</span> : null}
                   </span>
                   <span className="text-xs text-gray-400">{formatInstant(entry.changedAt)}</span>
@@ -226,7 +227,7 @@ function ReservationDetailPage() {
           <ul className="space-y-2 text-sm">
             {claimHistory.data.map((entry) => (
               <li key={entry.historyId} className="flex items-center justify-between gap-2">
-                <span>{entry.action}</span>
+                <span>{enumLabel(t, 'claimAction', entry.action)}</span>
                 <span className="text-xs text-gray-400">{formatInstant(entry.performedAt)}</span>
               </li>
             ))}
@@ -365,7 +366,7 @@ function StatusFormModal({
           <Select id="res-status" {...form.register('status')}>
             {MANAGER_STATUS_CHOICES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'reservationStatus', status)}
               </option>
             ))}
           </Select>

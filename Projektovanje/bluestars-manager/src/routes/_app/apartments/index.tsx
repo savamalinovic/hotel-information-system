@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState, type ReactNode } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiGet } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { ApartmentDetailsResponse, ApartmentTypeResponse, Page } from '../../../lib/api/types'
@@ -82,7 +83,7 @@ function ApartmentsPage() {
       {
         key: 'status',
         header: t('apartments.effectiveStatus'),
-        render: (row) => <StatusBadge value={row.effectiveStatus} />,
+        render: (row) => <StatusBadge kind="apartmentStatus" value={row.effectiveStatus} />,
       },
       {
         key: 'active',
@@ -120,7 +121,7 @@ function ApartmentsPage() {
             <option value="">{t('common.all')}</option>
             {APARTMENT_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'apartmentStatus', status)}
               </option>
             ))}
           </Select>

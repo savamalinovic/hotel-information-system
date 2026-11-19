@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiFetch, apiGet, apiPost } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type {
@@ -108,7 +109,7 @@ function TaskDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           {isCleaning ? <Badge tone="amber">{t('tasks.cleaning')}</Badge> : null}
-          <StatusBadge value={data.status} />
+          <StatusBadge kind="taskStatus" value={data.status} />
           {data.status !== 'CANCELLED' && data.status !== 'COMPLETED' ? (
             <Button variant="secondary" onClick={() => setCancelOpen(true)}>
               {t('tasks.cancel')}
@@ -119,9 +120,9 @@ function TaskDetailPage() {
 
       <Card>
         <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-          <InfoRow label={t('tasks.specialization')} value={data.specializationCode} />
-          <InfoRow label={t('tasks.priority')} value={data.priority} />
-          <InfoRow label={t('tasks.status')} value={data.status} />
+          <InfoRow label={t('tasks.specialization')} value={enumLabel(t, 'specialization', data.specializationCode)} />
+          <InfoRow label={t('tasks.priority')} value={enumLabel(t, 'taskPriority', data.priority)} />
+          <InfoRow label={t('tasks.status')} value={enumLabel(t, 'taskStatus', data.status)} />
           <InfoRow label={t('tasks.apartment')} value={apartmentName ?? '—'} />
           <InfoRow label={t('tasks.reservation')} value={data.reservationId ? String(data.reservationId) : '—'} />
           <InfoRow label={t('tasks.assignedWorker')} value={workerName ?? '—'} />
@@ -139,7 +140,7 @@ function TaskDetailPage() {
               {history.data.map((entry) => (
                 <li key={entry.id} className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <StatusBadge value={entry.toStatus} />
+                    <StatusBadge kind="taskStatus" value={entry.toStatus} />
                     {entry.reason ? <span className="text-gray-500">{entry.reason}</span> : null}
                   </span>
                   <span className="text-xs text-gray-400">{formatInstant(entry.changedAt)}</span>

@@ -2,9 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../lib/i18n/enums'
 import { apiGet, type QueryValue } from '../../lib/api/client'
 import type { AnalyticsResponse, Page } from '../../lib/api/types'
-import { daysAgoLocal, todayLocal } from '../../lib/format/date'
+import { daysAgoLocal, formatDate, todayLocal } from '../../lib/format/date'
+import { formatPercent } from '../../lib/format/number'
 import { Card } from '../../components/ui/Card'
 import { Money } from '../../components/ui/Money'
 import { Spinner } from '../../components/ui/Spinner'
@@ -64,16 +66,22 @@ function DashboardPage() {
         <StatCard label={t('dashboard.expenses')} value={<Money value={financial.operationalExpenses} />} />
         <StatCard label={t('dashboard.netResult')} value={<Money value={financial.netResult} />} />
         <StatCard label={t('dashboard.reservations')} value={String(reservations.reservationCount)} />
-        <StatCard label={t('dashboard.occupancy')} value={`${reservations.occupancyPercentage.toFixed(1)}%`} />
+        <StatCard label={t('dashboard.occupancy')} value={formatPercent(reservations.occupancyPercentage)} />
         <StatCard label={t('dashboard.presentWorkers')} value={String(workforce.presentWorkers)} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card title={t('dashboard.reservationsByStatus')}>
-          <NameValueList items={reservations.byStatus.map((item) => ({ name: item.name, value: String(item.count) }))} />
+          <NameValueList items={reservations.byStatus.map((item) => ({
+              name: enumLabel(t, 'reservationStatus', item.name),
+              value: String(item.count),
+            }))} />
         </Card>
         <Card title={t('dashboard.tasksByStatus')}>
-          <NameValueList items={tasks.byStatus.map((item) => ({ name: item.name, value: String(item.count) }))} />
+          <NameValueList items={tasks.byStatus.map((item) => ({
+              name: enumLabel(t, 'taskStatus', item.name),
+              value: String(item.count),
+            }))} />
         </Card>
         <Card title={t('dashboard.workforce')}>
           <NameValueList
@@ -126,7 +134,7 @@ function DashboardPage() {
         <ul className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4 lg:grid-cols-7">
           {financial.dailyTrend.slice(-14).map((day) => (
             <li key={day.date} className="rounded-md bg-gray-50 p-2">
-              <div className="text-xs text-gray-500">{day.date}</div>
+              <div className="text-xs text-gray-500">{formatDate(day.date)}</div>
               <div className="font-medium text-gray-900">
                 <Money value={day.revenue} />
               </div>

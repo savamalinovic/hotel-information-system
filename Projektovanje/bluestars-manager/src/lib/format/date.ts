@@ -2,24 +2,37 @@
 // Audit timestamps are ISO Instants, also rendered in Europe/Sarajevo.
 // LocalDate values are formatted as calendar dates (no time-zone day shift).
 
+import { intlLocale } from '../i18n'
+
 export const TIME_ZONE = 'Europe/Sarajevo'
-const DATE_LOCALE = 'en-GB'
+
+function parseLocalDate(isoLocalDate: string): Date | null {
+  const [year, month, day] = isoLocalDate.split('-').map((part) => Number(part))
+  if (!year || !month || !day) return null
+  return new Date(year, month - 1, day)
+}
 
 export function formatDate(isoLocalDate: string): string {
-  const [year, month, day] = isoLocalDate.split('-').map((part) => Number(part))
-  if (!year || !month || !day) return isoLocalDate
-  const date = new Date(year, month - 1, day)
-  return new Intl.DateTimeFormat(DATE_LOCALE, {
+  const date = parseLocalDate(isoLocalDate)
+  if (!date) return isoLocalDate
+  return new Intl.DateTimeFormat(intlLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
   }).format(date)
 }
 
+// Day and month only, for compact chart axes.
+export function formatShortDate(isoLocalDate: string): string {
+  const date = parseLocalDate(isoLocalDate)
+  if (!date) return isoLocalDate
+  return new Intl.DateTimeFormat(intlLocale(), { day: '2-digit', month: '2-digit' }).format(date)
+}
+
 export function formatInstant(isoInstant: string): string {
   const date = new Date(isoInstant)
   if (Number.isNaN(date.getTime())) return isoInstant
-  return new Intl.DateTimeFormat(DATE_LOCALE, {
+  return new Intl.DateTimeFormat(intlLocale(), {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: TIME_ZONE,

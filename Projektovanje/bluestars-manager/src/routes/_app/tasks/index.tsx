@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import type { TFunction } from 'i18next'
 import { apiGet, apiPost } from '../../../lib/api/client'
 import { errorMessage, errorViolations } from '../../../lib/api/errorMessage'
@@ -131,7 +132,7 @@ function TasksPage() {
           </Link>
         ),
       },
-      { key: 'specialization', header: t('tasks.specialization'), render: (row) => row.specializationCode },
+      { key: 'specialization', header: t('tasks.specialization'), render: (row) => enumLabel(t, 'specialization', row.specializationCode) },
       {
         key: 'apartment',
         header: t('tasks.apartment'),
@@ -143,8 +144,8 @@ function TasksPage() {
         header: t('tasks.assignedWorker'),
         render: (row) => (row.assignedWorkerId ? (workerNames.get(row.assignedWorkerId) ?? String(row.assignedWorkerId)) : '—'),
       },
-      { key: 'status', header: t('tasks.status'), render: (row) => <StatusBadge value={row.status} /> },
-      { key: 'priority', header: t('tasks.priority'), render: (row) => <StatusBadge value={row.priority} /> },
+      { key: 'status', header: t('tasks.status'), render: (row) => <StatusBadge kind="taskStatus" value={row.status} /> },
+      { key: 'priority', header: t('tasks.priority'), render: (row) => <StatusBadge kind="taskPriority" value={row.priority} /> },
     ],
     [t, apartmentNames, workerNames],
   )
@@ -165,7 +166,7 @@ function TasksPage() {
             <option value="">{t('common.all')}</option>
             {TASK_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'taskStatus', status)}
               </option>
             ))}
           </Select>
@@ -361,7 +362,7 @@ function TaskFormModal({
             <Select id="t-priority" {...form.register('priority')}>
               {TASK_PRIORITIES.map((priority) => (
                 <option key={priority} value={priority}>
-                  {priority}
+                  {enumLabel(t, 'taskPriority', priority)}
                 </option>
               ))}
             </Select>

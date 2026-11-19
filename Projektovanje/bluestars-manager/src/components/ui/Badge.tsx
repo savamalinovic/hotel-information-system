@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { enumLabel, type EnumKind } from '../../lib/i18n/enums'
 
 export type BadgeTone = 'gray' | 'green' | 'red' | 'amber' | 'blue' | 'purple'
 
@@ -53,6 +55,9 @@ const STATUS_TONES: Record<string, BadgeTone> = {
   UNPAID: 'red',
 }
 
-export function StatusBadge({ value }: { value: string }) {
-  return <Badge tone={STATUS_TONES[value] ?? 'gray'}>{value}</Badge>
+// `kind` selects the translation group: the same API value can read
+// differently per domain (e.g. CANCELLED reservation vs. task).
+export function StatusBadge({ kind, value }: { kind: EnumKind; value: string }) {
+  const { t } = useTranslation()
+  return <Badge tone={STATUS_TONES[value] ?? 'gray'}>{enumLabel(t, kind, value)}</Badge>
 }

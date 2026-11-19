@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiPost } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { NotificationResponse } from '../../../lib/api/types'
@@ -69,7 +70,7 @@ function NotificationsPage() {
       {
         key: 'type',
         header: t('notifications.type'),
-        render: (row) => <span className="text-gray-500">{row.type}</span>,
+        render: (row) => <span className="text-gray-500">{enumLabel(t, 'notificationType', row.type)}</span>,
       },
       {
         key: 'created',

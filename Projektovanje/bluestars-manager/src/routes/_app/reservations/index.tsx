@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, type ReactNode } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { apiGet } from '../../../lib/api/client'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { ApartmentDetailsResponse, Page, ReservationDetailsResponse } from '../../../lib/api/types'
@@ -74,7 +75,7 @@ function ReservationsPage() {
         render: (row) => `${formatDate(row.checkInDate)} → ${formatDate(row.checkOutDate)}`,
       },
       { key: 'guests', header: t('reservations.guestCount'), render: (row) => row.guestCount },
-      { key: 'status', header: t('reservations.status'), render: (row) => <StatusBadge value={row.status} /> },
+      { key: 'status', header: t('reservations.status'), render: (row) => <StatusBadge kind="reservationStatus" value={row.status} /> },
       { key: 'total', header: t('reservations.totalPrice'), render: (row) => <Money value={row.totalPrice} /> },
       {
         key: 'actions',
@@ -134,7 +135,7 @@ function ReservationsPage() {
             <option value="">{t('common.all')}</option>
             {RESERVATION_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {enumLabel(t, 'reservationStatus', status)}
               </option>
             ))}
           </Select>

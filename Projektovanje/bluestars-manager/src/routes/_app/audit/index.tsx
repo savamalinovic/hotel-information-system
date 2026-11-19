@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMemo, type ReactNode } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { AuditLogResponse } from '../../../lib/api/types'
 import { numberParam, pageParam, sizeParam, stringParam } from '../../../lib/query/search'
@@ -109,7 +110,11 @@ function AuditPage() {
       {
         key: 'event',
         header: t('audit.event'),
-        render: (row) => <span className="whitespace-nowrap font-medium text-gray-900">{row.event}</span>,
+        render: (row) => (
+          <span className="whitespace-nowrap font-medium text-gray-900" title={row.event}>
+            {enumLabel(t, 'auditEvent', row.event)}
+          </span>
+        ),
       },
       {
         key: 'actor',
@@ -208,7 +213,7 @@ function AuditPage() {
             <option value="">{t('common.all')}</option>
             {AUDIT_EVENTS.map((event) => (
               <option key={event} value={event}>
-                {event}
+                {enumLabel(t, 'auditEvent', event)}
               </option>
             ))}
           </Select>

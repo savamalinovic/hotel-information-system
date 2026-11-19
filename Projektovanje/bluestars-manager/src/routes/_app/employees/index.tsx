@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import type { TFunction } from 'i18next'
 import { apiGet, apiPatch, apiPost, apiPut } from '../../../lib/api/client'
 import { errorMessage, errorViolations } from '../../../lib/api/errorMessage'
@@ -105,7 +106,7 @@ function EmployeesPage() {
         render: (row) => `${row.name} ${row.surname}`,
       },
       { key: 'email', header: t('employees.email'), render: (row) => row.email },
-      { key: 'role', header: t('employees.role'), render: (row) => <Badge tone="blue">{row.role}</Badge> },
+      { key: 'role', header: t('employees.role'), render: (row) => <Badge tone="blue">{enumLabel(t, 'role', row.role)}</Badge> },
       {
         key: 'active',
         header: t('employees.active'),
@@ -176,7 +177,7 @@ function EmployeesPage() {
             <option value="">{t('common.all')}</option>
             {ROLES.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {enumLabel(t, 'role', role)}
               </option>
             ))}
           </Select>
@@ -397,7 +398,7 @@ function UserFormModal({
           <Select id="u-role" {...form.register('role')}>
             {ROLES.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {enumLabel(t, 'role', role)}
               </option>
             ))}
           </Select>

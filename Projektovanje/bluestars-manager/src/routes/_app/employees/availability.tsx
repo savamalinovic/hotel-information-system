@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMemo, type ReactNode } from 'react'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { enumLabel } from '../../../lib/i18n/enums'
 import { errorMessage } from '../../../lib/api/errorMessage'
 import type { WorkerAvailabilityResponse } from '../../../lib/api/types'
 import { pageParam, sizeParam, stringParam } from '../../../lib/query/search'
@@ -48,8 +49,8 @@ function AvailabilityPage() {
         header: t('employees.name'),
         render: (row) => `${row.name} ${row.surname}`,
       },
-      { key: 'role', header: t('employees.role'), render: (row) => row.role },
-      { key: 'status', header: t('employees.status'), render: (row) => <StatusBadge value={row.status} /> },
+      { key: 'role', header: t('employees.role'), render: (row) => enumLabel(t, 'role', row.role) },
+      { key: 'status', header: t('employees.status'), render: (row) => <StatusBadge kind="workerStatus" value={row.status} /> },
       {
         key: 'clockedIn',
         header: t('employees.clockedIn'),
@@ -86,7 +87,7 @@ function AvailabilityPage() {
             <option value="">{t('common.all')}</option>
             {WORKER_ROLES.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {enumLabel(t, 'role', role)}
               </option>
             ))}
           </Select>
