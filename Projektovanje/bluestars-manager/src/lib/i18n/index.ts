@@ -24,7 +24,6 @@ export function currentLocale(): AppLocale {
   return isSupportedLocale(language) ? language : DEFAULT_LOCALE
 }
 
-// Locale tag for Intl formatters, following the active UI language.
 export function intlLocale(): string {
   return INTL_LOCALES[currentLocale()]
 }

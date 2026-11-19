@@ -1,7 +1,5 @@
 import type { TranslationResource } from './en'
 
-// Srpski (latinica, ijekavica) — terminologija usklađena sa mobilnom aplikacijom
-// (Projektovanje/frontend/blueStars-mobile/assets/locales/sr.json).
 const sr: TranslationResource = {
   common: {
     appName: 'BlueStars Manager',

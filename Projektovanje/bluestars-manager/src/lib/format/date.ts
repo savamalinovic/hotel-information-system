@@ -22,7 +22,6 @@ export function formatDate(isoLocalDate: string): string {
   }).format(date)
 }
 
-// Day and month only, for compact chart axes.
 export function formatShortDate(isoLocalDate: string): string {
   const date = parseLocalDate(isoLocalDate)
   if (!date) return isoLocalDate

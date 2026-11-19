@@ -56,13 +56,9 @@ function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) })
 
-  // The language switcher sits next to this form: re-validate fields that
-  // already show an error so their messages follow a language change.
   useEffect(() => {
     const invalidFields = Object.keys(errors) as Array<keyof LoginFormValues>
     if (invalidFields.length > 0) void trigger(invalidFields)
-    // Only the schema (i.e. the language) should re-run this, not every error change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loginSchema])
 
   useEffect(() => {

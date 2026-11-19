@@ -22,8 +22,6 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: ReactNode }) {
-  // Re-renders with the active language; the stored preference itself is
-  // restored by the top-level routes (see useRestoreStoredLocale).
   const { i18n } = useTranslation()
 
   return (

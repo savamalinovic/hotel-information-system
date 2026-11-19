@@ -383,8 +383,6 @@ const en = {
     NETWORK: 'Network error. Please check your connection.',
     UNKNOWN: 'An unexpected error occurred.',
   },
-  // Display labels for backend enum values. Keys are the exact API values;
-  // unknown values fall back to the raw value (see lib/i18n/enums.ts).
   enums: {
     role: {
       MANAGER: 'Manager',
@@ -505,7 +503,6 @@ const en = {
   },
 } as const
 
-// Structural shape every locale must match: same keys, any string values.
 type DeepStrings<T> = { readonly [K in keyof T]: T[K] extends string ? string : DeepStrings<T[K]> }
 export type TranslationResource = DeepStrings<typeof en>
 

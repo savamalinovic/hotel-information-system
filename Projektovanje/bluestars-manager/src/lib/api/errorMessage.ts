@@ -22,7 +22,6 @@ export function errorMessage(error: unknown, t: TFunction): string {
     if (key) return t(key)
     return error.message || t('errors.UNKNOWN')
   }
-  // fetch() rejects with a TypeError when the request never reaches the server.
   if (error instanceof TypeError) return t('errors.NETWORK')
   return t('errors.UNKNOWN')
 }

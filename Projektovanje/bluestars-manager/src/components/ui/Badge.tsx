@@ -55,8 +55,6 @@ const STATUS_TONES: Record<string, BadgeTone> = {
   UNPAID: 'red',
 }
 
-// `kind` selects the translation group: the same API value can read
-// differently per domain (e.g. CANCELLED reservation vs. task).
 export function StatusBadge({ kind, value }: { kind: EnumKind; value: string }) {
   const { t } = useTranslation()
   return <Badge tone={STATUS_TONES[value] ?? 'gray'}>{enumLabel(t, kind, value)}</Badge>
